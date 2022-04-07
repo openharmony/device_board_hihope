@@ -1,7 +1,7 @@
 /*
  * hdf_mac80211_sta_event.c
  *
- * sta event driver
+ * hdf driver
  *
  * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
@@ -15,10 +15,8 @@
  * GNU General Public License for more details.
  *
  */
-
 #include <net/netlink.h>
 #include <net/cfg80211.h>
-
 #include <securec.h>
 #include <linux/kernel.h>
 #include <linux/skbuff.h>
@@ -34,11 +32,11 @@
 #include "wifi_mac80211_ops.h"
 #include "hdf_wifi_cmd.h"
 #include "hdf_wifi_event.h"
+#include "hdf_wl_interface.h"
 #include "hdf_public_ap6275s.h"
 #include "hdf_mac80211_sta_event.h"
 
 #define HDF_LOG_TAG BDH6Driver
-
 #define WIFI_SCAN_EXTRA_IE_LEN_MAX      (512)
 
 int32_t HdfScanEventCallback(struct net_device *ndev, HdfWifiScanStatus _status)
@@ -47,20 +45,22 @@ int32_t HdfScanEventCallback(struct net_device *ndev, HdfWifiScanStatus _status)
 
     NetDevice *netDev = GetHdfNetDeviceByLinuxInf(ndev);
     WifiScanStatus status = _status;
-
+    netDev = get_hdf_netdev(g_scan_event_ifidx);
     HDF_LOGE("%s: %d, scandone!", __func__, _status);
-
     ret = HdfWifiEventScanDone(netDev, status);
 
     return ret;
 }
 
 #define HDF_ETHER_ADDR_LEN (6)
-int32_t HdfConnectResultEventCallback(struct net_device *ndev, struct ConnetResult *conn)
+int32_t HdfConnectResultEventCallback(struct net_device *ndev, uint8_t *bssid, uint8_t *reqIe,
+    uint8_t *rspIe, uint32_t reqIeLen, uint32_t rspIeLen, uint16_t connectStatus, uint16_t freq)
 {
     int32_t retVal = 0;
     NetDevice *netDev = GetHdfNetDeviceByLinuxInf(ndev);
     struct ConnetResult connResult;
+    // for check p2p0 report
+    netDev = get_hdf_netdev(g_conn_event_ifidx);
 
     HDF_LOGE("%s: enter", __func__);
 
@@ -69,24 +69,20 @@ int32_t HdfConnectResultEventCallback(struct net_device *ndev, struct ConnetResu
         return -1;
     }
 
-    memcpy_s(&connResult.bssid[0], HDF_ETHER_ADDR_LEN, conn->bssid, HDF_ETHER_ADDR_LEN);
+    memcpy_s(&connResult.bssid[0], HDF_ETHER_ADDR_LEN, bssid, HDF_ETHER_ADDR_LEN);
 
-    connResult.rspIe = conn->rspIe;
-    connResult.rspIeLen = conn->rspIeLen;
-    
-    connResult.reqIe = conn->reqIe;
-    connResult.reqIeLen = conn->reqIeLen;
-
-    connResult.connectStatus = conn->connectStatus;
-
-    connResult.freq = conn->freq;
-    connResult.statusCode = conn->connectStatus;
+    connResult.rspIe = rspIe;
+    connResult.rspIeLen = rspIeLen;
+    connResult.reqIe = reqIe;
+    connResult.reqIeLen = reqIeLen;
+    connResult.connectStatus = connectStatus;
+    connResult.freq = freq;
+    connResult.statusCode = connectStatus;
 
     retVal = HdfWifiEventConnectResult(netDev, &connResult);
     if (retVal < 0) {
         HDF_LOGE("%s: hdf wifi event inform connect result failed!", __func__);
     }
-
     return retVal;
 }
 
@@ -95,31 +91,30 @@ int32_t HdfDisconnectedEventCallback(struct net_device *ndev, uint16_t reason, u
     int32_t ret = 0;
 
     NetDevice *netDev = GetHdfNetDeviceByLinuxInf(ndev);
-
+    netDev = get_hdf_netdev(g_conn_event_ifidx);
     HDF_LOGE("%s: leave", __func__);
 
     ret = HdfWifiEventDisconnected(netDev, reason, ie, len);
-
     return ret;
 }
 
-void HdfInformBssFrameEventCallback(struct net_device *ndev, struct ieee80211_channel *channel,
-    struct ScannedBssInfo *bss)
+void HdfInformBssFrameEventCallback(struct net_device *ndev, struct ieee80211_channel *channel, int32_t signal,
+    int16_t freq, struct ieee80211_mgmt *mgmt, uint32_t mgmtLen)
 {
     int32_t retVal = 0;
     NetDevice *netDev = GetHdfNetDeviceByLinuxInf(ndev);
     struct ScannedBssInfo bssInfo;
     struct WlanChannel hdfchannel;
 
-    if (channel == NULL || netDev == NULL || bss->mgmt == NULL) {
+    if (channel == NULL || netDev == NULL || mgmt == NULL) {
         HDF_LOGE("%s: inform_bss_frame channel = null or netDev = null!", __func__);
         return;
     }
-
-    bssInfo.signal = bss->signal;
-    bssInfo.freq = bss->freq;
-    bssInfo.mgmtLen = bss->mgmtLen;
-    bssInfo.mgmt = (struct Ieee80211Mgmt *)bss->mgmt;
+    netDev = get_hdf_netdev(g_scan_event_ifidx);
+    bssInfo.signal = signal;
+    bssInfo.freq = freq;
+    bssInfo.mgmtLen = mgmtLen;
+    bssInfo.mgmt = (struct Ieee80211Mgmt *)mgmt;
 
     hdfchannel.flags = channel->flags;
     hdfchannel.channelId = channel->hw_value;
@@ -127,5 +122,8 @@ void HdfInformBssFrameEventCallback(struct net_device *ndev, struct ieee80211_ch
     retVal = HdfWifiEventInformBssFrame(netDev, &hdfchannel, &bssInfo);
     if (retVal < 0) {
         HDF_LOGE("%s: hdf wifi event inform bss frame failed!", __func__);
+    } else {
+        HDF_LOGE("%s: hdf wifi event inform bss frame ret = %d", __func__, retVal);
     }
 }
+

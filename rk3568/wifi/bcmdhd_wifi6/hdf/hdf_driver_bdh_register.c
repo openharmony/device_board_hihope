@@ -1,11 +1,20 @@
 /*
+ * hdf_driver_bdh_register.c
+ *
+ * hdf driver
+ *
  * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * HDF is dual licensed: you can use it either under the terms of
- * the GPL, or the BSD license, at your option.
- * See the LICENSE file in the root of this repository for complete details.
+ * This software is licensed under the terms of the GNU General Public
+ * License version 2, as published by the Free Software Foundation, and
+ * may be copied, distributed, and modified under those terms.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
  */
-
 #include "hdf_device_desc.h"
 #include "hdf_wifi_product.h"
 #include "hdf_log.h"
@@ -14,8 +23,8 @@
 #include "securec.h"
 #include "wifi_module.h"
 
-
 #define HDF_LOG_TAG BDH6Driver
+
 
 int32_t InitBDH6Chip(struct HdfWlanDevice *device);
 int32_t DeinitBDH6Chip(struct HdfWlanDevice *device);
@@ -25,7 +34,6 @@ int32_t BDH6Init(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice);
 void BDH6Mac80211Init(struct HdfChipDriver *chipDriver);
 
 
-// match to "chipInst {"  in hcs
 static const char * const BDH6_DRIVER_NAME = "hisi";
 
 
@@ -57,7 +65,7 @@ static struct HdfChipDriver *BuildBDH6Driver(struct HdfWlanDevice *device, uint8
     specificDriver->init = BDH6Init;
     specificDriver->deinit = BDH6Deinit;
 
-    HDF_LOGW("bdh6: call BuildBDH6Driver");
+    HDF_LOGW("bdh6: call BuildBDH6Driver %p", specificDriver);
 
     BDH6Mac80211Init(specificDriver);
 
@@ -106,6 +114,7 @@ static int32_t HDFWlanRegBDH6DriverFactory(void)
 
     return HDF_SUCCESS;
 }
+
 
 static int32_t HdfWlanBDH6ChipDriverInit(struct HdfDeviceObject *device)
 {
