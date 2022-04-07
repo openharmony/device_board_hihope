@@ -1,15 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0
 # bcmdhd
 
-#HDF_BDH6_VENDOR_PREFIX := ../../
+BDH6_ROOT_DIR := ../../../..
+KERNEL_SRC_DIR := $(BDH6_ROOT_DIR)/out/kernel/src_tmp/linux-5.10
+ORIG_PATH = $(KERNEL_SRC_DIR)/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd_wifi6
+CURR_PATH = $(BDH6_ROOT_DIR)/device/board/hihope/rk3568/wifi/bcmdhd_wifi6/
 
 # Execute Makefile in the kernel root directory
-#include drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd_wifi6/hdfwifi_bdh6.mk
-include ../../../../device/board/hihope/drivers/rkwifi/bcmdhd_wifi6/hdfwifi_bdh6.mk
+include $(BDH6_ROOT_DIR)/device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdfwifi_bdh6.mk
 
-#$(info lijg: $(HDF_FRAMEWORKS_INC))
-$(info lijg: srctree=$(srctree)  src=$(src))
-$(info liuzb: ++++++++++++++++ this is 6275s makefile +++++++++++++++++++)
+#$(info HDF: $(HDF_FRAMEWORKS_INC))
+$(info ap6275s: srctree=$(srctree)  src=$(src))
+#$(shell echo "hello world !" > /home/lijg/tools/abc.txt)
+$(shell cp -f $(ORIG_PATH)/*.c $(CURR_PATH))
+$(shell cp -f $(ORIG_PATH)/*.h $(CURR_PATH))
+$(shell rm -fr $(CURR_PATH)/include)
+$(shell cp -fr $(ORIG_PATH)/include $(CURR_PATH)/include)
+$(shell rm -f $(CURR_PATH)/include/eapol.h)
+
 
 #ccflags-$(CONFIG_DRIVERS_HDF_WIFI) += \
 #    $(HDF_FRAMEWORKS_INC) \
@@ -51,14 +59,18 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Dlinux -DBCMDRIVER                 \
 	-DWL_EXT_IAPSTA -DWL_ESCAN -DCCODE_LIST                               \
 	-DENABLE_INSMOD_NO_FW_LOAD                                            \
 	$(HDF_BDH6_WIFI_CFLAGS)                                               \
-	-I../../../../device/board/hihope/drivers/rkwifi/bcmdhd_wifi6 \
-	-I../../../../device/board/hihope/drivers/rkwifi/bcmdhd_wifi6/include \
-	-I../../../../device/board/hihope/drivers/rkwifi/bcmdhd_wifi6/hdfadapt \
+	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6 \
+	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6/include \
+	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdf \
 	$(HDF_FRAMEWORKS_INC) \
 	$(HDF_WIFI_FRAMEWORKS_INC) \
 	$(HDF_WIFI_ADAPTER_INC) \
 	$(HDF_WIFI_VENDOR_INC) \
 	$(SECURE_LIB_INC)
+
+#ORIGOFILES = aiutils.o siutils.o
+#ORIGOFILES := $(addprefix $(ORIG_PATH),$(ORIGOFILES))
+#$(info ORIGOFILES = $(ORIGOFILES))
 
 DHDOFILES = aiutils.o siutils.o sbutils.o bcmutils.o bcmwifi_channels.o   \
 	dhd_linux.o dhd_linux_platdev.o dhd_linux_sched.o dhd_pno.o           \
@@ -70,7 +82,7 @@ DHDOFILES = aiutils.o siutils.o sbutils.o bcmutils.o bcmwifi_channels.o   \
 	dhd_config.o dhd_ccode.o wl_event.o wl_android_ext.o wl_escan.o \
 	hdf/hdf_driver_bdh_register.o hdf/hdfinit_bdh.o \
 	hdf/net_bdh_adpater.o hdf/hdf_bdh_mac80211.o hdf/hdf_mac80211_sta.o \
-	hdf/hdf_mac80211_sta_event.o hdf/hdf_mac80211_ap.o
+	hdf/hdf_mac80211_sta_event.o hdf/hdf_mac80211_ap.o hdf/hdf_mac80211_p2p.o
 
 ifeq ($(BCMDHD_STATIC_IF),y)
 	DHDCFLAGS += -DWL_STATIC_IF
@@ -257,6 +269,7 @@ ifeq ($(CONFIG_BCMDHD),m)
 endif
 
 obj-$(CONFIG_AP6XXX_WIFI6_HDF) += $(MODULE_NAME).o
+#$(MODULE_NAME)-objs += $(DHDOFILES) $(ORIGOFILES)
 $(MODULE_NAME)-objs += $(DHDOFILES)
 
 ifeq ($(CONFIG_MACH_PLATFORM),y)
