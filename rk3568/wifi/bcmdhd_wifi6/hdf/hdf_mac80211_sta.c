@@ -75,15 +75,7 @@ static int32_t WifiScanSetChannel(const struct wiphy *wiphy, const struct WlanSc
             }
 
             for (loop = 0; loop < (int32_t)wiphy->bands[band]->n_channels; loop++) {
-                if(count >= channelTotal) {
-                    break;
-                } 
-
                 chan = &wiphy->bands[band]->channels[loop];
-                if ((chan->flags & WIFI_CHAN_DISABLED) != 0) {
-                    continue;
-                }
-
                 request->channels[count++] = chan;
             }
         }
@@ -164,7 +156,6 @@ static int32_t WifiScanSetUserIe(const struct WlanScanRequest *params, struct cf
         request->ie = (uint8_t *)OsalMemCalloc(params->extraIEsLen);
         if (request->ie == NULL) {
             HDF_LOGE("%s: calloc request->ie null", __func__);
-            goto fail;
         }
         (void)memcpy_s((void *)request->ie, params->extraIEsLen, params->extraIEs, params->extraIEsLen);
         request->ie_len = params->extraIEsLen;
@@ -225,20 +216,20 @@ void WifiScanFree(struct cfg80211_scan_request **request)
 
 int get_scan_ifidx(const char *ifname)
 {
-	int i = 0;
-	struct NetDevice *p2p_hnetdev = NULL;
-	for (; i < HDF_INF_MAX; i ++) {
-		p2p_hnetdev = g_hdf_infmap[i].hnetdev;
-		if (p2p_hnetdev == NULL) {
-			continue;
-		}
-		if (strcmp(p2p_hnetdev->name, ifname) == 0) {
-			HDF_LOGE("get scan ifidx = %d, %s", i, ifname);
-			return i;
-		}
-	}
-	HDF_LOGE("get scan ifidx error %d, %s", i, ifname);
-	return 0;
+    int i = 0;
+    struct NetDevice *p2p_hnetdev = NULL;
+    for (; i < HDF_INF_MAX; i ++) {
+        p2p_hnetdev = g_hdf_infmap[i].hnetdev;
+        if (p2p_hnetdev == NULL) {
+            continue;
+            }
+        if (strcmp(p2p_hnetdev->name, ifname) == 0) {
+            HDF_LOGE("get scan ifidx = %d, %s", i, ifname);
+            return i;
+        }
+    }
+    HDF_LOGE("get scan ifidx error %d, %s", i, ifname);
+    return 0;
 }
 int32_t HdfStartScan(NetDevice *hhnetDev, struct WlanScanRequest *scanParam)
 {
@@ -255,10 +246,6 @@ int32_t HdfStartScan(NetDevice *hhnetDev, struct WlanScanRequest *scanParam)
     wiphy = get_linux_wiphy_ndev(ndev);
     channelTotal = ieee80211_get_num_supported_channels(wiphy);
     g_scan_event_ifidx = get_scan_ifidx(hnetdev->name);
-
-    struct cfg80211_scan_request *request =
-        (struct cfg80211_scan_request *)OsalMemCalloc(sizeof(struct cfg80211_scan_request) + BDH6_POINT_CHANNEL_SIZE * channelTotal);
-
     HDF_LOGE("%s: enter hdfStartScan %s, channelTotal: %d", __func__, ndev->name, channelTotal);
 
     if (request == NULL) {
@@ -336,95 +323,13 @@ static struct ieee80211_channel *WalGetChannel(struct wiphy *wiphy, int32_t freq
     return NULL;
 }
 
-int32_t HdfConnect(NetDevice *hnetDev, WlanConnectParams *param)
-{
-    int32_t ret = 0;
-    struct net_device *ndev = NULL;
-    struct wiphy *wiphy = NULL;
-    struct NetDevice *netDev = NULL;
-    struct cfg80211_connect_params cfg80211_params = { 0 };
-	g_conn_event_ifidx = get_scan_ifidx(hnetDev->name);
-    netDev = get_real_netdev(hnetDev);
-    if (netDev == NULL || param == NULL) {
-        HDF_LOGE("%s:NULL ptr!", __func__);
-        return HDF_FAILURE;
-    }
-    ndev = GetLinuxInfByNetDevice(netDev);
-    if (ndev == NULL) {
-        HDF_LOGE("%s:NULL ptr!", __func__);
-        return HDF_FAILURE;
-    }
-
-    wiphy = get_linux_wiphy_ndev(ndev);
-    if (!wiphy) {
-        HDF_LOGE("%s: wiphy is NULL", __func__);
-        return -1;
-    }
-
-    if (param->centerFreq != WLAN_FREQ_NOT_SPECFIED) {
-        cfg80211_params.channel = WalGetChannel(wiphy, param->centerFreq);
-        if ((cfg80211_params.channel == NULL) || (cfg80211_params.channel->flags & WIFI_CHAN_DISABLED)) {
-            HDF_LOGE("%s:illegal channel.flags=%u", __func__,
-                (cfg80211_params.channel == NULL) ? 0 : cfg80211_params.channel->flags);
-            return HDF_FAILURE;
-        }
-    }
-
-    cfg80211_params.bssid = param->bssid;
-    cfg80211_params.ssid = param->ssid;
-    cfg80211_params.ie = param->ie;
-    cfg80211_params.ssid_len = param->ssidLen;
-    cfg80211_params.ie_len = param->ieLen;
-
-    cfg80211_params.crypto.wpa_versions = param->crypto.wpaVersions;
-    cfg80211_params.crypto.cipher_group = param->crypto.cipherGroup;
-    cfg80211_params.crypto.n_ciphers_pairwise = param->crypto.n_ciphersPairwise;
-                                                      
-    memcpy_s(cfg80211_params.crypto.ciphers_pairwise, NL80211_MAX_NR_CIPHER_SUITES*sizeof(cfg80211_params.crypto.ciphers_pairwise[0]), \
-             param->crypto.ciphersPairwise, NL80211_MAX_NR_CIPHER_SUITES*sizeof(param->crypto.ciphersPairwise[0]));
-
-    memcpy_s(cfg80211_params.crypto.akm_suites, NL80211_MAX_NR_AKM_SUITES*sizeof(cfg80211_params.crypto.akm_suites[0]), \
-             param->crypto.akmSuites, NL80211_MAX_NR_AKM_SUITES*sizeof(param->crypto.akmSuites[0]));
-
-    cfg80211_params.crypto.n_akm_suites = param->crypto.n_akmSuites;
-
-    if (param->crypto.controlPort) {
-        cfg80211_params.crypto.control_port = true;
-    } else {
-        cfg80211_params.crypto.control_port = false;
-    }
-
-    cfg80211_params.crypto.control_port_ethertype = param->crypto.controlPortEthertype;
-    cfg80211_params.crypto.control_port_no_encrypt = param->crypto.controlPortNoEncrypt;
-    
-    cfg80211_params.key = param->key;
-    cfg80211_params.auth_type = (unsigned char)param->authType;
-    cfg80211_params.privacy = param->privacy;
-    cfg80211_params.key_len = param->keyLen;
-    cfg80211_params.key_idx = param->keyIdx;
-    cfg80211_params.mfp = (unsigned char)param->mfp;
-
-    HDF_LOGE("%s: %s connect ssid: %s", __func__, netDev->name, cfg80211_params.ssid);
-    HDF_LOGE("%s: cfg80211_params auth_type:%d--channelId:%d--centerFreq:%d--Mac:%02x:%02x:%02x:%02x:%02x:%02x",
-        __func__, cfg80211_params.auth_type, cfg80211_params.channel->band, param->centerFreq,
-        cfg80211_params.bssid[0], cfg80211_params.bssid[1], cfg80211_params.bssid[2],
-        cfg80211_params.bssid[3], cfg80211_params.bssid[4], cfg80211_params.bssid[5]);
-
-    ret = wl_cfg80211_ops.connect(wiphy, ndev, &cfg80211_params);
-    if (ret < 0) {
-        HDF_LOGE("%s: connect failed!\n", __func__);
-    }
-
-    return ret;
-}
-
 int32_t HdfDisconnect(NetDevice *hnetDev, uint16_t reasonCode)
 {
     int32_t ret = 0;
     struct net_device *ndev = NULL;
     struct wiphy *wiphy = NULL;
     struct NetDevice *netDev = NULL;
-	g_conn_event_ifidx = get_scan_ifidx(hnetDev->name);
+    g_conn_event_ifidx = get_scan_ifidx(hnetDev->name);
     netDev = get_real_netdev(hnetDev);
 
     HDF_LOGE("%s: start...", __func__);
