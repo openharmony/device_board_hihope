@@ -29,7 +29,6 @@
 #include "hdf_mac80211_sta.h"
 
 #define HDF_LOG_TAG BDH6Driver
-extern struct net_device_ops dhd_ops_pri;
 typedef enum {
     WLAN_BAND_2G,
     WLAN_BAND_5G,

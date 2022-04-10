@@ -63,5 +63,3 @@ int32_t HdfDisconnectedEventCallback(struct net_device *ndev, uint16_t reason, u
     ret = HdfWifiEventDisconnected(netDev, reason, ie, len);
     return ret;
 }
-
-
