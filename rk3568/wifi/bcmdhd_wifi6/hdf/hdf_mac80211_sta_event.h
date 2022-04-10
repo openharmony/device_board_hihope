@@ -39,10 +39,6 @@ typedef enum {
     HDF_WIFI_SCAN_TIMEOUT
 } HdfWifiScanStatus;
 extern int32_t HdfScanEventCallback(struct net_device *ndev, HdfWifiScanStatus _status);
-extern int32_t HdfConnectResultEventCallback(struct net_device *ndev, uint8_t *bssid, uint8_t *reqIe,
-    uint8_t *rspIe, uint32_t reqIeLen, uint32_t rspIeLen, uint16_t connectStatus, uint16_t freq);
-extern void HdfInformBssFrameEventCallback(struct net_device *ndev, struct ieee80211_channel *channel, int32_t signal,
-    int16_t freq, struct ieee80211_mgmt *mgmt, uint32_t mgmtLen);
 extern int32_t HdfDisconnectedEventCallback(struct net_device *ndev, uint16_t reason, uint8_t *ie, uint32_t len);
 void WifiScanFree(struct cfg80211_scan_request **request);
 #endif
