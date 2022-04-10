@@ -273,7 +273,7 @@ int32_t HdfAbortScan(NetDevice *hnetDev)
     struct wireless_dev *wdev = NULL;
     struct wiphy *wiphy = NULL;
     struct NetDevice *netDev = NULL;
-	g_scan_event_ifidx = get_scan_ifidx(hnetDev->name);
+    g_scan_event_ifidx = get_scan_ifidx(hnetDev->name);
     netDev = get_real_netdev(hnetDev);
     if (netDev == NULL) {
         HDF_LOGE("%s:NULL ptr!", __func__);
