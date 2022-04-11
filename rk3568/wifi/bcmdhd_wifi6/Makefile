@@ -12,11 +12,11 @@ include $(BDH6_ROOT_DIR)/device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdfwifi_bd
 #$(info HDF: $(HDF_FRAMEWORKS_INC))
 $(info ap6275s: srctree=$(srctree)  src=$(src))
 #$(shell echo "hello world !" > /home/lijg/tools/abc.txt)
-$(shell cp -f $(ORIG_PATH)/*.c $(CURR_PATH))
-$(shell cp -f $(ORIG_PATH)/*.h $(CURR_PATH))
-$(shell rm -fr $(CURR_PATH)/include)
-$(shell cp -fr $(ORIG_PATH)/include $(CURR_PATH)/include)
-$(shell rm -f $(CURR_PATH)/include/eapol.h)
+#$(shell cp -f $(ORIG_PATH)/*.c $(CURR_PATH))
+#$(shell cp -f $(ORIG_PATH)/*.h $(CURR_PATH))
+#$(shell rm -fr $(CURR_PATH)/include)
+#$(shell cp -fr $(ORIG_PATH)/include $(CURR_PATH)/include)
+#$(shell rm -f $(CURR_PATH)/include/eapol.h)
 
 
 #ccflags-$(CONFIG_DRIVERS_HDF_WIFI) += \
