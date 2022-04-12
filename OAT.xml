@@ -38,6 +38,7 @@
                 <filteritem type="filepath" name="rk3568/cfg/fstab.required" desc="配置文件，不能加其他注释"/>
                 <filteritem type="filepath" name="rk3568/loader/*" desc="mirror image file"/>
                 <filteritem type="filepath" name="rk3568/bootanimation/*" desc="raw files"/>
+                <filteritem type="filepath" name="rk3568/updater/config/fstab.updater" desc="配置文件，不能加其他注释"/>
                 <!--filteritem type="filename" name="*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
                 <!--filteritem type="filepath" name="abcdefg/.*.uvwxyz" desc="Describe the reason for filtering scan results"/-->
 		<!--filteritem type="filepath" name="projectroot/[a-zA-Z0-9]{20,}.sh" desc="Temp files"/-->

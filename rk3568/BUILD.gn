@@ -20,6 +20,7 @@ group("rk3568_group") {
     "cfg:init_configs",
     "distributedhardware:distributedhardware",
     "kernel:kernel",
+    "updater:updater_files",
     "//device/soc/rockchip/hardware:hardware_group",
   ]
 }
