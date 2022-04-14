@@ -15,6 +15,8 @@
 
 set -e
 
+
+
 pushd ${1}
 ROOT_DIR=${5}
 export PRODUCT_PATH=${4}
