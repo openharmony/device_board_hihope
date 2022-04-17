@@ -22,20 +22,16 @@
 #include "hdf_wlan_chipdriver_manager.h"
 #include "securec.h"
 #include "wifi_module.h"
+#include "hdf_public_ap6275s.h"
 
 #define HDF_LOG_TAG BDH6Driver
-
 
 int32_t InitBDH6Chip(struct HdfWlanDevice *device);
 int32_t DeinitBDH6Chip(struct HdfWlanDevice *device);
 int32_t BDH6Deinit(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice);
 int32_t BDH6Init(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice);
-
 void BDH6Mac80211Init(struct HdfChipDriver *chipDriver);
-
-
 static const char * const BDH6_DRIVER_NAME = "hisi";
-
 
 static struct HdfChipDriver *BuildBDH6Driver(struct HdfWlanDevice *device, uint8_t ifIndex)
 {
