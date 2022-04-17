@@ -39,7 +39,8 @@
 #define HDF_LOG_TAG BDH6Driver
 #define WIFI_SCAN_EXTRA_IE_LEN_MAX      (512)
 #define BDH6_POINT_CHANNEL_SIZE (8)
-static struct ieee80211_channel *GetChannelByFreq(const struct wiphy *wiphy, uint16_t center_freq)
+extern int32_t HdfConnect(NetDevice *hnetDev, WlanConnectParams *param); 
+struct ieee80211_channel *GetChannelByFreq(const struct wiphy *wiphy, uint16_t center_freq)
 {
     enum Ieee80211Band band;
     struct ieee80211_supported_band *currentBand = NULL;
@@ -57,52 +58,7 @@ static struct ieee80211_channel *GetChannelByFreq(const struct wiphy *wiphy, uin
     }
     return NULL;
 }
-static int32_t WifiScanSetChannel(const struct wiphy *wiphy, const struct WlanScanRequest *params,
-    struct cfg80211_scan_request *request)
-{
-    int32_t loop;
-    int32_t count = 0;
-    enum Ieee80211Band band = IEEE80211_BAND_2GHZ;
-    struct ieee80211_channel *chan = NULL;
 
-    int32_t channelTotal = ieee80211_get_num_supported_channels((struct wiphy *)wiphy);
-
-    if ((params->freqs == NULL) || (params->freqsCount == 0)) {
-        for (band = IEEE80211_BAND_2GHZ; band <= IEEE80211_BAND_5GHZ; band++) {
-            if (wiphy->bands[band] == NULL) {
-                HDF_LOGE("%s: wiphy->bands[band] = NULL!\n", __func__);
-                continue;
-            }
-
-            for (loop = 0; loop < (int32_t)wiphy->bands[band]->n_channels; loop++) {
-                chan = &wiphy->bands[band]->channels[loop];
-                request->channels[count++] = chan;
-            }
-        }
-    } else {
-        for (loop = 0; loop < params->freqsCount; loop++) {
-            chan = GetChannelByFreq(wiphy, (uint16_t)(params->freqs[loop]));
-            if (chan == NULL) {
-                HDF_LOGE("%s: freq not found!freq=%d!\n", __func__, params->freqs[loop]);
-                continue;
-            }
-
-            if (count >= channelTotal) {
-                break;
-            }
-            
-            request->channels[count++] = chan;
-        }
-    }
-
-    if (count == 0) {
-        HDF_LOGE("%s: invalid freq info!\n", __func__);
-        return HDF_FAILURE;
-    }
-    request->n_channels = count;
-
-    return HDF_SUCCESS;
-}
 
 static int32_t WifiScanSetSsid(const struct WlanScanRequest *params, struct cfg80211_scan_request *request)
 {
@@ -146,33 +102,7 @@ static int32_t WifiScanSetSsid(const struct WlanScanRequest *params, struct cfg8
     return HDF_SUCCESS;
 }
 
-static int32_t WifiScanSetUserIe(const struct WlanScanRequest *params, struct cfg80211_scan_request *request)
-{
-    if (params->extraIEsLen > WIFI_SCAN_EXTRA_IE_LEN_MAX) {
-        HDF_LOGE("%s:unexpected extra len!extraIesLen=%d", __func__, params->extraIEsLen);
-        return HDF_FAILURE;
-    }
-    if ((params->extraIEs != NULL) && (params->extraIEsLen != 0)) {
-        request->ie = (uint8_t *)OsalMemCalloc(params->extraIEsLen);
-        if (request->ie == NULL) {
-            HDF_LOGE("%s: calloc request->ie null", __func__);
-        }
-        (void)memcpy_s((void *)request->ie, params->extraIEsLen, params->extraIEs, params->extraIEsLen);
-        request->ie_len = params->extraIEsLen;
-    }
-
-    return HDF_SUCCESS;
-
-fail:
-    if (request->ie != NULL) {
-        OsalMemFree((void *)request->ie);
-        request->ie = NULL;
-    }
-
-    return HDF_FAILURE;
-}
-
-static int32_t WifiScanSetRequest(struct NetDevice *netdev, const struct WlanScanRequest *params,
+int32_t WifiScanSetRequest(struct NetDevice *netdev, const struct WlanScanRequest *params,
     struct cfg80211_scan_request *request)
 {
     if (netdev == NULL || netdev->ieee80211Ptr == NULL) {
@@ -231,41 +161,6 @@ int get_scan_ifidx(const char *ifname)
     HDF_LOGE("get scan ifidx error %d, %s", i, ifname);
     return 0;
 }
-int32_t HdfStartScan(NetDevice *hhnetDev, struct WlanScanRequest *scanParam)
-{
-    int32_t ret = 0;
-    struct net_device *ndev = NULL;
-    struct wiphy *wiphy = NULL;
-    static int32_t is_p2p_complete = 0;
-    NetDevice *hnetdev = hhnetDev;
-    int32_t channelTotal;
-    struct NetDevice *netDev = NULL;
-
-    netDev = get_real_netdev(hhnetDev);
-    ndev = GetLinuxInfByNetDevice(netDev);
-    wiphy = get_linux_wiphy_ndev(ndev);
-    channelTotal = ieee80211_get_num_supported_channels(wiphy);
-    g_scan_event_ifidx = get_scan_ifidx(hnetdev->name);
-    HDF_LOGE("%s: enter hdfStartScan %s, channelTotal: %d", __func__, ndev->name, channelTotal);
-
-    if (request == NULL) {
-        return HDF_FAILURE;
-    }
-    if (WifiScanSetRequest(netDev, scanParam, request) != HDF_SUCCESS) {
-        WifiScanFree(&request);
-        return HDF_FAILURE;
-    }
-    
-    HDF_LOGE("%s: enter cfg80211_scan, n_ssids=%d !", __func__, request->n_ssids);
-    ret = wl_cfg80211_ops.scan(wiphy, request);
-    HDF_LOGE("%s: left cfg80211_scan %d!", __func__, ret);
-
-    if (ret != HDF_SUCCESS) {
-        WifiScanFree(&request);
-    }
-    
-    return ret;
-}
 
 int32_t HdfAbortScan(NetDevice *hnetDev)
 {
@@ -295,7 +190,7 @@ int32_t HdfAbortScan(NetDevice *hnetDev)
     return HDF_SUCCESS;
 }
 
-static struct ieee80211_channel *WalGetChannel(struct wiphy *wiphy, int32_t freq)
+struct ieee80211_channel *WalGetChannel(struct wiphy *wiphy, int32_t freq)
 {
     int32_t loop;
 
