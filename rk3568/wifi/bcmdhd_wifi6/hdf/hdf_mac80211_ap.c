@@ -43,12 +43,11 @@ struct net_device *g_save_kernel_net = NULL;
 #define WLC_GET_ASSOCLIST		159
 #define ETH_MAC_LEN 6
 
-
+struct cfg80211_ap_settings g_ap_setting_info;
 typedef struct maclist {
     uint32 count;			/**< number of MAC addresses */
     struct ether_addr ea[1];	/**< variable length array of MAC addresses */
 } maclist_t;
-
 
 int ChangDelSta(struct net_device *dev, const uint8_t *macAddr, uint8_t addrLen)
 {
@@ -138,7 +137,7 @@ static void bdh6_nl80211_check_ap_rate_selectors(struct cfg80211_ap_settings *pa
 	}
 }
 
-static void bdh6_nl80211_calculate_ap_params(struct cfg80211_ap_settings *params)
+void bdh6_nl80211_calculate_ap_params(struct cfg80211_ap_settings *params)
 {
     const struct cfg80211_beacon_data *bcn = &params->beacon;
     size_t ies_len = bcn->tail_len;
@@ -176,7 +175,6 @@ static void bdh6_nl80211_calculate_ap_params(struct cfg80211_ap_settings *params
 
 
 static struct ieee80211_channel g_ap_ieee80211_channel;
-static struct cfg80211_ap_settings g_ap_setting_info;
 static u8 g_ap_ssid[IEEE80211_MAX_SSID_LEN];
 static int start_ap_flag = 0;
 
