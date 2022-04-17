@@ -29,22 +29,9 @@
 #include "hdf_mac80211_sta.h"
 
 #define HDF_LOG_TAG BDH6Driver
-typedef enum {
-    WLAN_BAND_2G,
-    WLAN_BAND_5G,
-    WLAN_BAND_BUTT
-} wlan_channel_band_enum;
 
-#define WIFI_24G_CHANNEL_NUMS   (14)
-#define WAL_MIN_CHANNEL_2G      (1)
-#define WAL_MAX_CHANNEL_2G      (14)
-#define WAL_MIN_FREQ_2G         (2412 + 5*(WAL_MIN_CHANNEL_2G - 1))
-#define WAL_MAX_FREQ_2G         (2484)
-#define WAL_FREQ_2G_INTERVAL    (5)
-
-#define WLAN_WPS_IE_MAX_SIZE    (352) // (WLAN_MEM_EVENT_SIZE2 - 32)   /* 32表示事件自身占用的空间 */
-#define MAC_80211_FRAME_LEN                 24      /* 非四地址情况下，MAC帧头的长度 */
-
+extern int32_t Bdh6SAction(struct NetDevice *hhnetDev, WifiActionData *actionData);
+extern int32_t Bdh6Fband(NetDevice *hnetDev, int32_t band, int32_t *freqs, uint32_t *num);
 struct NetDevice *get_real_netdev(NetDevice *netDev);
 int32_t WalStopAp(NetDevice *netDev);
 struct wiphy *get_linux_wiphy_ndev(struct net_device *ndev)
@@ -270,7 +257,6 @@ int32_t BDH6WalSetTxPower(NetDevice *hnetDev, int32_t power)
     return HDF_SUCCESS;
 }
 
-const struct ieee80211_regdomain *bdh6_get_regdomain(void);
 void BDH6WalReleaseHwCapability(struct WlanHwCapability *self)
 {
     uint8_t i;
