@@ -39,7 +39,6 @@
 #define HDF_LOG_TAG BDH6Driver
 #define WIFI_SCAN_EXTRA_IE_LEN_MAX      (512)
 #define BDH6_POINT_CHANNEL_SIZE (8)
-extern int32_t HdfConnect(NetDevice *hnetDev, WlanConnectParams *param); 
 struct ieee80211_channel *GetChannelByFreq(const struct wiphy *wiphy, uint16_t center_freq)
 {
     enum Ieee80211Band band;
