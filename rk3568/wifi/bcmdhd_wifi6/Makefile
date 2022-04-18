@@ -12,11 +12,11 @@ include $(BDH6_ROOT_DIR)/device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdfwifi_bd
 #$(info HDF: $(HDF_FRAMEWORKS_INC))
 $(info ap6275s: srctree=$(srctree)  src=$(src))
 #$(shell echo "hello world !" > /home/lijg/tools/abc.txt)
-#$(shell cp -f $(ORIG_PATH)/*.c $(CURR_PATH))
-#$(shell cp -f $(ORIG_PATH)/*.h $(CURR_PATH))
-#$(shell rm -fr $(CURR_PATH)/include)
-#$(shell cp -fr $(ORIG_PATH)/include $(CURR_PATH)/include)
-#$(shell rm -f $(CURR_PATH)/include/eapol.h)
+$(shell cp -f $(ORIG_PATH)/*.c $(CURR_PATH))
+$(shell cp -f $(ORIG_PATH)/*.h $(CURR_PATH))
+$(shell rm -fr $(CURR_PATH)/include)
+$(shell cp -fr $(ORIG_PATH)/include $(CURR_PATH)/include)
+$(shell rm -f $(CURR_PATH)/include/eapol.h)
 
 
 #ccflags-$(CONFIG_DRIVERS_HDF_WIFI) += \
@@ -82,7 +82,8 @@ DHDOFILES = aiutils.o siutils.o sbutils.o bcmutils.o bcmwifi_channels.o   \
 	dhd_config.o dhd_ccode.o wl_event.o wl_android_ext.o wl_escan.o \
 	hdf/hdf_driver_bdh_register.o hdf/hdfinit_bdh.o \
 	hdf/net_bdh_adpater.o hdf/hdf_bdh_mac80211.o hdf/hdf_mac80211_sta.o \
-	hdf/hdf_mac80211_sta_event.o hdf/hdf_mac80211_ap.o hdf/hdf_mac80211_p2p.o
+	hdf/hdf_mac80211_sta_event.o hdf/hdf_mac80211_ap.o hdf_mac80211_p2p.o \
+	hdf_comm.o
 
 ifeq ($(BCMDHD_STATIC_IF),y)
 	DHDCFLAGS += -DWL_STATIC_IF
