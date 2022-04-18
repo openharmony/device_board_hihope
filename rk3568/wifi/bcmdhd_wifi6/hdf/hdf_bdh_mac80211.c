@@ -30,8 +30,6 @@
 
 #define HDF_LOG_TAG BDH6Driver
 
-extern int32_t Bdh6SAction(struct NetDevice *hhnetDev, WifiActionData *actionData);
-extern int32_t Bdh6Fband(NetDevice *hnetDev, int32_t band, int32_t *freqs, uint32_t *num);
 struct NetDevice *get_real_netdev(NetDevice *netDev);
 int32_t WalStopAp(NetDevice *netDev);
 struct wiphy *get_linux_wiphy_ndev(struct net_device *ndev)

@@ -35,5 +35,4 @@ struct hdf_inf_map {
     struct wireless_dev *wdev;
     u8 macaddr[ETH_ALEN];
 };
-extern int g_event_ifidx;
 #endif
