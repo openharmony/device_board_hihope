@@ -1,44 +1,38 @@
 /*
+ * hdf_bdh_mac80211.c
+ *
+ * hdf driver
+ *
  * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * HDF is dual licensed: you can use it either under the terms of
- * the GPL, or the BSD license, at your option.
- * See the LICENSE file in the root of this repository for complete details.
+ * This software is licensed under the terms of the GNU General Public
+ * License version 2, as published by the Free Software Foundation, and
+ * may be copied, distributed, and modified under those terms.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
  */
-
 #include <net/cfg80211.h>
 #include <net/regulatory.h>
-
 #include <securec.h>
+#include <linux/version.h>
 
 #include "wifi_module.h"
 #include "wifi_mac80211_ops.h"
 #include "hdf_wlan_utils.h"
-
 #include "net_bdh_adpater.h"
+#include "hdf_wl_interface.h"
 #include "hdf_public_ap6275s.h"
+#include "hdf_mac80211_sta.h"
 
 #define HDF_LOG_TAG BDH6Driver
 
-
-typedef enum {
-    WLAN_BAND_2G,
-    WLAN_BAND_5G,
-    WLAN_BAND_BUTT
-} wlan_channel_band_enum;
-
-#define WIFI_24G_CHANNEL_NUMS   (14)
-#define WAL_MIN_CHANNEL_2G      (1)
-#define WAL_MAX_CHANNEL_2G      (14)
-#define WAL_MIN_FREQ_2G         (2412 + 5*(WAL_MIN_CHANNEL_2G - 1))
-#define WAL_MAX_FREQ_2G         (2484)
-#define WAL_FREQ_2G_INTERVAL    (5)
-
-#define BDH6_GROUP_SIZE (1)
-#define BDH6_ROW_SIZE (16)
-
-
-struct wiphy* get_linux_wiphy_ndev(struct net_device *ndev)
+struct NetDevice *get_real_netdev(NetDevice *netDev);
+int32_t WalStopAp(NetDevice *netDev);
+struct wiphy *get_linux_wiphy_ndev(struct net_device *ndev)
 {
     if (ndev == NULL || ndev->ieee80211_ptr == NULL) {
         return NULL;
@@ -47,17 +41,20 @@ struct wiphy* get_linux_wiphy_ndev(struct net_device *ndev)
     return ndev->ieee80211_ptr->wiphy;
 }
 
-struct wiphy* get_linux_wiphy_hdfdev(NetDevice *netDev)
+struct wiphy *get_linux_wiphy_hdfdev(NetDevice *netDev)
 {
     struct net_device *ndev = GetLinuxInfByNetDevice(netDev);
     return get_linux_wiphy_ndev(ndev);
 }
 
-int32_t BDH6WalSetMode(NetDevice *netDev, enum WlanWorkMode iftype)
+int32_t BDH6WalSetMode(NetDevice *hnetDev, enum WlanWorkMode iftype)
 {
     int32_t retVal = 0;
     struct net_device *netdev = NULL;
+    NetDevice *netDev = NULL;
     struct wiphy *wiphy = NULL;
+    netDev = get_real_netdev(hnetDev);
+    enum nl80211_iftype old_iftype = 0;
     
     netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
@@ -70,10 +67,13 @@ int32_t BDH6WalSetMode(NetDevice *netDev, enum WlanWorkMode iftype)
         HDF_LOGE("%s: wiphy is NULL", __func__);
         return -1;
     }
+    old_iftype = netdev->ieee80211_ptr->iftype;
 
     HDF_LOGE("%s: start... iftype=%d ", __func__, iftype);
-    retVal = (int32_t) wl_cfg80211_ops.change_virtual_intf(wiphy, netdev,
-        (enum nl80211_iftype) iftype, NULL);
+    if (old_iftype == NL80211_IFTYPE_AP && iftype != old_iftype)
+    WalStopAp(netDev);
+    retVal = (int32_t)wl_cfg80211_ops.change_virtual_intf(wiphy, netdev,
+        (enum nl80211_iftype)iftype, NULL);
     if (retVal < 0) {
         HDF_LOGE("%s: set mode failed!", __func__);
     }
@@ -81,12 +81,18 @@ int32_t BDH6WalSetMode(NetDevice *netDev, enum WlanWorkMode iftype)
     return retVal;
 }
 
-int32_t BDH6WalAddKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr,
+int32_t BDH6WalAddKey(struct NetDevice *hnetDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr,
     struct KeyParams *params)
 {
     int32_t retVal = 0;
+    struct NetDevice *netDev = NULL;
     struct net_device *netdev = NULL;
     struct wiphy *wiphy = NULL;
+    netDev = get_real_netdev(hnetDev);
+
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0))
+    struct key_params keypm;
+#endif
 
     netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
@@ -100,13 +106,21 @@ int32_t BDH6WalAddKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise,
         return -1;
     }
     
-    HDF_LOGE("%s: start..., mac=%p, keyIndex=%u, pairwise=%d, cipher=0x%x, seqlen=%d, keylen=%d",
+    HDF_LOGE("%s: start..., mac = %p, keyIndex = %u,pairwise = %d, cipher = 0x%x, seqlen = %d, keylen = %d",
         __func__, macAddr, keyIndex, pairwise, params->cipher, params->seqLen, params->keyLen);
-    print_hex_dump(KERN_INFO, "key: ", DUMP_PREFIX_NONE, BDH6_ROW_SIZE, BDH6_GROUP_SIZE, params->key,
-        params->keyLen, true);
-
     (void)netDev;
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(5, 10, 0))
+    memset_s(&keypm, sizeof(struct key_params), 0, sizeof(struct key_params));
+    keypm.key = params->key;
+    keypm.seq = params->seq;
+    keypm.key_len = params->keyLen;
+    keypm.seq_len = params->seqLen;
+    keypm.cipher = params->cipher;
+    keypm.vlan_id = 0;
+    retVal = (int32_t)wl_cfg80211_ops.add_key(wiphy, netdev, keyIndex, pairwise, macAddr, &keypm);
+#else
     retVal = (int32_t)wl_cfg80211_ops.add_key(wiphy, netdev, keyIndex, pairwise, macAddr, (struct key_params *)params);
+#endif
     if (retVal < 0) {
         HDF_LOGE("%s: add key failed!", __func__);
     }
@@ -114,11 +128,13 @@ int32_t BDH6WalAddKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise,
     return retVal;
 }
 
-int32_t BDH6WalDelKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr)
+int32_t BDH6WalDelKey(struct NetDevice *hnetDev, uint8_t keyIndex, bool pairwise, const uint8_t *macAddr)
 {
     int32_t retVal = 0;
+    struct NetDevice *netDev = NULL;
     struct net_device *netdev = NULL;
     struct wiphy *wiphy = NULL;
+    netDev = get_real_netdev(hnetDev);
 
     netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
@@ -143,11 +159,13 @@ int32_t BDH6WalDelKey(struct NetDevice *netDev, uint8_t keyIndex, bool pairwise,
     return retVal;
 }
 
-int32_t BDH6WalSetDefaultKey(struct NetDevice *netDev, uint8_t keyIndex, bool unicast, bool multicas)
+int32_t BDH6WalSetDefaultKey(struct NetDevice *hnetDev, uint8_t keyIndex, bool unicast, bool multicas)
 {
     int32_t retVal = 0;
+    struct NetDevice *netDev = NULL;
     struct net_device *netdev = NULL;
     struct wiphy *wiphy = NULL;
+    netDev = get_real_netdev(hnetDev);
 
     netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
@@ -160,9 +178,7 @@ int32_t BDH6WalSetDefaultKey(struct NetDevice *netDev, uint8_t keyIndex, bool un
         HDF_LOGE("%s: wiphy is NULL", __func__);
         return -1;
     }
-
     HDF_LOGE("%s: start..., keyIndex=%u,unicast=%d, multicas=%d", __func__, keyIndex, unicast, multicas);
-    
     retVal = (int32_t)wl_cfg80211_ops.set_default_key(wiphy, netdev, keyIndex, unicast, multicas);
     if (retVal < 0) {
         HDF_LOGE("%s: set default key failed!", __func__);
@@ -171,8 +187,10 @@ int32_t BDH6WalSetDefaultKey(struct NetDevice *netDev, uint8_t keyIndex, bool un
     return retVal;
 }
 
-int32_t BDH6WalGetDeviceMacAddr(NetDevice *netDev, int32_t type, uint8_t *mac, uint8_t len)
+int32_t BDH6WalGetDeviceMacAddr(NetDevice *hnetDev, int32_t type, uint8_t *mac, uint8_t len)
 {
+    struct NetDevice *netDev = NULL;
+    netDev = get_real_netdev(hnetDev);
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
         HDF_LOGE("%s: net_device is NULL", __func__);
@@ -189,9 +207,11 @@ int32_t BDH6WalGetDeviceMacAddr(NetDevice *netDev, int32_t type, uint8_t *mac, u
     return HDF_SUCCESS;
 }
 
-int32_t BDH6WalSetMacAddr(NetDevice *netDev, uint8_t *mac, uint8_t len)
+int32_t BDH6WalSetMacAddr(NetDevice *hnetDev, uint8_t *mac, uint8_t len)
 {
     int32_t retVal = 0;
+    struct NetDevice *netDev = NULL;
+    netDev = get_real_netdev(hnetDev);
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
     if (!netdev) {
         HDF_LOGE("%s: net_device is NULL", __func__);
@@ -210,10 +230,12 @@ int32_t BDH6WalSetMacAddr(NetDevice *netDev, uint8_t *mac, uint8_t len)
     return retVal;
 }
 
-int32_t BDH6WalSetTxPower(NetDevice *netDev, int32_t power)
+int32_t BDH6WalSetTxPower(NetDevice *hnetDev, int32_t power)
 {
     int retVal = 0;
     struct wiphy *wiphy = NULL;
+    struct NetDevice *netDev = NULL;
+    netDev = get_real_netdev(hnetDev);
 
     // sync from net_device->ieee80211_ptr
     struct wireless_dev *wdev = GET_NET_DEV_CFG80211_WIRELESS(netDev);
@@ -230,71 +252,6 @@ int32_t BDH6WalSetTxPower(NetDevice *netDev, int32_t power)
         HDF_LOGE("%s: set_tx_power failed!", __func__);
     }
         
-    return HDF_SUCCESS;
-}
-
-const struct ieee80211_regdomain* bdh6_get_regdomain(void);
-
-
-int32_t BDH6WalGetValidFreqsWithBand(NetDevice *netDev, int32_t band, int32_t *freqs, uint32_t *num)
-{
-    uint32_t freqIndex = 0;
-    uint32_t channelNumber;
-    uint32_t freqTmp;
-    uint32_t minFreq;
-    uint32_t maxFreq;
-    
-    struct wiphy* wiphy = NULL;
-    struct ieee80211_supported_band *band5g = NULL;
-    int32_t max5GChNum = 0;
-    const struct ieee80211_regdomain *regdom = bdh6_get_regdomain();
-    if (regdom == NULL) {
-        return HDF_FAILURE;
-    }
-
-    wiphy = get_linux_wiphy_hdfdev(netDev);
-    if (!wiphy) {
-        return -1;
-    }
-    
-    (void)netDev;
-
-    minFreq = regdom->reg_rules[0].freq_range.start_freq_khz / MHZ_TO_KHZ(1);
-    maxFreq = regdom->reg_rules[0].freq_range.end_freq_khz / MHZ_TO_KHZ(1);
-    switch (band) {
-        case WLAN_BAND_2G:
-            for (channelNumber = 1; channelNumber <= WIFI_24G_CHANNEL_NUMS; channelNumber++) {
-                if (channelNumber < WAL_MAX_CHANNEL_2G) {
-                    freqTmp = WAL_MIN_FREQ_2G + (channelNumber - 1) * WAL_FREQ_2G_INTERVAL;
-                } else if (channelNumber == WAL_MAX_CHANNEL_2G) {
-                    freqTmp = WAL_MAX_FREQ_2G;
-                }
-                if (freqTmp < minFreq || freqTmp > maxFreq) {
-                    continue;
-                }
-
-                freqs[freqIndex] = freqTmp;
-                freqIndex++;
-            }
-            *num = freqIndex;
-            break;
-
-        case WLAN_BAND_5G:
-            band5g = wiphy->bands[IEEE80211_BAND_5GHZ];
-            if (band5g == NULL) {
-                return HDF_ERR_NOT_SUPPORT;
-            }
-            
-            max5GChNum = min(band5g->n_channels, WIFI_24G_CHANNEL_NUMS);
-            for (freqIndex = 0; freqIndex < max5GChNum; freqIndex++) {
-                freqs[freqIndex] = band5g->channels[freqIndex].center_freq;
-            }
-            *num = freqIndex;
-            break;
-
-        default:
-            return HDF_ERR_NOT_SUPPORT;
-    }
     return HDF_SUCCESS;
 }
 
@@ -317,123 +274,10 @@ void BDH6WalReleaseHwCapability(struct WlanHwCapability *self)
     OsalMemFree(self);
 }
 
-static int32_t BDH6GetHw5GCapability(struct wiphy* wiphy, struct ieee80211_supported_band *band5g,
-    struct WlanHwCapability *hwCapability)
+int32_t BDH6WalGetIftype(struct NetDevice *hnetDev, uint8_t *iftype)
 {
-    uint8_t loop = 0;
-    hwCapability->bands[IEEE80211_BAND_5GHZ] = OsalMemCalloc(sizeof(struct WlanBand) + \
-        (sizeof(struct WlanChannel) * band5g->n_channels));
-    if (hwCapability->bands[IEEE80211_BAND_5GHZ] == NULL) {
-        HDF_LOGE("%s: oom!\n", __func__);
-        BDH6WalReleaseHwCapability(hwCapability);
-        return HDF_FAILURE;
-    }
-
-    hwCapability->bands[IEEE80211_BAND_5GHZ]->channelCount = band5g->n_channels;
-    for (loop = 0; loop < band5g->n_channels; loop++) {
-        hwCapability->bands[IEEE80211_BAND_5GHZ]->channels[loop].centerFreq = band5g->channels[loop].center_freq;
-        hwCapability->bands[IEEE80211_BAND_5GHZ]->channels[loop].flags = band5g->channels[loop].flags;
-        hwCapability->bands[IEEE80211_BAND_5GHZ]->channels[loop].channelId = band5g->channels[loop].hw_value;
-    }
-
-    return HDF_SUCCESS;
-}
-
-static int32_t BDH6WalGetSupportRate(struct WlanHwCapability *hwCapability, struct ieee80211_supported_band *band,
-    struct ieee80211_supported_band *band5g, uint16_t supportedRateCount)
-{
-    uint8_t loop = 0;
-    hwCapability->supportedRateCount = supportedRateCount;
-    hwCapability->supportedRates = OsalMemCalloc(sizeof(uint16_t) * supportedRateCount);
-    if (hwCapability->supportedRates == NULL) {
-        HDF_LOGE("%s: oom!\n", __func__);
-        BDH6WalReleaseHwCapability(hwCapability);
-        return HDF_FAILURE;
-    }
-    
-    for (loop = 0; loop < band->n_bitrates; loop++) {
-        hwCapability->supportedRates[loop] = band->bitrates[loop].bitrate;
-        HDF_LOGE("bdh6 2G supportedRates %u: %u\n", loop, hwCapability->supportedRates[loop]);
-    }
-
-    if (band5g) {
-        for (loop = band->n_bitrates; loop < supportedRateCount; loop++) {
-            hwCapability->supportedRates[loop] = band5g->bitrates[loop].bitrate;
-            HDF_LOGE("bdh6 5G supportedRates %u: %u\n", loop, hwCapability->supportedRates[loop]);
-        }
-    }
-
-    if (hwCapability->supportedRateCount > MAX_SUPPORTED_RATE)
-        hwCapability->supportedRateCount = MAX_SUPPORTED_RATE;
-
-    return HDF_SUCCESS;
-}
-
-int32_t BDH6WalGetHwCapability(struct NetDevice *netDev, struct WlanHwCapability **capability)
-{
-    uint8_t loop = 0;
-    struct wiphy* wiphy = NULL;
-    struct ieee80211_supported_band *band = NULL;
-    struct ieee80211_supported_band *band5g = NULL;
-    struct WlanHwCapability *hwCapability = NULL;
-    uint16_t supportedRateCount = 0;
-
-    wiphy = get_linux_wiphy_hdfdev(netDev);
-    if (!wiphy) {
-        return -1;
-    }
-    band = wiphy->bands[IEEE80211_BAND_2GHZ];
-    hwCapability = (struct WlanHwCapability *)OsalMemCalloc(sizeof(struct WlanHwCapability));
-    if (hwCapability == NULL) {
-        return HDF_FAILURE;
-    }
-    hwCapability->Release = BDH6WalReleaseHwCapability;
-    
-    if (hwCapability->bands[IEEE80211_BAND_2GHZ] == NULL) {
-        hwCapability->bands[IEEE80211_BAND_2GHZ] =
-            OsalMemCalloc(sizeof(struct WlanBand) + (sizeof(struct WlanChannel) * band->n_channels));
-        if (hwCapability->bands[IEEE80211_BAND_2GHZ] == NULL) {
-            BDH6WalReleaseHwCapability(hwCapability);
-            return HDF_FAILURE;
-        }
-    }
-    
-    hwCapability->htCapability = band->ht_cap.cap;
-    supportedRateCount = band->n_bitrates;
-    
-    hwCapability->bands[IEEE80211_BAND_2GHZ]->channelCount = band->n_channels;
-    for (loop = 0; loop < band->n_channels; loop++) {
-        hwCapability->bands[IEEE80211_BAND_2GHZ]->channels[loop].centerFreq = band->channels[loop].center_freq;
-        hwCapability->bands[IEEE80211_BAND_2GHZ]->channels[loop].flags = band->channels[loop].flags;
-        hwCapability->bands[IEEE80211_BAND_2GHZ]->channels[loop].channelId = band->channels[loop].hw_value;
-    }
-    
-    if (wiphy->bands[IEEE80211_BAND_5GHZ]) { // Fill 5Ghz band
-        band5g = wiphy->bands[IEEE80211_BAND_5GHZ];
-        if (BDH6GetHw5GCapability(wiphy, band5g, hwCapability) != HDF_SUCCESS) {
-            return HDF_FAILURE;
-        }
-
-        supportedRateCount += band5g->n_bitrates;
-    }
-
-    if (BDH6WalGetSupportRate(hwCapability, band, band5g, supportedRateCount) != HDF_FAILURE) {
-        return HDF_FAILURE;
-    }
-    *capability = hwCapability;
-    return HDF_SUCCESS;
-}
-
-int32_t BDH6WalSendAction(struct NetDevice *netDev, WifiActionData *actionData)
-{
-    (void)netDev;
-    (void)actionData;
-    HDF_LOGE("%s: start...", __func__);
-    return HDF_ERR_NOT_SUPPORT;
-}
-
-int32_t BDH6WalGetIftype(struct NetDevice *netDev, uint8_t *iftype)
-{
+    struct NetDevice *netDev = NULL;
+    netDev = get_real_netdev(hnetDev);
     iftype = (uint8_t *)(&(GET_NET_DEV_CFG80211_WIRELESS(netDev)->iftype));
     HDF_LOGE("%s: start...", __func__);
     return HDF_SUCCESS;
@@ -448,24 +292,13 @@ static struct HdfMac80211BaseOps g_bdh6_baseOps = {
     .GetDeviceMacAddr = BDH6WalGetDeviceMacAddr,
     .SetMacAddr = BDH6WalSetMacAddr,
     .SetTxPower = BDH6WalSetTxPower,
-    .GetValidFreqsWithBand = BDH6WalGetValidFreqsWithBand,
+    .GetValidFreqsWithBand = Bdh6Fband,
     
-    .GetHwCapability = BDH6WalGetHwCapability,
-
-    /**
-    .RemainOnChannel = WalRemainOnChannel,
-    .CancelRemainOnChannel = WalCancelRemainOnChannel,
-    .ProbeReqReport = WalProbeReqReport,
-    .AddIf = WalAddIf,
-    .RemoveIf = WalRemoveIf,
-    .SetApWpsP2pIe = WalSetApWpsP2pIe,
-    .GetDriverFlag = WalGetDriverFlag,
-    */
-    .SendAction = BDH6WalSendAction,
+    .GetHwCapability = Bdh6Ghcap,
+    .SendAction = Bdh6SAction,
     .GetIftype = BDH6WalGetIftype,
     
 };
-
 
 void BDH6Mac80211Init(struct HdfChipDriver *chipDriver)
 {
@@ -479,6 +312,6 @@ void BDH6Mac80211Init(struct HdfChipDriver *chipDriver)
     chipDriver->ops = &g_bdh6_baseOps;
     chipDriver->staOps = &g_bdh6_staOps;
     chipDriver->apOps = &g_bdh6_apOps;
-    chipDriver->p2pOps = NULL;
+    chipDriver->p2pOps = &g_bdh6_p2pOps;
 }
 

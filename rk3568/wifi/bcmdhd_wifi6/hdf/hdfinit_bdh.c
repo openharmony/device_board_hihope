@@ -1,28 +1,45 @@
 /*
+ * hdfinit_bdh.c
+ *
+ * hdf driver
+ *
  * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  *
- * HDF is dual licensed: you can use it either under the terms of
- * the GPL, or the BSD license, at your option.
- * See the LICENSE file in the root of this repository for complete details.
+ * This software is licensed under the terms of the GNU General Public
+ * License version 2, as published by the Free Software Foundation, and
+ * may be copied, distributed, and modified under those terms.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
  */
+#include <uapi/linux/nl80211.h>
+#include <securec.h>
+#include <asm/byteorder.h>
+#include <linux/kernel.h>
 
 #include "hdf_wifi_product.h"
 #include "wifi_mac80211_ops.h"
 #include "hdf_wlan_utils.h"
+#include "hdf_wl_interface.h"
 #include "net_bdh_adpater.h"
+#include "hdf_public_ap6275s.h"
 
 #define HDF_LOG_TAG BDH6Driver
-
-
+int hdf_cfgp2p_register_ndev(struct net_device *p2p_netdev, struct net_device *primary_netdev, struct wiphy *wiphy);
 int dhd_module_init(void);
-int get_dhd_priv_data_size(void);
+struct NetDeviceInterFace *wal_get_net_p2p_ops(void);
+s32 wl_get_vif_macaddr(struct bcm_cfg80211 *cfg, u16 wl_iftype, u8 *mac_addr);
+struct hdf_inf_map g_hdf_infmap[HDF_INF_MAX];
 
-struct NetDevice *g_hdf_netdev = NULL;
+int g_hdf_ifidx = HDF_INF_WLAN0;
+int g_event_ifidx = HDF_INF_WLAN0;
+int g_scan_event_ifidx = HDF_INF_WLAN0;
+int g_conn_event_ifidx = HDF_INF_WLAN0;
+int g_mgmt_tx_event_ifidx = HDF_INF_P2P0;
 
-void* get_dhd_priv_data(void)
-{
-    return g_hdf_netdev->mlPriv;
-}
 
 // BDH Wifi6 chip driver init
 int32_t InitBDH6Chip(struct HdfWlanDevice *device)
@@ -42,58 +59,19 @@ int32_t DeinitBDH6Chip(struct HdfWlanDevice *device)
     return ret;
 }
 
-int32_t BDH6Init(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice)
-{
-    int32_t ret = 0;
-    struct HdfWifiNetDeviceData *data = NULL;
-    void *netdev = NULL;
-    int private_data_size = 0;
-    
-    (void)chipDriver;
-    HDF_LOGW("bdh6: call BDH6Init");
-
-    if (netDevice == NULL) {
-        HDF_LOGE("%s netdevice is null!", __func__);
-        return HDF_FAILURE;
-    }
-
-    netdev = GetLinuxInfByNetDevice(netDevice);
-    if (netdev == NULL) {
-        HDF_LOGE("%s net_device is null!", __func__);
-        return HDF_FAILURE;
-    }
-
-    set_krn_netdev(netdev);
-
-    data = GetPlatformData(netDevice);
-    if (data == NULL) {
-        HDF_LOGE("%s:netdevice data null!", __func__);
-        return HDF_FAILURE;
-    }
-
-    /* set netdevice ops to netDevice */
-    hdf_bdh6_netdev_init(netDevice);
-    netDevice->classDriverPriv = data;
-
-    // create bdh6 private object
-    private_data_size = get_dhd_priv_data_size();
-    netDevice->mlPriv = kzalloc(private_data_size, GFP_KERNEL);
-    if (netDevice->mlPriv == NULL) {
-        HDF_LOGE("%s:kzalloc mlPriv failed", __func__);
-        return HDF_FAILURE;
-    }
-    g_hdf_netdev = netDevice;
-    
-    dhd_module_init();
-
-    ret = hdf_bdh6_netdev_open(netDevice);
-    return HDF_SUCCESS;
-}
-
 int32_t BDH6Deinit(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice)
 {
     (void)chipDriver;
     (void)netDevice;
     hdf_bdh6_netdev_stop(netDevice);
     return HDF_SUCCESS;
+}
+
+struct NetDevice *get_real_netdev(NetDevice *netDev)
+{
+    if (strcmp(netDev->name, "p2p0") == 0) {
+        return get_hdf_netdev(HDF_INF_WLAN0);
+    } else {
+        return netDev;
+    }
 }
