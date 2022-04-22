@@ -41,7 +41,7 @@ if (enable_ramdisk) {
   }
   ohos_copy("ramdisk_resource_config.ini") {
     sources = [ "ramdisk_resource_config.ini" ]
-    outputs = [ "$root_build_dir/../../build/ohos/images/mkimage/ramdisk_resource_config.ini" ]
+    outputs = [ "$product_output_dir/phone/ramdisk_resource_config.ini" ]
   }
 } else {
   ohos_prebuilt_etc("fstab.required") {
