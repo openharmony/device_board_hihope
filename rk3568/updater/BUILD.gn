@@ -29,8 +29,12 @@ ohos_prebuilt_etc("fstab.updater") {
 if (enable_ramdisk) {
   ohos_copy("updater_ramdisk_resource_config.ini") {
     sources = [ "updater_ramdisk_resource_config.ini" ]
+<<<<<<< HEAD
     outputs =
         [ "$product_output_dir/phone/updater_ramdisk_resource_config.ini" ]
+=======
+    outputs = [ "$product_output_dir/phone/updater_ramdisk_resource_config.ini" ]
+>>>>>>> 1fa6f74c8a642ea1cf10569e7ff314c49f261802
   }
 }
 
