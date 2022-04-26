@@ -47,12 +47,12 @@ struct platform_device *getPlatformDev(void)
     g_platformDev = of_find_device_by_node(dmaOfNode);
     return g_platformDev;
 }
-int32_t Rk3568DeviceReadReg(unsigned long regBase, uint32_t reg, uint32_t *val)
+int32_t Rk3568DeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val)
 {
     struct platform_device *platformdev = getPlatformDev();
     struct rk3568_i2s_tdm_dev *i2sTdm;
 
-    (void)regBase;
+    (void)dai;
     i2sTdm = dev_get_drvdata(&platformdev->dev);
     if (regmap_read(i2sTdm->regmap, reg, val)) {
         AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", reg);
@@ -62,11 +62,11 @@ int32_t Rk3568DeviceReadReg(unsigned long regBase, uint32_t reg, uint32_t *val)
     return HDF_SUCCESS;
 }
 
-int32_t Rk3568DeviceWriteReg(unsigned long regBase, uint32_t reg, uint32_t value)
+int32_t Rk3568DeviceWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value)
 {
     struct platform_device *platformdev = getPlatformDev();
     struct rk3568_i2s_tdm_dev *i2sTdm;
-    (void)regBase;
+    (void)dai;
     i2sTdm = dev_get_drvdata(&platformdev->dev);
     if (regmap_write(i2sTdm->regmap, reg, value)) {
         AUDIO_DEVICE_LOG_ERR("write register fail: [%04x] = %04x", reg, value);
