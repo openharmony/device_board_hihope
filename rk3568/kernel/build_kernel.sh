@@ -61,4 +61,5 @@ cp resource.img ${2}/resource.img
 cp ${3}/loader/parameter.txt ${2}/parameter.txt
 cp ${3}/loader/MiniLoaderAll.bin ${2}/MiniLoaderAll.bin
 cp ${3}/loader/uboot.img ${2}/uboot.img
+cp ${3}/loader/config.cfg ${2}/config.cfg
 popd
