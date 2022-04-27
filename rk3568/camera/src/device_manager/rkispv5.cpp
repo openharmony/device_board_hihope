@@ -21,38 +21,38 @@ IMPLEMENT_SENSOR(Rkispv5)
 Rkispv5::Rkispv5() : ISensor("rkisp_v5") {}
 
 Rkispv5::~Rkispv5() {}
-void Rkispv5::InitPhysicalSize(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitPhysicalSize(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitPhysicalSize(camera_meta_data);
 }
-void Rkispv5::InitAntiBandingModes(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitAntiBandingModes(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitAntiBandingModes(camera_meta_data);
 }
-void Rkispv5::InitAvailableModes(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitAvailableModes(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitAvailableModes(camera_meta_data);
 }
-void Rkispv5::InitFpsTarget(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitFpsTarget(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitFpsTarget(camera_meta_data);
 }
-void Rkispv5::InitCompensationRange(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitCompensationRange(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitCompensationRange(camera_meta_data);
 }
 
-void Rkispv5::InitAwbModes(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitAwbModes(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitAwbModes(camera_meta_data);
 }
 
-void Rkispv5::InitSensitivityRange(CameraStandard::CameraMetadata& camera_meta_data)
+void Rkispv5::InitSensitivityRange(Camera::CameraMetadata& camera_meta_data)
 {
     ISensor::InitSensitivityRange(camera_meta_data);
 }
 
-void Rkispv5::Init(CameraStandard::CameraMetadata& camera_metaData)
+void Rkispv5::Init(Camera::CameraMetadata& camera_metaData)
 {
     InitPhysicalSize(camera_metaData);
     InitAntiBandingModes(camera_metaData);
