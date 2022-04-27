@@ -61,5 +61,5 @@ private:
     void* halCtx_ = nullptr;
     int mppStatus_ = 0;
 };
-}// namespace OHOS::Camera
+} // namespace OHOS::Camera
 #endif
