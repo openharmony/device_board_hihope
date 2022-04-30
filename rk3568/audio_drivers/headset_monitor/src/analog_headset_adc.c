@@ -220,7 +220,6 @@ static irqreturn_t HeadsetInterrupt(int irq, void *devId)
     struct HeadsetPriv *hs = g_hsInfo;
     bool beChange = false;
 
-    HDF_LOGI("%s: enter.", __func__);
     (void)devId;
     if (hs == NULL) {
         HDF_LOGE("%s: hs is NULL.", __func__);
