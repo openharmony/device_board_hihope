@@ -28,6 +28,8 @@ action("kernel") {
     rebase_path("//device/board/hihope/$device_name"),
     product_path,
     rebase_path("$root_build_dir/../.."),
+    device_company,
+    device_name,
   ]
   if (enable_ramdisk) {
     args += [ "enable_ramdisk" ]
