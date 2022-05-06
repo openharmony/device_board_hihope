@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef HOS_CAMERA_UTEST_V4L2_H
-#define HOS_CAMERA_UTEST_V4L2_H
+#ifndef HOS_CAMERA_UTEST_V4L2_DEV_H
+#define HOS_CAMERA_UTEST_V4L2_DEV_H
 
 #include <stdio.h>
 #include <gtest/gtest.h>
