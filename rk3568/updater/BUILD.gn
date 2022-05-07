@@ -13,6 +13,24 @@
 
 import("//build/ohos.gni")
 
+ohos_prebuilt_etc("updater_init.cfg") {
+  source = "config/init.cfg"
+  install_images = [ "updater" ]
+  part_name = "rockchip_products"
+}
+
+ohos_prebuilt_etc("updater_usb_init.cfg") {
+  source = "config/init.usb.cfg"
+  install_images = [ "updater" ]
+  part_name = "rockchip_products"
+}
+
+ohos_prebuilt_etc("updater_init_usb_configfs.cfg") {
+  source = "config/init.usb.configfs.cfg"
+  install_images = [ "updater" ]
+  part_name = "rockchip_products"
+}
+
 ohos_prebuilt_etc("signing_cert.crt") {
   source = "config/signing_cert.crt"
   module_install_dir = "certificate"
@@ -38,6 +56,9 @@ group("updater_files") {
   deps = [
     ":fstab.updater",
     ":signing_cert.crt",
+    ":updater_init.cfg",
+    ":updater_init_usb_configfs.cfg",
+    ":updater_usb_init.cfg",
   ]
   if (enable_ramdisk) {
     deps += [ ":updater_ramdisk_resource_config.ini" ]
