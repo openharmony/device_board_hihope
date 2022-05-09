@@ -30,6 +30,7 @@ action("kernel") {
     rebase_path("$root_build_dir/../.."),
     device_company,
     device_name,
+    product_company,
   ]
   if (enable_ramdisk) {
     args += [ "enable_ramdisk" ]
