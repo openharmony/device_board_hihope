@@ -22,7 +22,7 @@ ROOT_DIR=${5}
 export PRODUCT_PATH=${4}
 export DEVICE_COMPANY=${6}
 export DEVICE_NAME=${7}
-export PRODUCT_NAME=${8}
+export PRODUCT_COMPANY=${8}
 
 KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/linux-5.10
 KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/linux-5.10
