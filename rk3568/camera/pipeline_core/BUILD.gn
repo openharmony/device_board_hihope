@@ -45,7 +45,7 @@ config("pipe_config") {
 
 ohos_shared_library("camera_pipeline_core") {
   sources = [
-    "$camera_device_name_path/camera/src/pipeline_core/node/rk_codec_node.cpp",
+    "$board_camera_path/pipeline_core/src/node/rk_codec_node.cpp",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/uvc_node/uvc_node.cpp",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/v4l2_source_node/v4l2_source_node.cpp",
     "$camera_path/pipeline_core/host_stream/src/host_stream_impl.cpp",
@@ -108,14 +108,14 @@ ohos_shared_library("camera_pipeline_core") {
     "$camera_path/interfaces/hdi",
     "$camera_path/utils/event",
     "$camera_path/adapter/platform/v4l2/src/device_manager/include",
-    "$camera_device_name_path/camera/include/device_manager",
+    "../device_manager/include",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/v4l2_source_node",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/uvc_node",
     "//drivers/peripheral/camera/hal/adapter/platform/v4l2/src/driver_adapter/include/",
     "//foundation/communication/ipc/ipc/native/src/core/include",
     "//utils/native/base/include",
     "//drivers/peripheral/camera/interfaces/metadata/include",
-    "$camera_device_name_path/camera/src/pipeline_core/node",
+    "src/node",
     "//device/soc/rockchip/hardware/rga/include",
     "//device/soc/rockchip/hardware/mpp/include",
     "//third_party/libjpeg",
@@ -168,7 +168,7 @@ config("example_config") {
 }
 
 ohos_shared_library("camera_ipp_algo_example") {
-  sources = [ "$camera_device_name_path/camera/src/pipeline_core/ipp_algo_example/ipp_algo_example.c" ]
+  sources = [ "src/ipp_algo_example/ipp_algo_example.c" ]
 
   include_dirs = [
     "$camera_path/pipeline_core/ipp/include",
