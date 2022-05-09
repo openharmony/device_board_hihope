@@ -17,7 +17,7 @@
 #include <v4l2_dev.h>
 #include <v4l2_uvc.h>
 
-#include "utest_v4l2.h"
+#include "utest_v4l2_dev.h"
 
 using namespace testing::ext;
 namespace OHOS::Camera {

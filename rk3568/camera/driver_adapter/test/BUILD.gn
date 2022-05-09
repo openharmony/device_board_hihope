@@ -50,12 +50,12 @@ ohos_unittest("v4l2_adapter_unittest") {
   test_type = "unittest"
   testonly = true
   module_out_path = module_output_path
-  sources = [ "unittest/utest_v4l2.cpp" ]
+  sources = [ "unittest/src/utest_v4l2_dev.cpp" ]
 
   include_dirs = [
     "$camera_path/include",
     "$camera_path/adapter/platform/v4l2/src/driver_adapter/include",
-    "$camera_device_name_path/camera/src/driver_adapter/test/unittest/include",
+    "test/unittest/include",
     "//third_party/googletest/googletest/include/gtest",
     "//utils/native/base/include",
   ]
