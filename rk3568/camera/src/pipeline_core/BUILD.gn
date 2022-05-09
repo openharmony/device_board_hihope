@@ -139,7 +139,6 @@ ohos_shared_library("camera_pipeline_core") {
 
     # hcs parser
     "$hdf_uhdf_path/utils:libhdf_utils",
-    "//foundation/graphic/standard:libsurface",
   ]
 
   if (is_standard_system) {
@@ -147,7 +146,10 @@ ohos_shared_library("camera_pipeline_core") {
   } else {
     external_deps = [ "hilog:libhilog" ]
   }
-  external_deps += [ "ipc:ipc_single" ]
+  external_deps += [
+    "graphic_chipsetsdk:surface",
+    "ipc:ipc_single",
+  ]
 
   public_configs = [ ":pipe_config" ]
   install_images = [ chipset_base_dir ]
