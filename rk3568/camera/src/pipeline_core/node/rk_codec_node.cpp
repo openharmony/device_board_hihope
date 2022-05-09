@@ -113,7 +113,7 @@ int RKCodecNode::findStartCode(unsigned char *data, size_t dataSz)
 }
 
 static constexpr uint32_t nalBit = 0x1F;
-
+#define NAL_TYPE(value)             ((value) & nalBit)
 void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<IBuffer>& buffer)
 {
     size_t nalType = 0;
@@ -132,7 +132,7 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
             idx += 1;
             size -= 1;
         } else {
-            nalType = ((buf[idx + ret]) & nalBit);
+            nalType = NAL_TYPE(buf[idx + ret]);
             CAMERA_LOGI("ForkNode::ForkBuffers nalu == 0x%{public}x buf == 0x%{public}x \n", nalType, buf[idx + ret]);
             if (nalType == nalTypeValue) {
                 buffer->SetEsKeyFrame(1);
