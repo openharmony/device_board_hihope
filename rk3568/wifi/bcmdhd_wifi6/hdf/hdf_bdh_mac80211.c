@@ -69,9 +69,16 @@ int32_t BDH6WalSetMode(NetDevice *hnetDev, enum WlanWorkMode iftype)
     }
     old_iftype = netdev->ieee80211_ptr->iftype;
 
-    HDF_LOGE("%s: start... iftype=%d ", __func__, iftype);
-    if (old_iftype == NL80211_IFTYPE_AP && iftype != old_iftype)
-    WalStopAp(netDev);
+    HDF_LOGE("%s: start... iftype=%d, oldiftype=%d", __func__, iftype, old_iftype);
+    if (old_iftype == NL80211_IFTYPE_AP && iftype != old_iftype) {
+        WalStopAp(netDev);
+    }
+
+    if (iftype == NL80211_IFTYPE_P2P_GO && old_iftype == NL80211_IFTYPE_P2P_GO) {
+        HDF_LOGE("%s: p2p go don't change mode", __func__);
+        return retVal;
+    }
+    
     retVal = (int32_t)wl_cfg80211_ops.change_virtual_intf(wiphy, netdev,
         (enum nl80211_iftype)iftype, NULL);
     if (retVal < 0) {
