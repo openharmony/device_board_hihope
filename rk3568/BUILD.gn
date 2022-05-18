@@ -19,7 +19,6 @@ group("rk3568_group") {
     "bootanimation:bootanimation",
     "build/rootfs:init_configs",
     "distributedhardware:distributedhardware",
-    "kernel:kernel",
-    "system_hap:hap"
+    "kernel:kernel"
   ]
 }
