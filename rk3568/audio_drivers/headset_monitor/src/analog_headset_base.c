@@ -15,6 +15,7 @@
 
 #define EV_TYPE_KEY_INDEX       0
 #define KEY_CODE_JACK_INDEX     3
+#define IRQ_CONFIRM_MS1         1
 
 InputDevice *g_hdfInDev = NULL;
 void InputSetCapability(InputDevice *hdfInDev)
@@ -119,4 +120,30 @@ void DestroyHdfInputDevice(void)
         UnregisterInputDevice(g_hdfInDev);
         g_hdfInDev = NULL;
     }
+}
+
+int32_t GpioGetValue(uint16_t gpio)
+{
+    int32_t ret;
+    uint16_t level = 0;
+    ret = GpioRead(gpio, &level);
+    return (ret == HDF_SUCCESS) ? level : ret;
+}
+
+int32_t SetIrqType(uint16_t gpio, uint16_t irqType, GpioIrqFunc func, void *arg)
+{
+    int32_t ret;
+
+    ret = GpioUnsetIrq(gpio, arg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: [GpioSetIrq] failed.", __func__);
+        return ret;
+    }
+    OsalMSleep(IRQ_CONFIRM_MS1);
+    ret = GpioSetIrq(gpio, irqType, func, arg);
+    if (ret != HDF_SUCCESS) {
+        HDF_LOGE("%s: [GpioSetIrq] failed.", __func__);
+    }
+
+    return ret;
 }

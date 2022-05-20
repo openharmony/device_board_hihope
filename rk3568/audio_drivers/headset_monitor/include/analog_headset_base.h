@@ -16,6 +16,7 @@
 #ifndef ANALOG_HEADSET_BASE_H
 #define ANALOG_HEADSET_BASE_H
 
+#include "gpio_if.h"
 #include "hdf_device_desc.h"
 
 #define INPUT_DEVID_VENDOR      0x0001
@@ -25,4 +26,19 @@
 void SetStateSync(unsigned int id, bool state);
 int32_t CreateAndRegisterHdfInputDevice(void *hs, struct HdfDeviceObject *device);
 void DestroyHdfInputDevice(void);
+int32_t GpioGetValue(uint16_t gpio);
+/**
+ * @brief Set interrupt type.
+ *
+ * Replace  <b>irq_set_irq_type(irq, type)</b> function.
+ *
+ * @param gpio Indicates the GPIO pin number.
+ * @param mode Indicates the interrupt trigger mode. For details, see {@link OSAL_IRQF_TRIGGER_RISING}.
+ * @param func Indicates the ISR function to set, which is specified by {@link GpioIrqFunc}.
+ * @param arg Indicates the pointer to the parameters passed to the ISR function.
+ *
+ * @return Returns <b>0</b> if the operation is successful; returns a negative value otherwise.
+ * @since 1.0
+ */
+int32_t SetIrqType(uint16_t gpio, uint16_t irqType, GpioIrqFunc func, void *arg);
 #endif /* ANALOG_HEADSET_BASE_H */
