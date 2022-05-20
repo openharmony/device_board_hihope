@@ -242,7 +242,6 @@ static irqreturn_t HeadsetInterrupt(int irq, void *devId)
         return IRQ_HANDLED;
     }
     if (!beChange) {
-        HDF_LOGD("%s: read headset io level old status == now status =%u.", __func__, hs->hsStatus);
         hs->hsIrqWorking = IDLE;
         enable_irq(hs->irq[HEADSET]);
         return IRQ_HANDLED;
