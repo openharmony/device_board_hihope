@@ -17,8 +17,8 @@ extern "C" {
 #endif
 #endif /* __cplusplus */
 
-int32_t Rk3568DeviceReadReg(unsigned long regBase, uint32_t reg, uint32_t *val);
-int32_t Rk3568DeviceWriteReg(unsigned long regBase, uint32_t reg, uint32_t value);
+int32_t Rk3568DeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val);
+int32_t Rk3568DeviceWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value);
 
 int32_t Rk3568NormalTrigger(const struct AudioCard *card,
     int cmd, const struct DaiDevice *dai);

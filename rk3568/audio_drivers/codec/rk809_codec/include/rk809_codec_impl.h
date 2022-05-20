@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef RK809_ACCESSORY_IMPL_H
-#define RK809_ACCESSORY_IMPL_H
+#ifndef RK809_CODEC_IMPL_H
+#define RK809_CODEC_IMPL_H
 
 #include <linux/platform_device.h>
 #include <linux/types.h>
@@ -72,8 +72,8 @@ struct Rk809ChipData* GetCodecDevice(void);
 int32_t Rk809DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *device);
 int32_t Rk809DeviceRegRead(uint32_t reg, uint32_t *val);
 int32_t Rk809DeviceRegWrite(uint32_t reg, uint32_t value);
-int32_t RK809CodecReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *val);
-int32_t Rk809CodecWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value);
+int32_t RK809CodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val);
+int32_t Rk809CodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value);
 int32_t Rk809RegBitsUpdate(struct AudioMixerControl regAttr);
 int32_t Rk809DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *device);
 int32_t Rk809DaiStartup(const struct AudioCard *card, const struct DaiDevice *device);
