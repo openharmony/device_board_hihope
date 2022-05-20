@@ -21,7 +21,6 @@
 #include <linux/mfd/rk808.h>
 #include "rk817_codec.h"
 #include "rk809_codec_impl.h"
-#include "audio_accessory_base.h"
 #include "audio_codec_if.h"
 #include "audio_codec_base.h"
 #include "audio_driver_log.h"
@@ -103,7 +102,6 @@ static void RK809ChipRelease(void);
 
 static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
 {
-    int32_t ret;
     struct regmap_config codecRegmapCfg = getCodecRegmap();
     struct platform_device *codeDev = GetCodecPlatformDevice();
     struct rk808 *rk808;
@@ -128,29 +126,31 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
     if (IS_ERR(g_chip->regmap)) {
         AUDIO_DEVICE_LOG_ERR("failed to allocate regmap: %ld\n", PTR_ERR(g_chip->regmap));
         RK809ChipRelease();
-        return ret;
+        return HDF_FAILURE;
     }
-    ret = CodecGetConfigInfo(device, &(g_chip->codec));
-    if (ret !=  HDF_SUCCESS) {
+
+    if (CodecGetConfigInfo(device, &(g_chip->codec)) !=  HDF_SUCCESS) {
         RK809ChipRelease();
-        return ret;
+        return HDF_FAILURE;
     }
     if (CodecSetConfigInfo(&(g_chip->codec),  &(g_chip->dai)) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-    ret = GetServiceName(device);
-    if (ret !=  HDF_SUCCESS) {
+
+    if (GetServiceName(device) !=  HDF_SUCCESS) {
         RK809ChipRelease();
-        return ret;
-    }
-    ret = CodecGetDaiName(device,  &(g_chip->dai.drvDaiName));
-    if (ret != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-    ret = AudioRegisterCodec(device, &(g_chip->codec), &(g_chip->dai));
-    if (ret !=  HDF_SUCCESS) {
+
+    if (CodecGetDaiName(device,  &(g_chip->dai.drvDaiName)) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    OsalMutexInit(&g_rk809Data.mutex);
+
+    if (AudioRegisterCodec(device, &(g_chip->codec), &(g_chip->dai)) !=  HDF_SUCCESS) {
         RK809ChipRelease();
-        return ret;
+        return HDF_FAILURE;
     }
     return HDF_SUCCESS;
 }
@@ -164,6 +164,8 @@ static void RK809ChipRelease(void)
         }
         devm_kfree(&g_chip->pdev->dev, g_chip);
     }
+
+    OsalMutexDestroy(&g_rk809Data.mutex);
     AUDIO_DEVICE_LOG_ERR("success!");
     return;
 }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 #include <linux/regmap.h>
-#include "audio_accessory_base.h"
 #include "gpio_if.h"
 #include "linux/of_gpio.h"
 #include "audio_driver_log.h"
 #include "audio_stream_dispatch.h"
 #include "audio_codec_base.h"
+#include "audio_sapm.h"
 #include "rk817_codec.h"
 #include "rk809_codec_impl.h"
 
@@ -430,7 +430,7 @@ static int32_t RK809WorkStatusEnable(struct AudioRegCfgGroupNode **regCfgGroup)
     return HDF_SUCCESS;
 }
 
-int32_t RK809CodecReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *val)
+int32_t RK809CodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     if (val == NULL) {
         AUDIO_DRIVER_LOG_ERR("param val is null.");
@@ -444,7 +444,7 @@ int32_t RK809CodecReadReg(unsigned long virtualAddress, uint32_t reg, uint32_t *
     return HDF_SUCCESS;
 }
 
-int32_t Rk809CodecWriteReg(unsigned long virtualAddress, uint32_t reg, uint32_t value)
+int32_t Rk809CodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
 {
     if (Rk809DeviceRegWrite(reg, value)) {
         AUDIO_DRIVER_LOG_ERR("write register fail: [%04x] = %04x", reg, value);

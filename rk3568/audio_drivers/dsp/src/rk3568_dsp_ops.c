@@ -10,7 +10,6 @@
 #include "spi_if.h"
 #include "audio_dsp_if.h"
 #include "audio_driver_log.h"
-#include "audio_accessory_base.h"
 
 #define HDF_LOG_TAG rk3568_dsp_ops
 
