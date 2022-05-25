@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,11 +38,16 @@ extern "C" {
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
 
+#ifndef DISPLAY_DEBUGLOG_SWITCH
+#define DISPLAY_DEBUGLOG_SWITCH 0
+#endif
 #ifndef DISPLAY_DEBUGLOG
 #define DISPLAY_DEBUGLOG(format, ...) \
     do { \
+        if (DISPLAY_DEBUGLOG_SWITCH) { \
         HILOG_DEBUG(LOG_CORE, "[%{public}s@%{public}s:%{public}d] " format "\n", __FUNCTION__, __FILENAME__, __LINE__, \
             ##__VA_ARGS__); \
+        } \
     } while (0)
 #endif
 
