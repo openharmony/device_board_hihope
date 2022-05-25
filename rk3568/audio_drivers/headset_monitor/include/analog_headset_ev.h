@@ -22,11 +22,27 @@
 #define KEY_JACK_HEADPHONE     21  // EXTCON_JACK_HEADPHONE(21)
 #define KEY_JACK_HOOK          226 // KEY_MEDIA (226)
 
-enum JackType {
-    JACK_TYPE_HEADSET = 0,
-    JACK_TYPE_HEADPHONE,
-    JACK_TYPE_LINEOUT,
-    JACK_TYPE_UNKNOWN = 10,
+/**
+ * @brief Audio event type.
+ *
+ * referenc the 'drivers\peripheral\audio\interfaces\include\audio_events.h',
+ * the value don't modify!
+ *
+ * @since 1.0
+ */
+typedef enum AudioEventType {
+    HDF_AUDIO_DEVICE_ADD = 0x1,
+    HDF_AUDIO_DEVICE_REMOVE = 0x2,
+} EVENT_TYPE;
+
+typedef enum AudioDeviceType {
+    HDF_AUDIO_HEADPHONE = 0x2,
+    HDF_AUDIO_HEADSET = 0x4,
+} DEVICE_TYPE;
+
+struct AudioEvent {
+    uint32_t eventType;
+    uint32_t deviceType;
 };
 
 enum JackInsertStatus {
@@ -34,18 +50,9 @@ enum JackInsertStatus {
     JACK_STATUS_OUT,
 };
 
-enum JackState {
-    JACK_STATE_HEADSET_OUT = 0,
-    JACK_STATE_HEADPHONE_OUT,
-    JACK_STATE_HEADSET_IN,
-    JACK_STATE_HEADPHONE_IN,
-    JACK_STATE_UNKNOWN,
-};
-
 struct JackNotifyInfo {
     uint16_t jackType;
     bool jackStatus;
-    uint16_t jackState;
 };
 
 #endif
