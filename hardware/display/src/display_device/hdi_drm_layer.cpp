@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -64,7 +64,7 @@ DrmGemBuffer::~DrmGemBuffer()
         struct drm_gem_close gemClose = { 0 };
         gemClose.handle = mGemHandle;
         if (drmIoctl(mDrmFd, DRM_IOCTL_GEM_CLOSE, &gemClose)) {
-            DISPLAY_LOGE("can not free gem handle %{public}d errno : %{public}d", mGemHandle, errno);
+            DISPLAY_DEBUGLOG("can not free gem handle %{public}d errno : %{public}d", mGemHandle, errno);
         }
     }
 }

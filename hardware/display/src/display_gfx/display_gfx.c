@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
+ * Copyright (c) 2021-2022 Rockchip Electronics Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -178,7 +178,7 @@ int32_t rkFillRect(ISurface *iSurface, IRect *rect, uint32_t color, GfxOpt *opt)
         DISPLAY_LOGE("source iSurface address error");
         return DISPLAY_PARAM_ERR;
     }
-    DISPLAY_LOGE("gfx vir %{public}p phy 0x%{public}x fd %{public}d", dst.vir_addr, (int32_t)dst.phy_addr, dst.fd);
+    DISPLAY_DEBUGLOG("gfx vir %{public}p phy 0x%{public}x fd %{public}d", dst.vir_addr, (int32_t)dst.phy_addr, dst.fd);
     dst.width = iSurface->width;
     dst.height = iSurface->height;
     dst.wstride = ALIGN_UP(iSurface->width, 16);
@@ -346,10 +346,10 @@ int32_t doFlit(ISurface *srcSurface, IRect *srcRect, ISurface *dstSurface, IRect
         return DISPLAY_PARAM_ERR;
     }
 
-    DISPLAY_LOGE("gfx src fd %{public}d, w %{public}d, h %{publuc}d, sw %{public}d sh %{public}d vir %{public}p",
+    DISPLAY_DEBUGLOG("gfx src fd %{public}d, w %{public}d, h %{publuc}d, sw %{public}d sh %{public}d vir %{public}p",
         (int32_t)srcSurface->phyAddr, srcSurface->width, srcSurface->height, ALIGN_UP(srcSurface->width, 16),
         ALIGN_UP(srcSurface->height, 16), srcRgaBuffer.vir_addr);
-    DISPLAY_LOGE("gfx dst fd %{public}d, w %{public}d, h %{public}d, sw %{public}d sh %{public}d vir %{public}p",
+    DISPLAY_DEBUGLOG("gfx dst fd %{public}d, w %{public}d, h %{public}d, sw %{public}d sh %{public}d vir %{public}p",
         (int32_t)dstSurface->phyAddr, dstSurface->width, dstSurface->height, ALIGN_UP(dstSurface->width, 16),
         ALIGN_UP(dstSurface->height, 16), dstRgaBuffer.vir_addr);
 
@@ -510,6 +510,6 @@ int32_t GfxUninitialize(GfxFuncs *funcs)
 {
     CHECK_NULLPOINTER_RETURN_VALUE(funcs, DISPLAY_NULL_PTR);
     free(funcs);
-    DISPLAY_LOGI("%s: gfx uninitialize success", __func__);
+    DISPLAY_DEBUGLOG("%s: gfx uninitialize success", __func__);
     return DISPLAY_SUCCESS;
 }
