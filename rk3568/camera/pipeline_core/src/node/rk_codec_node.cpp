@@ -241,11 +241,15 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
     rkRga.RkRgaBlit(&src, &dst, NULL);
     rkRga.RkRgaFlush();
     encodeJpegToMemory((unsigned char *)temp, previewWidth_, previewHeight_, nullptr, &jpegSize, &jBuf);
-    int ret = memcpy_s((unsigned char*)buffer->GetVirAddress(), jpegSize, jBuf, jpegSize);
-    if (ret != 0) {
-        printf("memcpy_s failed!\n");
+
+    int ret = memcpy_s((unsigned char*)buffer->GetVirAddress(), buffer->GetSize(), jBuf, jpegSize);
+    if (ret == 0) {
+        buffer->SetEsFrameSize(jpegSize);
+    } else {
+        CAMERA_LOGI("memcpy_s failed, ret = %{public}d\n", ret);
+        buffer->SetEsFrameSize(0);
     }
-    buffer->SetEsFrameSize(jpegSize);
+
     free(jBuf);
     free(temp);
 
