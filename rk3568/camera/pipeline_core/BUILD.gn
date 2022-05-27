@@ -130,15 +130,15 @@ ohos_shared_library("camera_pipeline_core") {
   ]
 
   deps = [
+    "$board_camera_path:config.c",
+    "$board_camera_path:params.c",
     "$camera_path/buffer_manager:camera_buffer_manager",
     "$camera_path/device_manager:camera_device_manager",
+    "$hdf_uhdf_path/utils:libhdf_utils",
     "//device/soc/rockchip/hardware/mpp:libmpp",
     "//device/soc/rockchip/hardware/rga:librga",
     "//drivers/peripheral/camera/interfaces/metadata:metadata",
     "//third_party/libjpeg:libjpeg_static",
-
-    # hcs parser
-    "$hdf_uhdf_path/utils:libhdf_utils",
   ]
 
   if (is_standard_system) {
