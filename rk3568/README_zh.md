@@ -241,10 +241,7 @@ out/ohos-arm-release/packages/phone/images/ 目录下。
 
 **八、联系**
 
-合作伙伴购买链接：
-
-https://item.taobao.com/item.htm?spm=a2126o.success.result.1.68054831IdfpG7&id=655971020101
-
+http://www.hihope.org/pro/pro1.aspx?mtt=54
 
 
 
