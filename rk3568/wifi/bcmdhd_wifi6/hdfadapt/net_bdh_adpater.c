@@ -1,20 +1,25 @@
 /*
  * net_bdh_adpater.c
  *
- * ap6275s driver header
+ * hdf driver
  *
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 #include "net_bdh_adpater.h"
 #include <net/cfg80211.h>
 #include <securec.h>
@@ -22,6 +27,7 @@
 #include "hdf_wlan_utils.h"
 #include "hdf_wl_interface.h"
 #include "hdf_public_ap6275s.h"
+#include "hdf_wifi_event.h"
 
 #define HDF_LOG_TAG BDH6Driver
 
@@ -220,32 +226,49 @@ int BDH6InitNetdev(struct NetDevice *netDevice, int private_data_size, int type,
     return ret;
 }
 
+static void BDH_EnableEapol(struct NetDevice *netDev)
+{
+    WifiEnableEapol eapol;
+    const struct Eapol *eapolCB = EapolGetInstance();
+    
+    eapol.callback = (void *)HdfWifiEventEapolRecv;
+    eapol.context = NULL;
+    
+    eapolCB->eapolOp->enableEapol(netDev, (struct EapolEnable *)&eapol);
+}
+
 int32_t hdf_bdh6_netdev_init(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netDev == NULL) {
         HDF_LOGE("%s: netDev null!", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGE("%s: netDev->name:%s\n", __func__, netDev->name);
+    HDF_LOGI("%s: netDev->name:%s\n", __func__, netDev->name);
     netDev->netDeviceIf = wal_get_net_dev_ops();
     CreateEapolData(netDev);
+    if (bdh6_reset_driver_flag) {
+        BDH_EnableEapol(netDev);
+    }
 
     return HDF_SUCCESS;
 }
 
 int32_t hdf_p2p_netdev_init(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netDev == NULL) {
         HDF_LOGE("%s: netDev null!", __func__);
         return HDF_FAILURE;
     }
 
-    HDF_LOGE("%s: netDev->name:%s\n", __func__, netDev->name);
+    HDF_LOGI("%s: netDev->name:%s\n", __func__, netDev->name);
     netDev->netDeviceIf = wal_get_net_p2p_ops();
     CreateEapolData(netDev);
+    if (bdh6_reset_driver_flag) {
+        BDH_EnableEapol(netDev);
+    }
 
     return HDF_SUCCESS;
 }
@@ -253,7 +276,7 @@ int32_t hdf_p2p_netdev_init(struct NetDevice *netDev)
 
 void hdf_bdh6_netdev_deinit(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     (void)netDev;
 }
 
@@ -261,6 +284,7 @@ int32_t hdf_bdh6_netdev_open(struct NetDevice *netDev)
 {
     int32_t retVal = 0;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netdev != get_krn_netdev(0)) {
         // for virtual don't call open
         return 0;
@@ -272,7 +296,6 @@ int32_t hdf_bdh6_netdev_open(struct NetDevice *netDev)
     }
 
     rtnl_lock();
- 
     retVal = (int32_t)dhd_ops_pri.ndo_open(netdev);
     if (retVal < 0) {
         HDF_LOGE("%s: hdf net device open failed! ret = %d", __func__, retVal);
@@ -291,7 +314,10 @@ int32_t hdf_bdh6_netdev_open(struct NetDevice *netDev)
 
 int32_t hdf_p2p_netdev_open(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    struct NetDevice *hnetDev = NULL;
+    HDF_LOGI("%s: start %s..., need open primary interface", __func__, netDev->name);
+    hnetDev = get_hdf_netdev(0);
+    hdf_bdh6_netdev_open(hnetDev);
     return 0;
 }
 
@@ -300,7 +326,7 @@ int32_t hdf_bdh6_netdev_stop(struct NetDevice *netDev)
 {
     int32_t retVal = 0;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netdev != get_krn_netdev(0)) {
         return 0;
     }
@@ -321,7 +347,7 @@ int32_t hdf_bdh6_netdev_stop(struct NetDevice *netDev)
 
 int32_t hdf_p2p_netdev_stop(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     return 0;
 }
 
@@ -361,7 +387,7 @@ int32_t hdf_bdh6_netdev_ioctl(struct NetDevice *netDev, IfReq *req, int32_t cmd)
     struct ifreq dhd_req = {0};
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netdev == NULL || req == NULL) {
         HDF_LOGE("%s: netdev or req null!", __func__);
         return HDF_FAILURE;
@@ -379,24 +405,38 @@ int32_t hdf_bdh6_netdev_ioctl(struct NetDevice *netDev, IfReq *req, int32_t cmd)
 
 int32_t hdf_p2p_netdev_ioctl(struct NetDevice *netDev, IfReq *req, int32_t cmd)
 {
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     return 0;
 }
 
-
-int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, unsigned char *addr)
+#define MC0 0
+#define MC1 1
+#define MC2 2
+#define MC3 3
+#define MC4 4
+#define MC5 5
+int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
 {
     int32_t retVal = 0;
+    struct sockaddr sa;
+    const uint8_t *mac = addr;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
 
-    if (netdev == NULL || addr == NULL) {
+    if (netdev == NULL || mac == NULL) {
         HDF_LOGE("%s: netDev or addr null!", __func__);
         return HDF_FAILURE;
     }
 
-    retVal = (int32_t)dhd_ops_pri.ndo_set_mac_address(netdev, addr);
+    if (!is_valid_ether_addr(mac)) {
+        HDF_LOGE("%s: mac is invalid %02x:%02x:%02x:%02x:%02x:%02x", __func__,
+            mac[MC0], mac[MC1], mac[MC2], mac[MC3], mac[MC4], mac[MC5]);
+        return -1;
+    }
+    memcpy_s(sa.sa_data, ETH_ALEN, mac, ETH_ALEN);
+
+    retVal = (int32_t)dhd_ops_pri.ndo_set_mac_address(netdev, (void *)&sa);
     if (retVal < 0) {
         HDF_LOGE("%s: hdf net device setmacaddr failed! ret = %d", __func__, retVal);
     }
@@ -404,12 +444,12 @@ int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, unsigned char *addr
     return retVal;
 }
 
-int32_t hdf_p2p_netdev_setmacaddr(struct NetDevice *netDev, unsigned char *addr)
+int32_t hdf_p2p_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
 {
     int32_t retVal = 0;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
 
     if (netdev == NULL || addr == NULL) {
         HDF_LOGE("%s: netDev or addr null!", __func__);
@@ -428,7 +468,7 @@ struct NetDevStats *hdf_bdh6_netdev_getstats(struct NetDevice *netDev)
     struct net_device_stats *kdevStat = NULL;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
 
     if (netdev == NULL) {
         HDF_LOGE("%s: netDev null!", __func__);
@@ -458,7 +498,7 @@ struct NetDevStats *hdf_p2p_netdev_getstats(struct NetDevice *netDev)
     static struct NetDevStats devStat = {0};
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
 
     if (netdev == NULL) {
         HDF_LOGE("%s: netDev null!", __func__);
@@ -471,14 +511,14 @@ struct NetDevStats *hdf_p2p_netdev_getstats(struct NetDevice *netDev)
 
 void hdf_bdh6_netdev_setnetifstats(struct NetDevice *netDev, NetIfStatus status)
 {
-    HDF_LOGE("%s: start...", __func__);
+    HDF_LOGI("%s: start...", __func__);
     (void)netDev;
     (void)status;
 }
 
 uint16_t hdf_bdh6_netdev_selectqueue(struct NetDevice *netDev, NetBuf *netBuff)
 {
-    HDF_LOGE("%s: start...", __func__);
+    HDF_LOGI("%s: start...", __func__);
     (void)netDev;
     (void)netBuff;
     return HDF_SUCCESS;
@@ -486,7 +526,7 @@ uint16_t hdf_bdh6_netdev_selectqueue(struct NetDevice *netDev, NetBuf *netBuff)
 
 uint32_t hdf_bdh6_netdev_netifnotify(struct NetDevice *netDev, NetDevNotify *notify)
 {
-    HDF_LOGE("%s: start...", __func__);
+    HDF_LOGI("%s: start...", __func__);
     (void)netDev;
     (void)notify;
     return HDF_SUCCESS;
@@ -496,12 +536,12 @@ int32_t hdf_bdh6_netdev_changemtu(struct NetDevice *netDev, int32_t mtu)
 {
     int32_t retVal = 0;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     if (netdev == NULL) {
         HDF_LOGE("%s: netdev null!", __func__);
         return HDF_FAILURE;
     }
-    HDF_LOGE("%s: change mtu to %d\n", __FUNCTION__, mtu);
+    HDF_LOGI("%s: change mtu to %d\n", __FUNCTION__, mtu);
     retVal = (int32_t)dhd_netdev_changemtu_wrapper(netdev, mtu);
     if (retVal < 0) {
         HDF_LOGE("%s: hdf net device chg mtu failed! ret = %d", __func__, retVal);
@@ -513,28 +553,66 @@ int32_t hdf_bdh6_netdev_changemtu(struct NetDevice *netDev, int32_t mtu)
 int32_t hdf_p2p_netdev_changemtu(struct NetDevice *netDev, int32_t mtu)
 {
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
     netdev->mtu = mtu;
     return 0;
 }
 
-
 void hdf_bdh6_netdev_linkstatuschanged(struct NetDevice *netDev)
 {
-    HDF_LOGE("%s: start...", __func__);
+    HDF_LOGI("%s: start...", __func__);
     (void)netDev;
 }
+
+void eapol_report_handler(struct work_struct *work_data)
+{
+    const struct Eapol *eapolInstance = NULL;
+    struct hdf_eapol_event_s *eapolEvent = NULL;
+    struct NetDevice *netDev = NULL;
+    int32_t idx = 0, ret = 0;
+    NetBuf *netBuff = NULL;
+    eapolEvent = container_of(work_data, struct hdf_eapol_event_s, eapol_report);
+    idx = eapolEvent->idx;
+    netDev = g_hdf_infmap[idx].hnetdev;
+    if (netDev == NULL) {
+        HDF_LOGE("%s: idx=%d, netDev is NULL", __func__, idx);
+        return;
+    }
+
+    eapolInstance = EapolGetInstance();
+    while (1) {
+        netBuff = NetBufQueueDequeue(&eapolEvent->eapolQueue);
+        if (netBuff == NULL) {
+            return;
+        }
+
+        ret = eapolInstance->eapolOp->writeEapolToQueue(netDev, netBuff);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: writeEapolToQueue failed", __func__);
+            NetBufFree(netBuff);
+        }
+    }
+}
+
+static void hdf_bdh6_send_eapol_data(const struct NetDevice *netDev, NetBuf *buff)
+{
+    int idx = 0;
+    struct hdf_eapol_event_s *eapolEvent = NULL;
+    idx = get_scan_ifidx(netDev->name);
+    eapolEvent = &g_hdf_infmap[idx].eapolEvent;
+    NetBufQueueEnqueue(&eapolEvent->eapolQueue, buff);
+    schedule_work(&eapolEvent->eapol_report);
+}
+
 #define PEPROCESS1 12
 #define PEPROCESS2 13
 #define PEPROCESS3 8
 ProcessingResult hdf_bdh6_netdev_specialethertypeprocess(const struct NetDevice *netDev, NetBuf *buff)
 {
     struct EtherHeader *header = NULL;
-    const struct Eapol *eapolInstance = NULL;
-    int ret = HDF_SUCCESS;
     uint16_t protocol;
 
-    HDF_LOGE("%s: start %s...", __func__, netDev->name);
+    HDF_LOGI("%s: start %s...", __func__, netDev->name);
 
     if (netDev == NULL || buff == NULL) {
         return PROCESSING_ERROR;
@@ -554,12 +632,7 @@ ProcessingResult hdf_bdh6_netdev_specialethertypeprocess(const struct NetDevice 
         return PROCESSING_ERROR;
     }
 
-    eapolInstance = EapolGetInstance();
-    ret = eapolInstance->eapolOp->writeEapolToQueue(netDev, buff);
-    if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: writeEapolToQueue failed", __func__);
-        NetBufFree(buff);
-    }
+    hdf_bdh6_send_eapol_data(netDev, buff);
     return PROCESSING_COMPLETE;
 }
 
@@ -607,5 +680,14 @@ struct NetDeviceInterFace g_bdh6_p2p_net_dev_ops = {
 struct NetDeviceInterFace *wal_get_net_p2p_ops(void)
 {
     return &g_bdh6_p2p_net_dev_ops;
+}
+
+struct NetDevice *get_real_netdev(NetDevice *netDev)
+{
+    if (strcmp(netDev->name, "p2p0") == 0) {
+        return get_hdf_netdev(HDF_INF_WLAN0);
+    } else {
+        return netDev;
+    }
 }
 

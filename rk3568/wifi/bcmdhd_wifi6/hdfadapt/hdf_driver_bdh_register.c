@@ -3,18 +3,23 @@
  *
  * hdf driver
  *
- * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  *
- * This software is licensed under the terms of the GNU General Public
- * License version 2, as published by the Free Software Foundation, and
- * may be copied, distributed, and modified under those terms.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 #include "hdf_device_desc.h"
 #include "hdf_wifi_product.h"
 #include "hdf_log.h"
@@ -22,16 +27,45 @@
 #include "hdf_wlan_chipdriver_manager.h"
 #include "securec.h"
 #include "wifi_module.h"
+#include "hdf_wifi_core.h"
 #include "hdf_public_ap6275s.h"
 
 #define HDF_LOG_TAG BDH6Driver
+#define BDH6_MAX_WLAN_DEVICE 3
 
 int32_t InitBDH6Chip(struct HdfWlanDevice *device);
 int32_t DeinitBDH6Chip(struct HdfWlanDevice *device);
 int32_t BDH6Deinit(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice);
 int32_t BDH6Init(struct HdfChipDriver *chipDriver, struct NetDevice *netDevice);
 void BDH6Mac80211Init(struct HdfChipDriver *chipDriver);
-static const char * const BDH6_DRIVER_NAME = "hisi";
+static const char * const BDH6_DRIVER_NAME = "ap6275s";
+DEFINE_MUTEX(bdh6_reset_driver_lock);
+
+void BDH6_ResetDriver(void)
+{
+    uint8_t i;
+    int32_t ret;
+    struct HdfWlanDevice *wlanDevice = NULL;
+    mutex_lock(&bdh6_reset_driver_lock);
+    
+    for (i = 0; i < BDH6_MAX_WLAN_DEVICE; i++) {
+        wlanDevice = HdfWlanGetWlanDevice(i);
+        if (wlanDevice && strcmp(wlanDevice->driverName, BDH6_DRIVER_NAME) == 0 && wlanDevice->reset) {
+            ret = HdfWifiDeinitDevice(wlanDevice);
+            if (ret != HDF_SUCCESS) {
+                continue;
+            }
+
+            ret = wlanDevice->reset->Reset(wlanDevice->reset);
+            if (ret != HDF_SUCCESS) {
+                continue;
+            }
+
+            ret = HdfWifiInitDevice(wlanDevice);
+        }
+    }
+    mutex_unlock(&bdh6_reset_driver_lock);
+}
 
 static struct HdfChipDriver *BuildBDH6Driver(struct HdfWlanDevice *device, uint8_t ifIndex)
 {
@@ -61,7 +95,7 @@ static struct HdfChipDriver *BuildBDH6Driver(struct HdfWlanDevice *device, uint8
     specificDriver->init = BDH6Init;
     specificDriver->deinit = BDH6Deinit;
 
-    HDF_LOGW("bdh6: call BuildBDH6Driver %p", specificDriver);
+    HDF_LOGI("bdh6: call BuildBDH6Driver %p", specificDriver);
 
     BDH6Mac80211Init(specificDriver);
 
@@ -115,21 +149,26 @@ static int32_t HDFWlanRegBDH6DriverFactory(void)
 static int32_t HdfWlanBDH6ChipDriverInit(struct HdfDeviceObject *device)
 {
     (void)device;
-    HDF_LOGW("bdh6: call HdfWlanBDH6ChipDriverInit");
+    HDF_LOGI("bdh6: call HdfWlanBDH6ChipDriverInit");
     return HDFWlanRegBDH6DriverFactory();
 }
 
 static int HdfWlanBDH6DriverBind(struct HdfDeviceObject *dev)
 {
     (void)dev;
-    HDF_LOGW("bdh6: call HdfWlanBDH6DriverBind");
+    HDF_LOGI("bdh6: call HdfWlanBDH6DriverBind");
     return HDF_SUCCESS;
 }
 
 static void HdfWlanBDH6ChipRelease(struct HdfDeviceObject *object)
 {
     (void)object;
-    HDF_LOGW("bdh6: call HdfWlanBDH6ChipRelease");
+    HDF_LOGI("bdh6: call HdfWlanBDH6ChipRelease");
+}
+
+int32_t HdfWlanConfigSDIO(uint8_t busId)
+{
+    return HDF_SUCCESS;
 }
 
 struct HdfDriverEntry g_hdfBdh6ChipEntry = {
@@ -137,7 +176,7 @@ struct HdfDriverEntry g_hdfBdh6ChipEntry = {
     .Bind = HdfWlanBDH6DriverBind,
     .Init = HdfWlanBDH6ChipDriverInit,
     .Release = HdfWlanBDH6ChipRelease,
-    .moduleName = "HDF_WLAN_CHIPS"
+    .moduleName = "HDF_WLAN_CHIPS_AP6275S"
 };
 
 HDF_INIT(g_hdfBdh6ChipEntry);

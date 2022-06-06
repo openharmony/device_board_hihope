@@ -1,5 +1,5 @@
 /*
- * hdf_mac80211_sta_event.h
+ * hdf_bdh_event.h
  *
  * hdf driver
  *

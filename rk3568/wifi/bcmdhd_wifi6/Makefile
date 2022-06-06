@@ -61,7 +61,7 @@ DHDCFLAGS = -Wall -Wstrict-prototypes -Dlinux -DBCMDRIVER                 \
 	$(HDF_BDH6_WIFI_CFLAGS)                                               \
 	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6 \
 	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6/include \
-	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdf \
+	-I../../../../device/board/hihope/rk3568/wifi/bcmdhd_wifi6/hdfadapt \
 	$(HDF_FRAMEWORKS_INC) \
 	$(HDF_WIFI_FRAMEWORKS_INC) \
 	$(HDF_WIFI_ADAPTER_INC) \
@@ -80,10 +80,9 @@ DHDOFILES = aiutils.o siutils.o sbutils.o bcmutils.o bcmwifi_channels.o   \
 	hnd_pktq.o hnd_pktpool.o bcmxtlv.o linux_pkt.o bcmstdlib_s.o frag.o   \
 	dhd_linux_exportfs.o dhd_linux_pktdump.o                              \
 	dhd_config.o dhd_ccode.o wl_event.o wl_android_ext.o wl_escan.o \
-	hdf/hdf_driver_bdh_register.o hdf/hdfinit_bdh.o \
-	hdf/net_bdh_adpater.o hdf/hdf_bdh_mac80211.o hdf/hdf_mac80211_sta.o \
-	hdf/hdf_mac80211_sta_event.o hdf/hdf_mac80211_ap.o hdf_mac80211_p2p.o \
-	hdf_comm.o
+	hdfadapt/hdf_driver_bdh_register.o hdfadapt/hdfinit_bdh.o \
+	hdfadapt/net_bdh_adpater.o hdfadapt/hdf_bdh_mac80211.o \
+	hdfadapt/hdf_bdh_event.o
 
 ifeq ($(BCMDHD_STATIC_IF),y)
 	DHDCFLAGS += -DWL_STATIC_IF
