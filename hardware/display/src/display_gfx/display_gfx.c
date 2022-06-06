@@ -358,6 +358,7 @@ int32_t doFlit(ISurface *srcSurface, IRect *srcRect, ISurface *dstSurface, IRect
     srect.height = srcRect->h;
     srect.width = srcRect->w;
     drect.x = dstRect->x;
+    drect.x = (drect.x == 1) ? 0 : drect.x;
     drect.y = dstRect->y;
     drect.height = dstRect->h;
     drect.width = dstRect->w;
