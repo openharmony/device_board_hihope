@@ -6,17 +6,13 @@
  * See the LICENSE file in the root of this repository for complete details.
  */
 
-#include <linux/delay.h>
-#include <linux/err.h>
-#include <linux/errno.h>
-#include <linux/gpio.h>
 #include <linux/iio/consumer.h>
-#include <linux/of_gpio.h>
 #include <linux/platform_device.h>
 #include "analog_headset.h"
 #include "device_resource_if.h"
 #include "osal_mem.h"
 #include "securec.h"
+#include "gpio_if.h"
 
 #define HDF_LOG_TAG analog_headset_core
 
@@ -47,14 +43,14 @@ static void InitHeadsetPdata(struct HeadsetPdata *pdata)
 #ifdef CONFIG_MODEM_MIC_SWITCH
     pdata->micGpioFlags = 0;
     pdata->hsGpio = 0;
-    pdata->hpMicIoValue = LEVEL_IN_LOW;
-    pdata->mainMicIoValue = LEVEL_IN_HIGH;
+    pdata->hpMicIoValue = GPIO_VAL_LOW;
+    pdata->mainMicIoValue = GPIO_VAL_HIGH;
 #endif
 
     pdata->hsWakeup = true;
 }
 
-static int32_t GpioDirectionInput(struct device *dev, unsigned gpio, const char *label)
+static int32_t GpioDirectionInput(struct device *dev, uint32_t gpio, const char *label)
 {
     int32_t ret;
 
@@ -63,12 +59,7 @@ static int32_t GpioDirectionInput(struct device *dev, unsigned gpio, const char 
         return -EINVAL;
     }
 
-    ret = devm_gpio_request(dev, gpio, label);
-    if (ret < 0) {
-        HDF_LOGE("%s: [devm_gpio_request] failed.", __func__);
-        return ret;
-    }
-    ret = gpio_direction_input(gpio);
+    ret = GpioSetDir(gpio, GPIO_DIR_IN);
     if (ret < 0) {
         HDF_LOGE("%s: [gpio_direction_input] failed.", __func__);
         return ret;
@@ -118,12 +109,12 @@ static int32_t LinuxReadMicConfig(struct device_node *node, struct HeadsetPdata 
         ret = of_property_read_u32(node, "hp_mic_io_value", &pdata->hpMicIoValue);
         if (ret < 0) {
             HDF_LOGD("%s: have not set hpMicIoValue ,so default set pull down low level.", __func__);
-            pdata->hpMicIoValue = LEVEL_IN_LOW;
+            pdata->hpMicIoValue = GPIO_VAL_LOW;
         }
         ret = of_property_read_u32(node, "main_mic_io_value", &pdata->mainMicIoValue);
         if (ret < 0) {
             HDF_LOGD("%s: have not set mainMicIoValue ,so default set pull down low level.", __func__);
-            pdata->mainMicIoValue = LEVEL_IN_HIGH;
+            pdata->mainMicIoValue = GPIO_VAL_HIGH;
         }
     }
 #endif
@@ -307,7 +298,7 @@ static int32_t AnalogHeadsetInit(struct platform_device *pdev, struct HeadsetPda
     }
 
     /* headset */
-    ret = GpioDirectionInput(&pdev->dev, pdata->hsGpio, "headset_gpio");
+    ret = GpioSetDir(pdata->hsGpio, GPIO_DIR_IN);
     if (ret < 0) {
         HDF_LOGE("%s: [GpioDirectionInput]-[headset_gpio] failed.", __func__);
         return ret;
@@ -321,7 +312,7 @@ static int32_t AnalogHeadsetInit(struct platform_device *pdev, struct HeadsetPda
             HDF_LOGW("%s: have not set adc chan.", __func__);
         }
     } else {
-        ret = GpioDirectionInput(&pdev->dev, pdata->hookGpio, "hook_gpio");
+        ret = GpioSetDir(pdata->hookGpio, GPIO_DIR_IN);
         if (ret < 0) {
             HDF_LOGW("%s: [GpioDirectionInput]-[hook_gpio] failed.", __func__);
             return ret;
