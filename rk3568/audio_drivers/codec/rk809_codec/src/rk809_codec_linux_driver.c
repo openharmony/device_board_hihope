@@ -74,7 +74,7 @@ static const struct reg_default rk817_reg_defaults[] = {
     { RK817_CODEC_DADC_RVOLR, 0xff },
     { RK817_CODEC_AMIC_CFG0, 0x70 },
     { RK817_CODEC_AMIC_CFG1, 0x00 },
-    { RK817_CODEC_DMIC_PGA_GAIN, 0x66 },
+    { RK817_CODEC_DMIC_PGA_GAIN, 0x6F },
     { RK817_CODEC_DMIC_LMT1, 0x00 },
     { RK817_CODEC_DMIC_LMT2, 0x00 },
     { RK817_CODEC_DMIC_NG1, 0x00 },

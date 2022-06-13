@@ -29,6 +29,7 @@
 #define RK809_I2C_DEV_ADDR     (0x20)
 #define RK809_I2C_BUS_NUMBER   (0)      // i2c0
 #define RK809_I2C_WAIT_TIMES   (10)     // ms
+#define RK809_CODEC_REG_MAX    (0x4f)
 
 struct Rk809TransferData {
     uint16_t i2cDevAddr;
@@ -38,67 +39,70 @@ struct Rk809TransferData {
     struct AudioKcontrol *Controls;
 };
 
-
 static const struct AudioSapmRoute g_audioRoutes[] = {
-    { "SPKL", "Dacl enable", "DACL"},
-    { "SPKR", "Dacr enable", "DACR"},
+    { "SPKL", NULL, "SPKL PGA"},
+    { "HPL", NULL, "HPL PGA"},
+    { "HPR", NULL, "HPR PGA"},
+    { "SPKL PGA", "Speaker1 Switch", "DAC1"},
+    { "HPL PGA", "Headphone1 Switch", "DAC2"},
+    { "HPR PGA", "Headphone2 Switch", "DAC3"},
 
     { "ADCL", NULL, "LPGA"},
-    { "LPGA", "LPGA MIC Switch", "MIC"},
-
     { "ADCR", NULL, "RPGA"},
-    { "RPGA", "RPGA MIC Switch", "MIC"},
+    { "LPGA", "LPGA MIC Switch", "MIC1"},
+    { "RPGA", "RPGA MIC Switch", "MIC2"},
 };
 
-static const struct reg_default rk817_render_start_reg_defaults[] = {
-    { RK817_CODEC_ADAC_CFG1, 0x00 },
+struct RegDefaultVal {
+        uint16_t reg;
+        uint16_t val;
+};
+
+struct RegConfig {
+    const struct RegDefaultVal *regVal;
+    uint32_t size;
+};
+
+static const struct RegDefaultVal g_rk817RenderStartRegDefaults[] = {
     { RK817_CODEC_DDAC_POPD_DACST, 0x04 },
     { RK817_CODEC_DDAC_MUTE_MIXCTL, 0x10 },
+    { RK817_CODEC_DI2S_RXCMD_TSD, 0x20 },
 };
 
-static const struct regmap_config rk817_render_start_regmap_config = {
-    .reg_defaults = rk817_render_start_reg_defaults,
-    .num_reg_defaults = ARRAY_SIZE(rk817_render_start_reg_defaults),
+static const struct RegConfig g_rk817RenderStartRegConfig = {
+    .regVal = g_rk817RenderStartRegDefaults,
+    .size = ARRAY_SIZE(g_rk817RenderStartRegDefaults),
 };
 
-static const struct reg_default rk817_render_stop_reg_defaults[] = {
-    { RK817_CODEC_ADAC_CFG1, 0x0f },
+static const struct RegDefaultVal g_rk817RenderStopRegDefaults[] = {
     { RK817_CODEC_DDAC_POPD_DACST, 0x06 },
     { RK817_CODEC_DDAC_MUTE_MIXCTL, 0x11 },
+    { RK817_CODEC_DI2S_RXCMD_TSD, 0x10 },
 };
 
-static const struct regmap_config rk817_render_stop_regmap_config = {
-    .reg_defaults = rk817_render_stop_reg_defaults,
-    .num_reg_defaults = ARRAY_SIZE(rk817_render_stop_reg_defaults),
+static const struct RegConfig g_rk817RenderStopRegConfig = {
+    .regVal = g_rk817RenderStopRegDefaults,
+    .size = ARRAY_SIZE(g_rk817RenderStopRegDefaults),
 };
 
-static const struct reg_default rk817_capture_start_reg_defaults[] = {
-    { RK817_CODEC_DTOP_DIGEN_CLKE, 0xff },
-    { RK817_CODEC_AADC_CFG0, 0x08 },
-    { RK817_CODEC_DADC_SR_ACL0, 0x02 },
-    { RK817_CODEC_AMIC_CFG0, 0x8f },
-    { RK817_CODEC_DMIC_PGA_GAIN, 0x99 },
-    { RK817_CODEC_ADAC_CFG1, 0x0f },
-    { RK817_CODEC_DDAC_POPD_DACST, 0x04 },
-    { RK817_CODEC_DDAC_MUTE_MIXCTL, 0x00 },
+static const struct RegDefaultVal g_rk817CaptureStartRegDefaults[] = {
+    { RK817_CODEC_DTOP_DIGEN_CLKE, 0xff },   // I2SRX_EN I2SRX_CKE ADC_EN  ADC_CKE
     { RK817_CODEC_DI2S_TXCR3_TXCMD, 0x88 },
 };
 
-static const struct regmap_config rk817_capture_start_regmap_config = {
-    .reg_defaults = rk817_capture_start_reg_defaults,
-    .num_reg_defaults = ARRAY_SIZE(rk817_capture_start_reg_defaults),
+static const struct RegConfig g_rk817CaptureStartRegConfig = {
+    .regVal = g_rk817CaptureStartRegDefaults,
+    .size = ARRAY_SIZE(g_rk817CaptureStartRegDefaults),
 };
 
-static const struct reg_default rk817_capture_stop_reg_defaults[] = {
+static const struct RegDefaultVal g_rk817CaptureStopRegDefaults[] = {
     { RK817_CODEC_DTOP_DIGEN_CLKE, 0x0f },
-    { RK817_CODEC_AADC_CFG0, 0xc8 },
-    { RK817_CODEC_DADC_SR_ACL0, 0x00 },
-    { RK817_CODEC_DDAC_POPD_DACST, 0x06 },
+    { RK817_CODEC_DI2S_TXCR3_TXCMD, 0x40 },
 };
 
-static const struct regmap_config rk817_capture_stop_regmap_config = {
-    .reg_defaults = rk817_capture_stop_reg_defaults,
-    .num_reg_defaults = ARRAY_SIZE(rk817_capture_stop_reg_defaults),
+static const struct RegConfig g_rk817CaptureStopRegConfig = {
+    .regVal = g_rk817CaptureStopRegDefaults,
+    .size = ARRAY_SIZE(g_rk817CaptureStopRegDefaults),
 };
 
 unsigned int g_cuurentcmd = AUDIO_DRV_PCM_IOCTL_BUTT;
@@ -111,7 +115,7 @@ int32_t Rk809DeviceRegRead(uint32_t reg, uint32_t *val)
         return HDF_FAILURE;
     }
     if (regmap_read(chip->regmap, reg, val)) {
-        AUDIO_DRIVER_LOG_ERR("read register fail: [%04x]", reg);
+        AUDIO_DRIVER_LOG_ERR("read register fail: [%x]", reg);
         return HDF_FAILURE;
     }
 
@@ -125,8 +129,41 @@ int32_t Rk809DeviceRegWrite(uint32_t reg, uint32_t value)
         AUDIO_DRIVER_LOG_ERR("get codec device failed.");
         return HDF_FAILURE;
     }
+
     if (regmap_write(chip->regmap, reg, value)) {
-        AUDIO_DRIVER_LOG_ERR("write register fail: [%04x] = %04x", reg, value);
+        AUDIO_DRIVER_LOG_ERR("write register fail: [%x] = %x", reg, value);
+        return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
+int32_t RK809CodecDaiReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *value)
+{
+    if (value == NULL) {
+        AUDIO_DRIVER_LOG_ERR("param val is null.");
+        return HDF_FAILURE;
+    }
+    if (reg > RK809_CODEC_REG_MAX) {
+        AUDIO_DRIVER_LOG_ERR("codec dai read error reg: %x ", reg);
+        return HDF_FAILURE;
+    }
+
+    if (Rk809DeviceRegRead(reg, value)) {
+        AUDIO_DRIVER_LOG_ERR("codec dai read register fail: [%04x]", reg);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+int32_t RK809CodecDaiWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value)
+{
+    if (reg > RK809_CODEC_REG_MAX) {
+        AUDIO_DRIVER_LOG_ERR("codec dai write error reg: %x ", reg);
+        return HDF_FAILURE;
+    }
+
+    if (Rk809DeviceRegWrite(reg, value)) {
+        AUDIO_DRIVER_LOG_ERR("codec dai write register fail: [%04x] = %04x", reg, value);
         return HDF_FAILURE;
     }
 
@@ -194,25 +231,6 @@ int32_t RK809RegBitsUpdateValue(struct AudioMixerControl *regAttr, Update_Dest d
     }
 
     return ret;
-}
-
-int32_t RK809RegDefaultInit(struct AudioRegCfgGroupNode **regCfgGroup)
-{
-    int32_t i;
-    struct AudioAddrConfig *regAttr = NULL;
-    
-    if (regCfgGroup == NULL || regCfgGroup[AUDIO_INIT_GROUP] == NULL ||
-        regCfgGroup[AUDIO_INIT_GROUP]->addrCfgItem == NULL || regCfgGroup[AUDIO_INIT_GROUP]->itemNum <= 0) {
-        AUDIO_DEVICE_LOG_ERR("input invalid parameter.");
-        return HDF_ERR_INVALID_PARAM;
-    }
-    regAttr = regCfgGroup[AUDIO_INIT_GROUP]->addrCfgItem;
-
-    for (i = 0; i < regCfgGroup[AUDIO_INIT_GROUP]->itemNum; i++) {
-        Rk809DeviceRegWrite(regAttr[i].addr, regAttr[i].value);
-    }
-
-    return HDF_SUCCESS;
 }
 
 static const RK809SampleRateTimes RK809GetSRT(const unsigned int rate)
@@ -285,7 +303,10 @@ int32_t RK809UpdateRenderParams(struct AudioRegCfgGroupNode **regCfgGroup,
 
     itemNum = regCfgGroup[AUDIO_DAI_PATAM_GROUP]->itemNum;
     regAttr = regCfgGroup[AUDIO_DAI_PATAM_GROUP]->regCfgItem;
-
+    if (regAttr == NULL) {
+        AUDIO_DEVICE_LOG_ERR("reg Cfg Item is null.");
+        return HDF_FAILURE;
+    }
     for (i = 0; i < itemNum; i++) {
         if (regAttr[i].reg == RK817_CODEC_APLL_CFG3) {
             regAttr[i].value = RK809GetPremode(codecDaiParamsVal.frequencyVal);
@@ -335,6 +356,10 @@ int32_t RK809UpdateCaptureParams(struct AudioRegCfgGroupNode **regCfgGroup,
 
     itemNum = regCfgGroup[AUDIO_DAI_PATAM_GROUP]->itemNum;
     regAttr = regCfgGroup[AUDIO_DAI_PATAM_GROUP]->regCfgItem;
+    if (regAttr == NULL) {
+        AUDIO_DEVICE_LOG_ERR("reg Cfg Item is null.");
+        return HDF_FAILURE;
+    }
 
     for (i = 0; i < itemNum; i++) {
         if (regAttr[i].reg == RK817_CODEC_APLL_CFG3) {
@@ -401,41 +426,17 @@ int32_t RK809DaiParamsUpdate(struct AudioRegCfgGroupNode **regCfgGroup,
     return HDF_SUCCESS;
 }
 
-static int32_t RK809WorkStatusEnable(struct AudioRegCfgGroupNode **regCfgGroup)
-{
-    int ret;
-    uint8_t i;
-    struct AudioMixerControl *daiStartupParamsRegCfgItem = NULL;
-    uint8_t daiStartupParamsRegCfgItemCount;
-
-    ret = (regCfgGroup == NULL || regCfgGroup[AUDIO_DAI_STARTUP_PATAM_GROUP] == NULL
-        || regCfgGroup[AUDIO_DAI_STARTUP_PATAM_GROUP]->regCfgItem == NULL);
-    if (ret) {
-        AUDIO_DEVICE_LOG_ERR("input invalid parameter.");
-        return HDF_FAILURE;
-    }
-
-    daiStartupParamsRegCfgItem =
-        regCfgGroup[AUDIO_DAI_STARTUP_PATAM_GROUP]->regCfgItem;
-    daiStartupParamsRegCfgItemCount =
-        regCfgGroup[AUDIO_DAI_STARTUP_PATAM_GROUP]->itemNum;
-    for (i = 0; i < daiStartupParamsRegCfgItemCount; i++) {
-        ret = Rk809RegBitsUpdate(daiStartupParamsRegCfgItem[i]);
-        if (ret != HDF_SUCCESS) {
-            AUDIO_DEVICE_LOG_ERR("Rk809RegBitsUpdate fail.");
-            return HDF_FAILURE;
-        }
-    }
-
-    return HDF_SUCCESS;
-}
-
 int32_t RK809CodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_t *val)
 {
     if (val == NULL) {
         AUDIO_DRIVER_LOG_ERR("param val is null.");
         return HDF_FAILURE;
     }
+    if (reg > RK809_CODEC_REG_MAX) {
+        AUDIO_DRIVER_LOG_ERR("read error reg: %x ", reg);
+        return HDF_FAILURE;
+    }
+
     if (Rk809DeviceRegRead(reg, val)) {
         AUDIO_DRIVER_LOG_ERR("read register fail: [%04x]", reg);
         return HDF_FAILURE;
@@ -446,11 +447,14 @@ int32_t RK809CodecReadReg(const struct CodecDevice *codec, uint32_t reg, uint32_
 
 int32_t Rk809CodecWriteReg(const struct CodecDevice *codec, uint32_t reg, uint32_t value)
 {
+    if (reg > RK809_CODEC_REG_MAX) {
+        AUDIO_DRIVER_LOG_ERR("write error reg: %x ", reg);
+        return HDF_FAILURE;
+    }
     if (Rk809DeviceRegWrite(reg, value)) {
         AUDIO_DRIVER_LOG_ERR("write register fail: [%04x] = %04x", reg, value);
         return HDF_FAILURE;
     }
-
     return HDF_SUCCESS;
 }
 
@@ -518,12 +522,12 @@ int32_t Rk809DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *d
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (CodecSetCtlFunc(device->devData, RK809GetCtrlOps, RK809SetCtrlOps) != HDF_SUCCESS) {
+    if (CodecSetCtlFunc(device->devData, AUDIO_CONTROL_MIXER, RK809GetCtrlOps, RK809SetCtrlOps) != HDF_SUCCESS) {
         AUDIO_DRIVER_LOG_ERR("AudioCodecSetCtlFunc failed.");
         return HDF_FAILURE;
     }
 
-    ret = RK809RegDefaultInit(device->devData->regCfgGroup);
+    ret = CodecDeviceInitRegConfig(device);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("RK809RegDefaultInit failed.");
         return HDF_FAILURE;
@@ -531,6 +535,22 @@ int32_t Rk809DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *d
 
     if (AudioAddControls(audioCard, device->devData->controls, device->devData->numControls) != HDF_SUCCESS) {
         AUDIO_DRIVER_LOG_ERR("add controls failed.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSapmNewComponents(audioCard, device->devData->sapmComponents,
+        device->devData->numSapmComponent) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("new components failed.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSapmAddRoutes(audioCard, g_audioRoutes, HDF_ARRAY_SIZE(g_audioRoutes)) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("add route failed.");
+        return HDF_FAILURE;
+    }
+
+    if (AudioSapmNewControls(audioCard) != HDF_SUCCESS) {
+        AUDIO_DRIVER_LOG_ERR("add sapm controls failed.");
         return HDF_FAILURE;
     }
 
@@ -553,17 +573,39 @@ int32_t Rk809DaiStartup(const struct AudioCard *card, const struct DaiDevice *de
 {
     int ret;
     (void)card;
-    (void)device;
 
-    ret = RK809WorkStatusEnable(device->devData->regCfgGroup);
+    ret = CodecDaiDeviceStartupRegConfig(device);
     if (ret != HDF_SUCCESS) {
-        AUDIO_DEVICE_LOG_ERR("RK809WorkStatusEnable failed.");
+        AUDIO_DEVICE_LOG_ERR("CodecDaiDeviceStartupRegConfig failed.");
         return HDF_FAILURE;
     }
 
     AUDIO_DRIVER_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
+
+int32_t Rk809FormatToBitWidth(enum AudioFormat format, unsigned int *bitWidth)
+{
+    if (bitWidth == NULL) {
+        AUDIO_DRIVER_LOG_ERR("bitWidth is null.");
+        return HDF_FAILURE;
+    }
+    switch (format) {
+        case AUDIO_FORMAT_PCM_16_BIT:
+            *bitWidth = DATA_BIT_WIDTH16;
+            break;
+
+        case AUDIO_FORMAT_PCM_24_BIT:
+            *bitWidth = DATA_BIT_WIDTH24;
+            break;
+
+        default:
+            AUDIO_DRIVER_LOG_ERR("format: %d is not support.", format);
+            return HDF_FAILURE;
+    }
+    return HDF_SUCCESS;
+}
+
 
 int32_t Rk809DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param)
 {
@@ -579,7 +621,7 @@ int32_t Rk809DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwPa
         return HDF_FAILURE;
     }
 
-    ret = AudioFormatToBitWidth(param->format, &bitWidth);
+    ret = Rk809FormatToBitWidth(param->format, &bitWidth);
     if (ret != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
@@ -587,6 +629,7 @@ int32_t Rk809DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwPa
     codecDaiParamsVal.frequencyVal = param->rate;
     codecDaiParamsVal.DataWidthVal = bitWidth;
 
+    AUDIO_DRIVER_LOG_DEBUG("channels count : %d .", param->channels);
     ret =  RK809DaiParamsUpdate(card->rtd->codecDai->devData->regCfgGroup, codecDaiParamsVal);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("RK809DaiParamsUpdate failed.");
@@ -596,13 +639,17 @@ int32_t Rk809DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwPa
     return HDF_SUCCESS;
 }
 
-int32_t RK809DeviceRegConfig(const struct regmap_config reg_config)
+int32_t RK809DeviceRegConfig(const struct RegConfig regConfig)
 {
-    int32_t num_reg_defaults = reg_config.num_reg_defaults;
     int32_t index;
+    int ret;
 
-    for (index = 0; index < num_reg_defaults; index++) {
-        Rk809DeviceRegWrite(reg_config.reg_defaults[index].reg, reg_config.reg_defaults[index].def);
+    for (index = 0; index < regConfig.size; index++) {
+        ret = Rk809DeviceRegWrite(regConfig.regVal[index].reg, regConfig.regVal[index].val);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("Rk809DeviceRegWrite failed.");
+            return HDF_FAILURE;
+        }
     }
 
     return HDF_SUCCESS;
@@ -612,26 +659,43 @@ int32_t RK809DeviceRegConfig(const struct regmap_config reg_config)
 /* normal scene */
 int32_t Rk809NormalTrigger(const struct AudioCard *card, int cmd, const struct DaiDevice *device)
 {
+    int ret;
     g_cuurentcmd = cmd;
     switch (cmd) {
         case AUDIO_DRV_PCM_IOCTL_RENDER_START:
         case AUDIO_DRV_PCM_IOCTL_RENDER_RESUME:
-            RK809DeviceRegConfig(rk817_render_start_regmap_config);
+            ret = RK809DeviceRegConfig(g_rk817RenderStartRegConfig);
+            if (ret != HDF_SUCCESS) {
+                AUDIO_DEVICE_LOG_ERR("RK809DeviceRegConfig failed.");
+                return HDF_FAILURE;
+            }
             break;
-        
+
         case AUDIO_DRV_PCM_IOCTL_RENDER_STOP:
         case AUDIO_DRV_PCM_IOCTL_RENDER_PAUSE:
-            RK809DeviceRegConfig(rk817_render_stop_regmap_config);
+            ret = RK809DeviceRegConfig(g_rk817RenderStopRegConfig);
+            if (ret != HDF_SUCCESS) {
+                AUDIO_DEVICE_LOG_ERR("RK809DeviceRegConfig failed.");
+                return HDF_FAILURE;
+            }
             break;
 
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_START:
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_RESUME:
-            RK809DeviceRegConfig(rk817_capture_start_regmap_config);
+            ret = RK809DeviceRegConfig(g_rk817CaptureStartRegConfig);
+            if (ret != HDF_SUCCESS) {
+                AUDIO_DEVICE_LOG_ERR("RK809DeviceRegConfig failed.");
+                return HDF_FAILURE;
+            }
             break;
 
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_STOP:
         case AUDIO_DRV_PCM_IOCTL_CAPTURE_PAUSE:
-            RK809DeviceRegConfig(rk817_capture_stop_regmap_config);
+            ret = RK809DeviceRegConfig(g_rk817CaptureStopRegConfig);
+            if (ret != HDF_SUCCESS) {
+                AUDIO_DEVICE_LOG_ERR("RK809DeviceRegConfig failed.");
+                return HDF_FAILURE;
+            }
             break;
 
         default:
