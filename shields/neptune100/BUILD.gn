@@ -12,7 +12,7 @@
 # limitations under the License.
 
 if (ohos_kernel_type == "liteos_m") {
-  import("//drivers/adapter/khdf/liteos_m/hdf.gni")
+  import("//drivers/hdf_core/adapter/khdf/liteos_m/hdf.gni")
 
   module_switch = defined(LOSCFG_SHIELD_NEPTUNE100_EVB)
   module_name = get_path_info(rebase_path("."), "name")
