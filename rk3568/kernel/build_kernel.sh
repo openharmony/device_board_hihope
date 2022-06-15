@@ -43,7 +43,7 @@ cp -arf ${KERNEL_SOURCE}/* ${KERNEL_SRC_TMP_PATH}/
 cd ${KERNEL_SRC_TMP_PATH}
 
 #HDF patch
-bash ${ROOT_DIR}/drivers/adapter/khdf/linux/patch_hdf.sh ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${HDF_PATCH}
+bash ${ROOT_DIR}/drivers/hdf_core/adapter/khdf/linux/patch_hdf.sh ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${HDF_PATCH}
 
 #kernel patch
 patch -p1 < ${KERNEL_PATCH}
