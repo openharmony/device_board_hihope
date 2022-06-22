@@ -173,8 +173,11 @@ void RKCodecNode::Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer)
     previewWidth_ = buffer->GetWidth();
     previewHeight_ = buffer->GetHeight();
     int ret = memcpy_s(temp, buffer->GetSize(), (const void *)buffer->GetVirAddress(), buffer->GetSize());
-    if (ret != 0) {
+    if (ret == 0) {
+        buffer->SetEsFrameSize(buffer->GetSize());
+    } else {
         printf("memcpy_s failed!\n");
+        buffer->SetEsFrameSize(0);
     }
     RockchipRga rkRga;
 
