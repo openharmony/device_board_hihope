@@ -228,8 +228,8 @@ post_process
 
 2021-09-13 09:22:28
 
-编译所生成的文件都归档在out/ohos-arm-release/目录下，结果镜像输出在
-out/ohos-arm-release/packages/phone/images/ 目录下。
+编译所生成的文件都归档在out/rk3568/目录下，结果镜像输出在
+out/rk3568/packages/phone/images/ 目录下。
 
 3） 编译源码完成，请进行镜像烧录。
 
