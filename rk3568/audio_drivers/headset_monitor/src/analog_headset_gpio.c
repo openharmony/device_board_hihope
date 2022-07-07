@@ -7,7 +7,6 @@
  */
 
 #include <linux/debugfs.h>
-#include <linux/delay.h>
 #include <linux/device.h>
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
@@ -15,16 +14,10 @@
 #include <linux/err.h>
 #include <linux/errno.h>
 #include <linux/extcon-provider.h>
-#include <linux/fs.h>
-#include <linux/gpio.h>
-#include <linux/hrtimer.h>
 #include <linux/input.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
-#include <linux/mutex.h>
-#include <linux/of_gpio.h>
 #include <linux/platform_device.h>
-#include <linux/wakelock.h>
 #include "analog_headset.h"
 #include "analog_headset_base.h"
 #include "hdf_log.h"
@@ -33,6 +26,7 @@
 #include "osal_timer.h"
 #include "osal_mem.h"
 #include "osal_mutex.h"
+#include "gpio_if.h"
 
 #define HDF_LOG_TAG analog_headset_gpio
 #define HEADSET_IN              1
@@ -52,8 +46,6 @@ struct HeadsetPriv {
     uint32_t hookStatus : 1;
     uint32_t ishookIrq : 1;
     int32_t curHsStatus;
-    uint32_t irq[HS_HOOK_COUNT];
-    uint32_t irqType[HS_HOOK_COUNT];
     HdfWorkQueue workQueue;
     HdfWork hDelayedWork[HS_HOOK_COUNT];
     struct extcon_dev *edev;
@@ -80,9 +72,9 @@ void ModemMicSwitch(int value)
     }
     pdata = hs->pdata;
     if (value == HP_MIC) {
-        gpio_set_value(pdata->micSwitchGpio, pdata->hpMicIoValue);
+        GpioWrite(pdata->micSwitchGpio, pdata->hpMicIoValue);
     } else if (value == MAIN_MIC) {
-        gpio_set_value(pdata->micSwitchGpio, pdata->mainMicIoValue);
+        GpioWrite(pdata->micSwitchGpio, pdata->mainMicIoValue);
     } else {
         ; // do nothing.
     }
@@ -99,9 +91,9 @@ void ModemMicRelease(void)
     }
     pdata = hs->pdata;
     if (hs->curHsStatus == BIT_HEADSET) {
-        gpio_set_value(pdata->micSwitchGpio, pdata->hpMicIoValue);
+        GpioWrite(pdata->micSwitchGpio, pdata->hpMicIoValue);
     } else {
-        gpio_set_value(pdata->micSwitchGpio, pdata->mainMicIoValue);
+        GpioWrite(pdata->micSwitchGpio, pdata->mainMicIoValue);
     }
 }
 #endif
@@ -149,14 +141,15 @@ static void InitHeadsetPriv(struct HeadsetPriv *hs, struct HeadsetPdata *pdata)
     HDF_LOGD("%s, LINE = %d: isMic = %s.", __func__, __LINE__, hs->isMic ? "true" : "false");
 }
 
-static int ReadGpio(int gpio)
+static int ReadGpio(uint16_t gpio)
 {
     int32_t i;
-    int32_t level;
+    uint16_t level;
+    int32_t ret;
 
     for (i = 0; i < GET_GPIO_REPEAT_TIMES; i++) {
-        level = gpio_get_value(gpio);
-        if (level < 0) {
+        ret = GpioRead(gpio, &level);
+        if (ret < 0) {
             HDF_LOGW("%s: get pin level again, pin = %d, i = %d.", __func__, gpio, i);
             OsalMSleep(IRQ_CONFIRM_MS1);
             continue;
@@ -169,7 +162,7 @@ static int ReadGpio(int gpio)
     return level;
 }
 
-static irqreturn_t HeadsetInterrupt(int irq, void *devId)
+static int32_t HeadsetInterrupt(uint16_t gpio, void * data)
 {
     struct HeadsetPriv *hs = g_hsInfo;
 
@@ -178,13 +171,13 @@ static irqreturn_t HeadsetInterrupt(int irq, void *devId)
         return -EINVAL;
     }
 
-    (void)irq;
-    (void)devId;
+    (void)gpio;
+    (void)data;
     (void)HdfAddDelayedWork(&hs->workQueue, &hs->hDelayedWork[HEADSET], DELAY_WORK_MS50);
     return IRQ_HANDLED;
 }
 
-static irqreturn_t HookInterrupt(int irq, void *devId)
+static int32_t HookInterrupt(uint16_t gpio, void * data)
 {
     struct HeadsetPriv *hs = g_hsInfo;
 
@@ -193,8 +186,8 @@ static irqreturn_t HookInterrupt(int irq, void *devId)
         return -EINVAL;
     }
 
-    (void)irq;
-    (void)devId;
+    (void)gpio;
+    (void)data;
     (void)HdfAddDelayedWork(&hs->workQueue, &hs->hDelayedWork[HOOK], DELAY_WORK_MS100);
     return IRQ_HANDLED;
 }
@@ -261,7 +254,6 @@ static int32_t ReportCurrentState(struct HeadsetPriv *hs)
     if (hs->hsStatus == HEADSET_IN) {
         hs->curHsStatus = BIT_HEADSET_NO_MIC;
         type = (pdata->hsInsertType == HEADSET_IN_HIGH) ? IRQF_TRIGGER_FALLING : IRQF_TRIGGER_RISING;
-        irq_set_irq_type(hs->irq[HEADSET], type);
         if (pdata->hookGpio) {
             /* Start the timer, wait for press the hook-key, use OsalTimerStartOnce replace
                'del_timer(&t), t.expires = jiffies + TIMER_EXPIRES_JIFFIES, add_timer(&t)' */
@@ -273,11 +265,9 @@ static int32_t ReportCurrentState(struct HeadsetPriv *hs)
         if (hs->ishookIrq == ENABLE_FLAG) {
             HDF_LOGD("%s: disable hsHook irq.", __func__);
             hs->ishookIrq = DISABLE_FLAG;
-            disable_irq(hs->irq[HOOK]);
+            GpioDisableIrq(hs->pdata->hookGpio);
         }
         hs->curHsStatus = BIT_HEADSET_NULL;
-        type = (pdata->hsInsertType == HEADSET_IN_HIGH) ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING;
-        irq_set_irq_type(hs->irq[HEADSET], type);
     }
     bePlugIn = (hs->curHsStatus != BIT_HEADSET_NULL) ? true : false;
     (void)ExtconSetStateSync(hs, KEY_JACK_HEADPHONE, bePlugIn);
@@ -323,7 +313,6 @@ static void HookWorkCallback(void *arg)
     struct HeadsetPriv *hs = (struct HeadsetPriv *)arg;
     struct HeadsetPdata *pdata = NULL;
     static uint32_t oldStatus = HOOK_UP;
-    uint32_t type;
 
     if ((hs == NULL) || (hs->pdata == NULL)) {
         HDF_LOGE("%s: hs or hs->pdata is NULL.", __func__);
@@ -358,12 +347,7 @@ static void HookWorkCallback(void *arg)
     }
     HDF_LOGD("%s: Hook_work -- level = %d  hook status is %s.", __func__, level,
         hs->hookStatus ? "key down" : "key up");
-    if (hs->hookStatus == HOOK_DOWN) {
-        type = (pdata->hookDownType == HOOK_DOWN_HIGH) ? IRQF_TRIGGER_FALLING : IRQF_TRIGGER_RISING;
-    } else {
-        type = (pdata->hookDownType == HOOK_DOWN_HIGH) ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING;
-    }
-    irq_set_irq_type(hs->irq[HOOK], type);
+
     InputReportKeySync(hs, HOOK_KEY_CODE, hs->hookStatus);
     (void)OsalMutexUnlock(&hs->mutexLk[HOOK]);
 }
@@ -374,7 +358,6 @@ static void HeadsetTimerCallback(uintptr_t arg)
     struct HeadsetPdata *pdata = NULL;
     int32_t level;
     bool bePlugIn;
-    uint32_t type;
 
     HDF_LOGI("%s: enter.", __func__);
     if (hs == NULL) {
@@ -395,11 +378,9 @@ static void HeadsetTimerCallback(uintptr_t arg)
     if ((level > 0 && pdata->hookDownType == HOOK_DOWN_LOW) ||
         (level == 0 && pdata->hookDownType == HOOK_DOWN_HIGH)) {
         hs->isMic = true;
-        enable_irq(hs->irq[HOOK]);
+        GpioEnableIrq(hs->pdata->hookGpio);
         hs->ishookIrq = ENABLE_FLAG;
         hs->hookStatus = HOOK_UP;
-        type = (pdata->hookDownType == HOOK_DOWN_HIGH) ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING;
-        irq_set_irq_type(hs->irq[HOOK], type);
     } else {
         hs->isMic = false;
     }
@@ -520,6 +501,7 @@ static int32_t SetHeadsetIrqEnable(struct device *dev, struct HeadsetPriv *hs)
     int32_t ret;
     struct HeadsetPdata *pdata = NULL;
     uint32_t irqType;
+    uint32_t irq;
 
     if ((hs == NULL) || (hs->pdata == NULL) || (dev == NULL)) {
         HDF_LOGE("%s: hs, pdata or dev is NULL.", __func__);
@@ -528,31 +510,36 @@ static int32_t SetHeadsetIrqEnable(struct device *dev, struct HeadsetPriv *hs)
 
     pdata = hs->pdata;
     if (pdata->hsGpio) {
-        hs->irq[HEADSET] = gpio_to_irq(pdata->hsGpio);
-        irqType = (pdata->hsInsertType == HEADSET_IN_HIGH) ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING;
-        hs->irqType[HEADSET] = irqType;
-        ret = devm_request_irq(dev, hs->irq[HEADSET], HeadsetInterrupt, irqType, "headset_input", NULL);
-        if (ret) {
+        irqType = GPIO_IRQ_TRIGGER_RISING | GPIO_IRQ_TRIGGER_FALLING | GPIO_IRQ_USING_THREAD;
+        ret = GpioSetIrq(pdata->hsGpio, irqType, HeadsetInterrupt, NULL);
+        if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: [devm_request_irq] failed.", __func__);
             return ret;
         }
+
+        ret = GpioEnableIrq(pdata->hsGpio);
+        if (ret != HDF_SUCCESS) {
+            HDF_LOGE("%s: enable irq fail! ret:%d\n", __func__, ret);
+            (void)GpioUnsetIrq(pdata->hsGpio, NULL);
+            return ret;
+        }
+
         if (pdata->hsWakeup) {
-            enable_irq_wake(hs->irq[HEADSET]);
+            irq = gpio_to_irq(pdata->hsGpio);
+            enable_irq_wake(irq);
         }
     } else {
         HDF_LOGE("%s: failed init headset, please full hsGpio function in board.", __func__);
         return -EEXIST;
     }
     if (pdata->hookGpio) {
-        hs->irq[HOOK] = gpio_to_irq(pdata->hookGpio);
-        irqType = (pdata->hookDownType == HOOK_DOWN_HIGH) ? IRQF_TRIGGER_RISING : IRQF_TRIGGER_FALLING;
-        hs->irqType[HOOK] = irqType;
-        ret = devm_request_irq(dev, hs->irq[HOOK], HookInterrupt, irqType, "headset_hook", NULL);
-        if (ret) {
+        irqType = GPIO_IRQ_TRIGGER_RISING | GPIO_IRQ_TRIGGER_FALLING | GPIO_IRQ_USING_THREAD;
+        ret = GpioSetIrq(pdata->hookGpio, irqType, HookInterrupt, NULL);
+        if (ret != HDF_SUCCESS) {
             HDF_LOGE("%s: [devm_request_irq] failed.", __func__);
             return ret;
         }
-        disable_irq(hs->irq[HOOK]);
+        GpioDisableIrq(hs->pdata->hookGpio);
     }
 
     return 0;
