@@ -107,6 +107,7 @@ static int32_t DaiDriverInit(struct HdfDeviceObject *device)
         return HDF_FAILURE;
     }
 
+    OsalMutexInit(&g_daiData.mutex);
     ret = AudioSocRegisterDai(device, (void *)&g_daiData);
     if (ret !=  HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("register dai fail.");

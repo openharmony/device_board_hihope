@@ -105,7 +105,9 @@ static int32_t PlatformDriverInit(struct HdfDeviceObject *device)
         AUDIO_DEVICE_LOG_ERR("get service name fail.");
         return ret;
     }
-   
+
+    OsalMutexInit(&g_platformData.renderBufInfo.buffMutex);
+    OsalMutexInit(&g_platformData.captureBufInfo.buffMutex);
     ret = AudioSocRegisterPlatform(device, &g_platformData);
     if (ret !=  HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("register dai fail.");
@@ -129,6 +131,9 @@ static void PlatformDriverRelease(struct HdfDeviceObject *device)
         AUDIO_DEVICE_LOG_ERR("platformHost is NULL");
         return;
     }
+
+    OsalMutexDestroy(&g_platformData.renderBufInfo.buffMutex);
+    OsalMutexDestroy(&g_platformData.captureBufInfo.buffMutex);
     OsalMemFree(platformHost);
     AUDIO_DEVICE_LOG_DEBUG("success.\n");
     return;

@@ -37,27 +37,40 @@
 void *g_regDaiBase = NULL;
 static const char *g_i2s1DtsTreePath = "/i2s@fe410000";
 static struct platform_device *g_platformDev;
+
 struct platform_device *getPlatformDev(void)
 {
     struct device_node *dmaOfNode;
     dmaOfNode = of_find_node_by_path(g_i2s1DtsTreePath);
     if (dmaOfNode == NULL) {
         AUDIO_DEVICE_LOG_ERR("get device node failed.");
+        return NULL;
     }
     g_platformDev = of_find_device_by_node(dmaOfNode);
     return g_platformDev;
 }
+
 int32_t Rk3568DeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *val)
 {
     struct platform_device *platformdev = getPlatformDev();
-    struct rk3568_i2s_tdm_dev *i2sTdm;
+    struct rk3568_i2s_tdm_dev *i2sTdm = NULL;
 
+    if (platformdev == NULL) {
+        AUDIO_DEVICE_LOG_ERR("platformdev is null");
+        return HDF_FAILURE;
+    }
     (void)dai;
     i2sTdm = dev_get_drvdata(&platformdev->dev);
+    if (i2sTdm == NULL) {
+        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
+        return HDF_FAILURE;
+    }
+
     if (regmap_read(i2sTdm->regmap, reg, val)) {
         AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", reg);
         return HDF_FAILURE;
     }
+
     AUDIO_DEVICE_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
@@ -65,21 +78,30 @@ int32_t Rk3568DeviceReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t 
 int32_t Rk3568DeviceWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value)
 {
     struct platform_device *platformdev = getPlatformDev();
-    struct rk3568_i2s_tdm_dev *i2sTdm;
+    struct rk3568_i2s_tdm_dev *i2sTdm = NULL;
     (void)dai;
+
+    if (platformdev == NULL) {
+        AUDIO_DEVICE_LOG_ERR("platformdev is null");
+        return HDF_FAILURE;
+    }
     i2sTdm = dev_get_drvdata(&platformdev->dev);
+    if (i2sTdm == NULL) {
+        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
+        return HDF_FAILURE;
+    }
+
     if (regmap_write(i2sTdm->regmap, reg, value)) {
         AUDIO_DEVICE_LOG_ERR("write register fail: [%04x] = %04x", reg, value);
         return HDF_FAILURE;
     }
+
     AUDIO_DEVICE_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
 
-
 int32_t Rk3568DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *dai)
 {
-    int32_t ret;
     struct DaiData *data;
 
     if (dai == NULL || dai->device == NULL || dai->devDaiName == NULL) {
@@ -91,14 +113,8 @@ int32_t Rk3568DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *dai)
         return HDF_FAILURE;
     }
     data = dai->devData;
-    if (DaiSetConfigInfo(data) != HDF_SUCCESS) {
+    if (DaiSetConfigInfoOfControls(data) != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("set config info fail.");
-        return HDF_FAILURE;
-    }
-
-    ret = AudioAddControls(card, data->controls, data->numControls);
-    if (ret != HDF_SUCCESS) {
-        AUDIO_DEVICE_LOG_ERR("add controls failed.");
         return HDF_FAILURE;
     }
 
@@ -132,6 +148,10 @@ int32_t Rk3568DaiStartup(const struct AudioCard *card, const struct DaiDevice *d
 int RK3568SetI2sFomartVal(const struct AudioPcmHwParams *param)
 {
     int32_t val;
+    if (param == NULL) {
+        AUDIO_DEVICE_LOG_ERR("input param is null.");
+        return -1;
+    }
     switch (param->format) {
         case AUDIO_FORMAT_PCM_8_BIT:
             val |= I2S_TXCR_VDW(8); // 8-bit
@@ -156,14 +176,17 @@ int32_t RK3568SetI2sChannels(struct rk3568_i2s_tdm_dev *i2sTdm, const struct Aud
 {
     unsigned int regFmt, fmt;
     int32_t ret = 0;
-    AUDIO_DEVICE_LOG_DEBUG("entry");
 
+    if (i2sTdm == NULL || param == NULL) {
+        AUDIO_DEVICE_LOG_ERR("input param is null.");
+        return HDF_FAILURE;
+    }
     if (param->streamType == AUDIO_RENDER_STREAM) {
         regFmt = I2S_TXCR;
     } else {
         regFmt = I2S_RXCR;
     }
-    
+
     regmap_read(i2sTdm->regmap, regFmt, &fmt);
     fmt &= I2S_TXCR_TFS_MASK;
     if (fmt == 0) { // I2S mode
@@ -192,7 +215,11 @@ int32_t RK3568SetI2sChannels(struct rk3568_i2s_tdm_dev *i2sTdm, const struct Aud
 int32_t ConfigInfoSetToReg(struct rk3568_i2s_tdm_dev *i2sTdm, const struct AudioPcmHwParams *param,
     unsigned int div_bclk, unsigned int div_lrck, int32_t fmt)
 {
-    AUDIO_DEVICE_LOG_DEBUG("entry");
+    if (i2sTdm == NULL || param == NULL) {
+        AUDIO_DEVICE_LOG_ERR("input para is null.");
+        return HDF_FAILURE;
+    }
+
     regmap_update_bits(i2sTdm->regmap, I2S_CLKDIV,
         I2S_CLKDIV_TXM_MASK | I2S_CLKDIV_RXM_MASK,
         I2S_CLKDIV_TXM(div_bclk) | I2S_CLKDIV_RXM(div_bclk));
@@ -214,13 +241,16 @@ int32_t ConfigInfoSetToReg(struct rk3568_i2s_tdm_dev *i2sTdm, const struct Audio
 }
 
 // i2s_tdm->mclk_tx_freq ? i2s_tdm->mclk_rx_freq ?
-int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, struct clk **mclk, const struct AudioPcmHwParams *param)
+int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, const struct AudioPcmHwParams *param)
 {
     int32_t ret = 0;
     unsigned int mclkRate, bclkRate, bclkDiv, lrclkDiv;
     int32_t fmt = 0;
     int32_t channels = 0;
-    AUDIO_DEVICE_LOG_DEBUG("entry");
+    if (i2sTdm == NULL || param == NULL) {
+        AUDIO_DEVICE_LOG_ERR("input param is null.");
+        return HDF_FAILURE;
+    }
 
     ret = clk_set_rate(i2sTdm->mclk_tx, i2sTdm->mclk_tx_freq);
     if (ret) {
@@ -233,7 +263,7 @@ int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, struct clk **mclk
         AUDIO_DEVICE_LOG_ERR(" clk_set_rate ret = %d", ret);
         return ret;
     }
- 
+
     /* mclk_rx is also ok. */
     mclkRate = clk_get_rate(i2sTdm->mclk_tx);
     bclkRate = i2sTdm->bclk_fs * param->rate;
@@ -249,21 +279,30 @@ int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, struct clk **mclk
         AUDIO_DEVICE_LOG_ERR(" RK3568SetI2sFomartVal channels = %d", channels);
         return HDF_FAILURE;
     }
+
     fmt |= channels;
     ret = ConfigInfoSetToReg(i2sTdm, param, bclkDiv, lrclkDiv, fmt);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR(" ConfigInfoSetToReg ret= %d", ret);
         return HDF_FAILURE;
     }
-    
+
     AUDIO_DEVICE_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
+
 int32_t RK3568I2sTdmSetSysClk(struct rk3568_i2s_tdm_dev *i2sTdm, const struct AudioPcmHwParams *param)
 {
-    /* Put set mclk rate into rockchip_i2s_tdm_set_mclk() */
-    uint32_t sampleRate = param->rate;
+    uint32_t sampleRate;
     uint32_t mclk_parent_freq = 0;
+
+    if (i2sTdm == NULL || param == NULL) {
+        AUDIO_DEVICE_LOG_ERR("input para is null.");
+        return HDF_FAILURE;
+    }
+    sampleRate = param->rate;
+
+    /* Put set mclk rate into rockchip_i2s_tdm_set_mclk() */
     switch (sampleRate) {
         case AUDIO_DEVICE_SAMPLE_RATE_8000:
         case AUDIO_DEVICE_SAMPLE_RATE_16000:
@@ -293,12 +332,11 @@ int32_t Rk3568DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwP
 {
     int ret;
     uint32_t bitWidth;
-    struct clk *mclk;
     struct DaiData *data = DaiDataFromCard(card);
     struct platform_device *platformdev = getPlatformDev();
-    struct rk3568_i2s_tdm_dev *i2sTdm;
+    struct rk3568_i2s_tdm_dev *i2sTdm = NULL;
 
-    if (data == NULL) {
+    if (data == NULL || platformdev == NULL) {
         AUDIO_DEVICE_LOG_ERR("platformHost is nullptr.");
         return HDF_FAILURE;
     }
@@ -308,6 +346,7 @@ int32_t Rk3568DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwP
     }
     data->pcmInfo.channels = param->channels;
 
+    AUDIO_DEVICE_LOG_DEBUG("channels count : %d .", param->channels);
     if (AudioFormatToBitWidth(param->format, &bitWidth) != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("AudioFormatToBitWidth error");
         return HDF_FAILURE;
@@ -322,7 +361,8 @@ int32_t Rk3568DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwP
         AUDIO_DEVICE_LOG_ERR("RK3568I2sTdmSetSysClk error");
         return HDF_FAILURE;
     }
-    ret = RK3568I2sTdmSetMclk(i2sTdm, &mclk, param);
+
+    ret = RK3568I2sTdmSetMclk(i2sTdm, param);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("RK3568I2sTdmSetMclk error");
         return HDF_FAILURE;
@@ -330,6 +370,7 @@ int32_t Rk3568DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwP
     AUDIO_DEVICE_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
+
 static int GetTriggeredFlag(int cmd)
 {
     int32_t triggerFlag = false;
@@ -380,74 +421,174 @@ static int GetStreamType(int cmd)
     return streamType;
 }
 
-static void Rk3568TxAndRxSetReg(struct rk3568_i2s_tdm_dev *i2sTdm,
-    enum AudioStreamType streamType, int on)
+static int32_t Rk3568TxAndRxStart(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioStreamType streamType)
 {
-    unsigned int val = 0;
-    int retry = 10; // retry 10 times
-    if (on) {       // when start/resume
-        if (streamType == AUDIO_RENDER_STREAM) {
-            clk_prepare_enable(i2sTdm->mclk_tx);
-            regmap_update_bits(i2sTdm->regmap, I2S_DMACR,
-                I2S_DMACR_TDE_ENABLE, I2S_DMACR_TDE_ENABLE);
-        } else {
-            clk_prepare_enable(i2sTdm->mclk_rx);
-            regmap_update_bits(i2sTdm->regmap, I2S_DMACR,
-                I2S_DMACR_RDE_ENABLE, I2S_DMACR_RDE_ENABLE);
-            if (regmap_read(i2sTdm->regmap, I2S_DMACR, &val)) {
-                AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", I2S_DMACR);
-                return ;
-            }
+    uint32_t val = 0;
+
+    if (i2sTdm == NULL || i2sTdm->regmap == NULL) {
+        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
+        return HDF_FAILURE;
+    }
+
+    if (streamType == AUDIO_RENDER_STREAM) {
+        if (i2sTdm->mclk_tx == NULL) {
+            AUDIO_DEVICE_LOG_ERR("mclk tx is null");
+            return HDF_FAILURE;
         }
 
-        if (atomic_inc_return(&i2sTdm->refcount) == 1) {
-            regmap_update_bits(i2sTdm->regmap, I2S_XFER,
-                I2S_XFER_TXS_START | I2S_XFER_RXS_START, I2S_XFER_TXS_START | I2S_XFER_RXS_START);
-            if (regmap_read(i2sTdm->regmap, I2S_XFER, &val)) {
-                AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", I2S_XFER);
-                return ;
-            }
-        }
-    } else {     // when stop/pause
-        if (streamType == AUDIO_RENDER_STREAM) {
-            clk_disable_unprepare(i2sTdm->mclk_tx);
-            regmap_update_bits(i2sTdm->regmap, I2S_DMACR,
-                I2S_DMACR_TDE_ENABLE, I2S_DMACR_TDE_DISABLE);
-        } else {
-            clk_disable_unprepare(i2sTdm->mclk_rx);
-            regmap_update_bits(i2sTdm->regmap, I2S_DMACR,
-                I2S_DMACR_RDE_ENABLE, I2S_DMACR_RDE_DISABLE);
+        if (clk_prepare_enable(i2sTdm->mclk_tx) != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("clk_prepare_enable fail");
+            return HDF_FAILURE;
         }
 
-        if (atomic_dec_and_test(&i2sTdm->refcount)) {
-            regmap_update_bits(i2sTdm->regmap, I2S_XFER,
-                I2S_XFER_TXS_START | I2S_XFER_RXS_START, I2S_XFER_TXS_STOP | I2S_XFER_RXS_STOP);
-            udelay(150);
-            regmap_update_bits(i2sTdm->regmap, I2S_CLR,
-                I2S_CLR_TXC | I2S_CLR_RXC, I2S_CLR_TXC | I2S_CLR_RXC);
-            regmap_read(i2sTdm->regmap, I2S_CLR, &val);
-            /* Should wait for clear operation to finish */
-            while (val && retry > 0) {
-                regmap_read(i2sTdm->regmap, I2S_CLR, &val);
-                retry--;
-            }
+        if (regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_TDE_ENABLE, I2S_DMACR_TDE_ENABLE)) {
+            AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+            return HDF_FAILURE;
+        }
+    } else {
+        if (i2sTdm->mclk_rx == NULL) {
+            AUDIO_DEVICE_LOG_ERR("mclk rx is null");
+            return HDF_FAILURE;
+        }
+
+        if (clk_prepare_enable(i2sTdm->mclk_rx) != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("clk_prepare_enable fail");
+            return HDF_FAILURE;
+        }
+
+        if (regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_RDE_ENABLE, I2S_DMACR_RDE_ENABLE)) {
+            AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+            return HDF_FAILURE;
+        }
+
+        if (regmap_read(i2sTdm->regmap, I2S_DMACR, &val)) {
+            AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", I2S_DMACR);
+            return HDF_FAILURE;
         }
     }
-    
+
+    if (regmap_update_bits(i2sTdm->regmap, I2S_XFER, I2S_XFER_TXS_START | I2S_XFER_RXS_START,
+        I2S_XFER_TXS_START | I2S_XFER_RXS_START) != HDF_SUCCESS) {
+        AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+        return HDF_FAILURE;
+    }
+
+    if (regmap_read(i2sTdm->regmap, I2S_XFER, &val)) {
+        AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", I2S_XFER);
+        return HDF_FAILURE;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t Rk3568TxAndRxStop(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioStreamType streamType)
+{
+    uint32_t val = 0;
+    int retry = 10; // retry 10 times
+    int ret;
+
+    if (i2sTdm == NULL || i2sTdm->regmap == NULL) {
+        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
+        return HDF_FAILURE;
+    }
+
+    if (streamType == AUDIO_RENDER_STREAM) {
+        ret = regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_TDE_ENABLE, I2S_DMACR_TDE_DISABLE);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+            return HDF_FAILURE;
+        }
+    } else {
+        ret = regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_RDE_ENABLE, I2S_DMACR_RDE_DISABLE);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+            return HDF_FAILURE;
+        }
+    }
+
+    ret = regmap_update_bits(i2sTdm->regmap, I2S_XFER,
+        I2S_XFER_TXS_START | I2S_XFER_RXS_START, I2S_XFER_TXS_STOP | I2S_XFER_RXS_STOP);
+    if (ret != HDF_SUCCESS) {
+        AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+        return HDF_FAILURE;
+    }
+
+    udelay(150);
+    ret = regmap_update_bits(i2sTdm->regmap, I2S_CLR, I2S_CLR_TXC | I2S_CLR_RXC, I2S_CLR_TXC | I2S_CLR_RXC);
+    if (ret != HDF_SUCCESS) {
+        AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
+        return HDF_FAILURE;
+    }
+
+    ret = regmap_read(i2sTdm->regmap, I2S_CLR, &val);
+    if (ret != HDF_SUCCESS) {
+        AUDIO_DEVICE_LOG_ERR("regmap_read fail");
+        return HDF_FAILURE;
+    }
+
+    /* Should wait for clear operation to finish */
+    while (val && retry > 0) {
+        ret = regmap_read(i2sTdm->regmap, I2S_CLR, &val);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("regmap_read fail");
+            return HDF_FAILURE;
+        }
+
+        retry--;
+    }
+
+    return HDF_SUCCESS;
+}
+
+static int32_t Rk3568TxAndRxSetReg(struct rk3568_i2s_tdm_dev *i2sTdm,
+    enum AudioStreamType streamType, int on)
+{
+    int ret;
+
+    if (i2sTdm == NULL || i2sTdm->regmap == NULL) {
+        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
+        return HDF_FAILURE;
+    }
+
+    if (on) {       // when start/resume
+        ret = Rk3568TxAndRxStart(i2sTdm, streamType);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("Rk3568TxAndRxStart is failed");
+            return HDF_FAILURE;
+        }
+    } else {     // when stop/pause
+        ret = Rk3568TxAndRxStop(i2sTdm, streamType);
+        if (ret != HDF_SUCCESS) {
+            AUDIO_DEVICE_LOG_ERR("Rk3568TxAndRxStop is failed");
+            return HDF_FAILURE;
+        }
+    }
+
     AUDIO_DEVICE_LOG_DEBUG("success");
-    return;
+    return HDF_SUCCESS;
 }
 
 /* normal scene */
 int32_t Rk3568NormalTrigger(const struct AudioCard *card, int cmd, const struct DaiDevice *device)
 {
     struct platform_device *platformdev = getPlatformDev();
-    struct rk3568_i2s_tdm_dev *i2sTdm;
+    struct rk3568_i2s_tdm_dev *i2sTdm = NULL;
     int32_t triggerFlag = GetTriggeredFlag(cmd);
     enum AudioStreamType streamType = GetStreamType(cmd);
+    int ret;
+
+    if (platformdev == NULL) {
+        AUDIO_DEVICE_LOG_ERR("platformdev is null");
+        return HDF_FAILURE;
+    }
 
     i2sTdm = dev_get_drvdata(&platformdev->dev);
-    Rk3568TxAndRxSetReg(i2sTdm, streamType, triggerFlag);
+    ret = Rk3568TxAndRxSetReg(i2sTdm, streamType, triggerFlag);
+    if (ret != HDF_SUCCESS) {
+        AUDIO_DEVICE_LOG_ERR("Rk3568TxAndRxSetReg is failed");
+        return HDF_FAILURE;
+    }
+
     AUDIO_DEVICE_LOG_DEBUG("success");
     return HDF_SUCCESS;
 }
