@@ -79,6 +79,8 @@ int32_t Rk809DaiDeviceInit(struct AudioCard *card, const struct DaiDevice *devic
 int32_t Rk809DaiStartup(const struct AudioCard *card, const struct DaiDevice *device);
 int32_t Rk809DaiHwParams(const struct AudioCard *card, const struct AudioPcmHwParams *param);
 int32_t Rk809NormalTrigger(const struct AudioCard *card, int cmd, const struct DaiDevice *device);
+int32_t RK809CodecDaiReadReg(const struct DaiDevice *dai, uint32_t reg, uint32_t *value);
+int32_t RK809CodecDaiWriteReg(const struct DaiDevice *dai, uint32_t reg, uint32_t value);
 
 #ifdef __cplusplus
 #if __cplusplus
