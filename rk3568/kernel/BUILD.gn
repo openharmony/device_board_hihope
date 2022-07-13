@@ -40,4 +40,8 @@ action("kernel") {
   if (enable_ramdisk) {
     args += [ "enable_ramdisk" ]
   }
+
+  if (enable_mesa3d) {
+    args += [ "enable_mesa3d" ]
+  }
 }
