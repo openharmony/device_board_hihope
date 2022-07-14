@@ -19,9 +19,9 @@
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 #include "analog_headset_ev.h"
+#include "audio_device_log.h"
 #include "hdf_base.h"
 #include "hdf_device_desc.h"
-#include "hdf_log.h"
 #include "platform_if.h"
 
 #define HDF_HEADSET_WORK_QUEUE_NAME    "hdf_headset_work_queue"

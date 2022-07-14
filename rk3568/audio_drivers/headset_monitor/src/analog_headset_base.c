@@ -8,7 +8,7 @@
 
 #include "analog_headset_base.h"
 #include "analog_headset_ev.h"
-#include "hdf_log.h"
+#include "audio_device_log.h"
 #include "osal_mem.h"
 #include "securec.h"
 #include "event_hub.h"
@@ -21,7 +21,7 @@ InputDevice *g_hdfInDev = NULL;
 void InputSetCapability(InputDevice *hdfInDev)
 {
     if (hdfInDev == NULL) {
-        HDF_LOGE("%s: hdfInDev is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hdfInDev is NULL.");
         return;
     }
 
@@ -33,7 +33,7 @@ void SetStateSync(unsigned int id, bool state)
 {
     InputDevice *hdfInDev = g_hdfInDev;
     if (hdfInDev == NULL) {
-        HDF_LOGE("%s: hdfInDev is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hdfInDev is NULL.");
         return;
     }
 
@@ -48,15 +48,15 @@ static InputDevice *HdfInputDeviceInstance(void *hs, struct HdfDeviceObject *dev
     InputDevice *hdfInDev = NULL;
     static char *tempStr = "analog_headset_input_device";
 
-    HDF_LOGI("%s: enter.", __func__);
+    AUDIO_DEVICE_LOG_INFO("enter.");
     if ((hs == NULL) || (device == NULL)) {
-        HDF_LOGE("%s: hs or device is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or device is NULL.");
         return NULL;
     }
 
     hdfInDev = (InputDevice *)OsalMemCalloc(sizeof(InputDevice));
     if (hdfInDev == NULL) {
-        HDF_LOGE("%s: instance input device failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("instance input device failed");
         return NULL;
     }
 
@@ -74,7 +74,7 @@ static InputDevice *HdfInputDeviceInstance(void *hs, struct HdfDeviceObject *dev
     if (ret != 0) {
         OsalMemFree(hdfInDev);
         hdfInDev = NULL;
-        HDF_LOGE("%s: strncpy devName failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("strncpy devName failed");
         return NULL;
     }
 
@@ -86,22 +86,22 @@ int32_t CreateAndRegisterHdfInputDevice(void *hs, struct HdfDeviceObject *device
     int32_t ret;
     InputDevice *hdfInDev = NULL;
 
-    HDF_LOGI("%s: enter.", __func__);
+    AUDIO_DEVICE_LOG_INFO("enter.");
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL.");
         return HDF_ERR_INVALID_PARAM;
     }
 
     hdfInDev = HdfInputDeviceInstance(hs, device);
     if (hdfInDev == NULL) {
-        HDF_LOGE("%s: [HdfInputDeviceInstance] failed.", __func__);
+        AUDIO_DEVICE_LOG_ERR("[HdfInputDeviceInstance] failed.");
         return HDF_FAILURE;
     }
     ret = RegisterInputDevice(hdfInDev);
     if (ret != HDF_SUCCESS) {
         OsalMemFree(hdfInDev);
         hdfInDev = NULL;
-        HDF_LOGE("%s: [RegisterInputDevice] failed.", __func__);
+        AUDIO_DEVICE_LOG_ERR("[RegisterInputDevice] failed.");
         /* Theoretically, the return fails. In fact, two reporting systems are used.
            The registration of the input device is unsuccessful, and another system is still available. */
         return HDF_SUCCESS;
@@ -109,7 +109,7 @@ int32_t CreateAndRegisterHdfInputDevice(void *hs, struct HdfDeviceObject *device
 
     InputSetCapability(hdfInDev);
     g_hdfInDev = hdfInDev;
-    HDF_LOGI("%s: done.", __func__);
+    AUDIO_DEVICE_LOG_INFO("done.");
 
     return HDF_SUCCESS;
 }
@@ -136,13 +136,13 @@ int32_t SetIrqType(uint16_t gpio, uint16_t irqType, GpioIrqFunc func, void *arg)
 
     ret = GpioUnsetIrq(gpio, arg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: [GpioSetIrq] failed.", __func__);
+        AUDIO_DEVICE_LOG_ERR("[GpioUnsetIrq] failed.");
         return ret;
     }
     OsalMSleep(IRQ_CONFIRM_MS1);
     ret = GpioSetIrq(gpio, irqType, func, arg);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: [GpioSetIrq] failed.", __func__);
+        AUDIO_DEVICE_LOG_ERR("[GpioSetIrq] failed.");
     }
 
     return ret;
