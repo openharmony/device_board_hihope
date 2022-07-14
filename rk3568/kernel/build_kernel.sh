@@ -27,8 +27,8 @@ export PRODUCT_COMPANY=${8}
 KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/linux-5.10
 KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/linux-5.10
 KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/linux-5.10
+KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
 KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
-HDF_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/hdf.patch
 KERNEL_CONFIG_FILE=${ROOT_DIR}/kernel/linux/config/linux-5.10/arch/arm64/configs/rk3568_standard_defconfig
 
 rm -rf ${KERNEL_SRC_TMP_PATH}
@@ -43,7 +43,7 @@ cp -arf ${KERNEL_SOURCE}/* ${KERNEL_SRC_TMP_PATH}/
 cd ${KERNEL_SRC_TMP_PATH}
 
 #HDF patch
-bash ${ROOT_DIR}/drivers/hdf_core/adapter/khdf/linux/patch_hdf.sh ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${HDF_PATCH}
+bash ${ROOT_DIR}/drivers/hdf_core/adapter/khdf/linux/patch_hdf.sh ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${KERNEL_PATCH_PATH} ${DEVICE_NAME}
 
 #kernel patch
 patch -p1 < ${KERNEL_PATCH}
