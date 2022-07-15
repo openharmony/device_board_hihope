@@ -44,14 +44,6 @@ ohos_prebuilt_etc("fstab.updater") {
   part_name = "rockchip_products"
 }
 
-if (enable_ramdisk) {
-  ohos_copy("updater_ramdisk_resource_config.ini") {
-    sources = [ "updater_ramdisk_resource_config.ini" ]
-    outputs =
-        [ "$product_output_dir/phone/updater_ramdisk_resource_config.ini" ]
-  }
-}
-
 group("updater_files") {
   deps = [
     ":fstab.updater",
@@ -60,7 +52,4 @@ group("updater_files") {
     ":updater_init_usb_configfs.cfg",
     ":updater_usb_init.cfg",
   ]
-  if (enable_ramdisk) {
-    deps += [ ":updater_ramdisk_resource_config.ini" ]
-  }
 }
