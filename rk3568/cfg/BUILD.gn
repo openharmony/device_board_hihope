@@ -34,32 +34,10 @@ ohos_prebuilt_etc("fstab.rk3568") {
   install_enable = true
 }
 
-if (enable_ramdisk) {
-  ohos_copy("fstab.required") {
-    sources = [ "fstab.rk3568" ]
-    outputs = [ "$root_build_dir/fstab.required" ]
-  }
-  ohos_copy("ramdisk_resource_config.ini") {
-    sources = [ "ramdisk_resource_config.ini" ]
-    outputs = [ "$product_output_dir/phone/ramdisk_resource_config.ini" ]
-  }
-} else {
-  ohos_prebuilt_etc("fstab.required") {
-    source = "fstab.required"
-    part_name = "rockchip_products"
-    install_images = [ "system" ]
-    install_enable = true
-  }
-}
-
 group("init_configs") {
   deps = [
-    ":fstab.required",
     ":fstab.rk3568",
     ":init.rk3568.cfg",
     ":init.rk3568.usb.cfg",
   ]
-  if (enable_ramdisk) {
-    deps += [ ":ramdisk_resource_config.ini" ]
-  }
 }
