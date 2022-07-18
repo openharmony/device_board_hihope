@@ -70,3 +70,6 @@ cp ${3}/loader/MiniLoaderAll.bin ${2}/MiniLoaderAll.bin
 cp ${3}/loader/uboot.img ${2}/uboot.img
 cp ${3}/loader/config.cfg ${2}/config.cfg
 popd
+
+../kernel/src_tmp/linux-5.10/make-boot.sh ..
+
