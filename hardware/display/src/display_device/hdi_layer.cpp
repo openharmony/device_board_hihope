@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 
 #include "hdi_layer.h"
 #include <unistd.h>
+#include <libsync.h>
 #include <cerrno>
 
 namespace OHOS {
@@ -142,8 +143,8 @@ int32_t HdiLayer::SetLayerDirtyRegion(IRect *region)
 
 int32_t HdiLayer::SetLayerVisibleRegion(uint32_t num, IRect *rect)
 {
-    DISPLAY_DEBUGLOG("id : %{public}d DirtyRegion x: %{public}d y : %{public}d w : %{public}d h : %{public}d", mId, rect->x,
-        rect->y, rect->w, rect->h);
+    DISPLAY_DEBUGLOG("id : %{public}d DirtyRegion x: %{public}d y : %{public}d w : %{public}d h : %{public}d", mId,
+        rect->x, rect->y, rect->w, rect->h);
     return DISPLAY_SUCCESS;
 }
 
@@ -153,7 +154,7 @@ int32_t HdiLayer::SetLayerBuffer(const BufferHandle *buffer, int32_t fence)
     DISPLAY_CHK_RETURN((buffer == nullptr), DISPLAY_NULL_PTR, DISPLAY_LOGE("buffer is nullptr"));
     std::unique_ptr<HdiLayerBuffer> layerbuffer = std::make_unique<HdiLayerBuffer>(*buffer);
     mHdiBuffer = std::move(layerbuffer);
-    mAcquireFence = fence;
+    mAcquireFence = dup(fence);
     return DISPLAY_SUCCESS;
 }
 
@@ -198,6 +199,16 @@ void HdiLayer::ClearColor(uint32_t color)
             SetPixel(handle, x, y, color);
         }
     }
+}
+
+void HdiLayer::WaitAcquireFence()
+{
+    int fd = GetAcquireFenceFd();
+    if (fd < 0) {
+        DISPLAY_LOGE("fd is invalid");
+        return;
+    }
+    sync_wait(fd, mFenceTimeOut);
 }
 } // namespace OHOS
 } // namespace HDI
