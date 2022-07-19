@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -125,6 +125,7 @@ int32_t HdiGfxComposition::BlitLayer(HdiLayer &src, HdiLayer &dst)
     ISurface srcSurface = { 0 };
     ISurface dstSurface = { 0 };
     GfxOpt opt = { 0 };
+    src.WaitAcquireFence();
     DISPLAY_DEBUGLOG();
     HdiLayerBuffer *srcBuffer = src.GetCurrentBuffer();
     DISPLAY_CHK_RETURN((srcBuffer == nullptr), DISPLAY_NULL_PTR, DISPLAY_LOGE("the srcbuffer is null"));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,6 +26,7 @@ namespace OHOS {
 namespace HDI {
 namespace DISPLAY {
 const uint32_t INVALIDE_LAYER_ID = 0xffffffff;
+const uint32_t FENCE_TIMEOUT = 3000;
 struct HdiLayerBuffer {
 public:
     explicit HdiLayerBuffer(const BufferHandle &hdl);
@@ -136,6 +137,7 @@ public:
 
     void SetPixel(const BufferHandle &handle, int x, int y, uint32_t color);
 
+    void WaitAcquireFence();
     virtual int32_t SetLayerSize(IRect *rect);
     virtual int32_t SetLayerCrop(IRect *rect);
     virtual void SetLayerZorder(uint32_t zorder);
@@ -168,6 +170,7 @@ private:
     uint32_t mZorder = -1;
     bool mPreMul = false;
     LayerAlpha mAlpha;
+    int32_t mFenceTimeOut = FENCE_TIMEOUT;
     TransformType mTransformType = ROTATE_BUTT;
     CompositionType mCompositionType = COMPOSITION_CLIENT;
     CompositionType mDeviceSelect = COMPOSITION_CLIENT;
