@@ -68,13 +68,13 @@ static struct HeadsetPriv *g_hsInfo = NULL;
 static int ExtconSetStateSync(struct HeadsetPriv *hs, unsigned int id, bool state)
 {
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL!", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL!");
         return -EINVAL;
     }
 
     extcon_set_state_sync(hs->edev, id, state);
     SetStateSync(id, state);
-    HDF_LOGI("%s: id = %u, state = %s.", __func__, id, state ? "in" : "out");
+    AUDIO_DEVICE_LOG_DEBUG("id = %u, state = %s.", id, state ? "in" : "out");
 
     return 0;
 }
@@ -82,20 +82,20 @@ static int ExtconSetStateSync(struct HeadsetPriv *hs, unsigned int id, bool stat
 static void InputReportKeySync(struct HeadsetPriv *hs, unsigned int code, int value)
 {
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL!", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL!");
         return;
     }
 
     input_report_key(hs->inDev, code, value);
     input_sync(hs->inDev);
     SetStateSync(code, value);
-    HDF_LOGI("%s: code = %u, value = %s.", __func__, code, value ? "in" : "out");
+    AUDIO_DEVICE_LOG_DEBUG("code = %u, value = %s.", code, value ? "in" : "out");
 }
 
 static void InitHeadsetPriv(struct HeadsetPriv *hs, struct HeadsetPdata *pdata)
 {
     if ((hs == NULL) || (pdata == NULL)) {
-        HDF_LOGE("%s: hs or pdata is NULL!", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or pdata is NULL!");
         return;
     }
 
@@ -106,7 +106,7 @@ static void InitHeadsetPriv(struct HeadsetPriv *hs, struct HeadsetPdata *pdata)
     hs->hookTime = HOOK_ADC_SAMPLE_TIME;
     hs->curHsStatus = BIT_HEADSET_NULL;
     hs->isMic = false;
-    HDF_LOGD("%s, LINE = %d: isMic = %s.", __func__, __LINE__, hs->isMic ? "true" : "false");
+    AUDIO_DEVICE_LOG_DEBUG("isMic = %s.", hs->isMic ? "true" : "false");
     hs->chan = pdata->chan;
 }
 
@@ -119,7 +119,7 @@ static int32_t CheckState(struct HeadsetPriv *hs, bool *beChange)
     int16_t level = 0;
 
     if ((hs == NULL) || (hs->pdata == NULL) || (beChange == NULL)) {
-        HDF_LOGE("%s: hs, pdata or beChange is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs, pdata or beChange is NULL.");
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -128,14 +128,14 @@ static int32_t CheckState(struct HeadsetPriv *hs, bool *beChange)
     for (i = 0; i < GET_GPIO_REPEAT_TIMES; i++) {
         ret = GpioRead(pdata->hsGpio, &level);
         if (ret < 0) {
-            HDF_LOGE("%s: get pin level again, pin=%u, i=%d.", __func__, pdata->hsGpio, i);
+            AUDIO_DEVICE_LOG_ERR("get pin level again, pin=%u, i=%d.", pdata->hsGpio, i);
             OsalMSleep(IRQ_CONFIRM_MS1);
             continue;
         }
         break;
     }
     if ((level < 0) || (ret < 0)) {
-        HDF_LOGE("%s: get pin level err.", __func__);
+        AUDIO_DEVICE_LOG_ERR("get pin level err.");
         return HDF_FAILURE;
     }
 
@@ -148,7 +148,7 @@ static int32_t CheckState(struct HeadsetPriv *hs, bool *beChange)
             hs->hsStatus = (level == 0) ? HEADSET_IN : HEADSET_OUT;
             break;
         default:
-            HDF_LOGE("%s: [hsInsertType] error.", __func__);
+            AUDIO_DEVICE_LOG_ERR("[hsInsertType] error.");
             break;
     }
     if (oldStatus == hs->hsStatus) {
@@ -157,7 +157,7 @@ static int32_t CheckState(struct HeadsetPriv *hs, bool *beChange)
     }
 
     *beChange = true;
-    HDF_LOGI("%s: (headset in is %s)headset status is %s.", __func__,
+    AUDIO_DEVICE_LOG_DEBUG("(headset in is %s)headset status is %s.",
         pdata->hsInsertType ? "high" : "low", hs->hsStatus ? "in" : "out");
 
     return HDF_SUCCESS;
@@ -168,7 +168,7 @@ static int32_t ReportCurrentState(struct HeadsetPriv *hs)
     struct HeadsetPdata *pdata = NULL;
 
     if ((hs == NULL) || (hs->pdata == NULL)) {
-        HDF_LOGE("%s: hs or pdata is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or pdata is NULL.");
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -179,10 +179,10 @@ static int32_t ReportCurrentState(struct HeadsetPriv *hs)
             (void)HdfAddDelayedWork(&hs->workQueue, &hs->hDelayedWork[HOOK], DELAY_WORK_MS200);
         } else {
             hs->isMic = false;
-            HDF_LOGD("%s, LINE = %d: isMic = %s.", __func__, __LINE__, hs->isMic ? "true" : "false");
+            AUDIO_DEVICE_LOG_DEBUG("isMic = %s.", hs->isMic ? "true" : "false");
             hs->curHsStatus = BIT_HEADSET_NO_MIC;
             (void)ExtconSetStateSync(hs, KEY_JACK_HEADPHONE, true);
-            HDF_LOGD("%s: notice headset status = %d(0: NULL, 1: HEADSET, 2: HEADPHONE).", __func__, hs->curHsStatus);
+            AUDIO_DEVICE_LOG_DEBUG("notice headset status = %d(0: NULL, 1: HEADSET, 2: HEADPHONE).", hs->curHsStatus);
         }
     } else {
         hs->curHsStatus = BIT_HEADSET_NULL;
@@ -193,12 +193,12 @@ static int32_t ReportCurrentState(struct HeadsetPriv *hs)
                 InputReportKeySync(hs, HOOK_KEY_CODE, hs->hookStatus);
             }
             hs->isMic = false;
-            HDF_LOGD("%s, LINE = %d: isMic = %s.", __func__, __LINE__, hs->isMic ? "true" : "false");
+            AUDIO_DEVICE_LOG_DEBUG("isMic = %s.", hs->isMic ? "true" : "false");
         }
 
         // Need judge the type, it is not always microphone.
         (void)ExtconSetStateSync(hs, KEY_JACK_HEADSET, false);
-        HDF_LOGD("%s: notice headset status = %d(0: NULL, 1: HEADSET, 2:HEADPHONE).", __func__, hs->curHsStatus);
+        AUDIO_DEVICE_LOG_DEBUG("notice headset status = %d(0: NULL, 1: HEADSET, 2:HEADPHONE).", hs->curHsStatus);
     }
 
     return HDF_SUCCESS;
@@ -212,21 +212,21 @@ static int32_t HeadsetInterrupt(uint16_t gpio, void * data)
 
     (void)data;
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL.");
         return -EINVAL;
     }
 
     GpioDisableIrq(hs->pdata->hsGpio);
     if ((hs->hsIrqWorking == BUSY) ||
         (hs->hsIrqWorking == WAIT)) {
-        HDF_LOGI("%s: hsIrqWorking is BUSY or WAIT.", __func__);
+        AUDIO_DEVICE_LOG_DEBUG("hsIrqWorking is BUSY or WAIT.");
         return IRQ_HANDLED;
     }
 
     hs->hsIrqWorking = BUSY;
     ret = CheckState(hs, &beChange);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGD("%s: [CheckState] failed.", __func__);
+        AUDIO_DEVICE_LOG_DEBUG("[CheckState] failed.");
         hs->hsIrqWorking = IDLE;
         GpioEnableIrq(hs->pdata->hsGpio);
         return IRQ_HANDLED;
@@ -250,15 +250,15 @@ static int32_t HeadsetChangeIrqtype(int type, unsigned int irqType)
 
     free_irq(g_hsInfo->irq[type], NULL);
 
-    HDF_LOGD("%s: type is %s irqtype is %s.", __func__, type ? "hook" : "headset",
+    AUDIO_DEVICE_LOG_DEBUG("type is %s irqtype is %s.", type ? "hook" : "headset",
         (irqType == IRQF_TRIGGER_RISING) ? "RISING" : "FALLING");
-    HDF_LOGD("%s: type is %s irqtype is %s.", __func__,
+    AUDIO_DEVICE_LOG_DEBUG("type is %s irqtype is %s.",
         type ? "hook" : "headset", (irqType == IRQF_TRIGGER_LOW) ? "LOW" : "HIGH");
     switch (type) {
         case HEADSET:
             ret = request_threaded_irq(g_hsInfo->irq[type], NULL, HeadsetInterrupt, irqType, "headset_input", NULL);
             if (ret < 0) {
-                HDF_LOGD("%s: HeadsetChangeIrqtype: request irq failed.", __func__);
+                AUDIO_DEVICE_LOG_DEBUG("HeadsetChangeIrqtype: request irq failed.");
             }
             break;
         default:
@@ -277,14 +277,14 @@ static void HookOnceWork(void *arg)
     struct HeadsetPriv *hs = (struct HeadsetPriv *)arg;
 
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL.");
         return;
     }
     ret = iio_read_channel_raw(hs->chan, &val);
     if (ret < 0) {
-        HDF_LOGE("%s: read HookOnceWork adc channel() error: %d.", __func__, ret);
+        AUDIO_DEVICE_LOG_ERR("read HookOnceWork adc channel() error: %d.", ret);
     } else {
-        HDF_LOGD("%s: HookOnceWork read adc value: %d.", __func__, val);
+        AUDIO_DEVICE_LOG_DEBUG("HookOnceWork read adc value: %d.", val);
     }
 
     if (val >= 0 && val < HOOK_LEVEL_LOW) {
@@ -295,14 +295,14 @@ static void HookOnceWork(void *arg)
     } else {
         ; // do nothing.
     }
-    HDF_LOGD("%s, LINE = %d: isMic = %s.", __func__, __LINE__, g_hsInfo->isMic ? "true" : "false");
+    AUDIO_DEVICE_LOG_DEBUG("isMic = %s.", g_hsInfo->isMic ? "true" : "false");
     hs->curHsStatus = hs->isMic ? BIT_HEADSET : BIT_HEADSET_NO_MIC;
 
     if (hs->curHsStatus != BIT_HEADSET_NULL) {
         type = (hs->isMic) ? KEY_JACK_HEADSET : KEY_JACK_HEADPHONE;
         (void)ExtconSetStateSync(hs, type, true);
     }
-    HDF_LOGD("%s: notice headset status = %d(0: NULL, 1: HEADSET, 2:HEADPHONE).", __func__, hs->curHsStatus);
+    AUDIO_DEVICE_LOG_DEBUG("notice headset status = %d(0: NULL, 1: HEADSET, 2:HEADPHONE).", hs->curHsStatus);
 }
 
 static int32_t CheckInsertType(struct HeadsetPdata *pdata)
@@ -314,7 +314,7 @@ static int32_t CheckInsertType(struct HeadsetPdata *pdata)
     for (i = 0; i < GET_GPIO_REPEAT_TIMES; i++) {
         ret = GpioRead(pdata->hsGpio, &level);
         if (ret < 0) {
-            HDF_LOGE("%s: get pin level again, pin=%u, i=%d.", __func__, pdata->hsGpio, i);
+            AUDIO_DEVICE_LOG_ERR("get pin level again, pin=%u, i=%d.", pdata->hsGpio, i);
             OsalMSleep(IRQ_CONFIRM_MS1);
             continue;
         }
@@ -322,7 +322,7 @@ static int32_t CheckInsertType(struct HeadsetPdata *pdata)
     }
 
     if ((level < 0) || (ret < 0)) {
-        HDF_LOGE("%s: get pin level err.", __func__);
+        AUDIO_DEVICE_LOG_ERR("get pin level err.");
         return HDF_FAILURE;
     }
 
@@ -335,7 +335,7 @@ static int32_t CheckInsertType(struct HeadsetPdata *pdata)
             break;
         default:
             ret = HDF_FAILURE;
-            HDF_LOGE("%s: [hsInsertType] error.", __func__);
+            AUDIO_DEVICE_LOG_ERR("[hsInsertType] error.");
             break;
     }
 
@@ -351,20 +351,20 @@ static void HookWorkCallback(void * arg)
     static int32_t oldVal = -1; // Invalid initial value
 
     if ((hs == NULL) || (hs->pdata == NULL)) {
-        HDF_LOGE("%s: hs or hs->pdata is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or hs->pdata is NULL.");
         return;
     }
 
     ret = iio_read_channel_raw(hs->chan, &val);
     if (ret < 0) {
-        HDF_LOGE("%s: read hook adc channel() error: %d.", __func__, ret);
+        AUDIO_DEVICE_LOG_ERR("read hook adc channel() error: %d.", ret);
         return;
     }
 
     ret = CheckInsertType(hs->pdata);
     if ((hs->hsStatus == HEADSET_OUT) || (hs->hsIrqWorking == BUSY) || (hs->hsIrqWorking == WAIT) ||
         (ret != HEADSET_IN)) {
-        HDF_LOGD("%s: Headset is out or waiting for headset is in or out, after same time check HOOK key.", __func__);
+        AUDIO_DEVICE_LOG_DEBUG("Headset is out or waiting for headset is in or out, after same time check HOOK key.");
         return;
     }
     oldStatus = hs->hookStatus;
@@ -376,7 +376,7 @@ static void HookWorkCallback(void * arg)
         ; // do nothing.
     }
     if (oldVal != val) {
-        HDF_LOGD("%s: HOOK status is %s , adc value = %d, hookTime = %u.", __func__,
+        AUDIO_DEVICE_LOG_DEBUG("HOOK status is %s , adc value = %d, hookTime = %u.",
             hs->hookStatus ? "down" : "up", val, hs->hookTime);
         oldVal = val;
     }
@@ -388,7 +388,7 @@ static void HookWorkCallback(void * arg)
     ret = CheckInsertType(hs->pdata);
     if ((hs->hsStatus == HEADSET_OUT) || (hs->hsIrqWorking == BUSY) || (hs->hsIrqWorking == WAIT) ||
         (ret != HEADSET_IN)) {
-        HDF_LOGI("%s: headset is out, HOOK status must discard.", __func__);
+        AUDIO_DEVICE_LOG_DEBUG("headset is out, HOOK status must discard.");
         return;
     }
     InputReportKeySync(hs, HOOK_KEY_CODE, hs->hookStatus);
@@ -416,12 +416,12 @@ static int32_t InitWorkData(struct HeadsetPriv *hs)
 {
     struct HeadsetPdata *pdata = NULL;
     if ((hs == NULL) || (hs->pdata == NULL)) {
-        HDF_LOGE("%s: hs or pdata is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or pdata is NULL.");
         return HDF_ERR_INVALID_PARAM;
     }
     pdata = hs->pdata;
     if (HdfWorkQueueInit(&hs->workQueue, HDF_HEADSET_WORK_QUEUE_NAME) != HDF_SUCCESS) {
-        HDF_LOGE("%s: Init work queue failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("Init work queue failed");
         return HDF_FAILURE;
     }
     HdfDelayedWorkInit(&hs->hDelayedWork[HOOK], HookOnceWork, hs);
@@ -436,15 +436,15 @@ static int32_t CreateAndRegisterInputDevice(struct platform_device *pdev, struct
 {
     int32_t ret;
 
-    HDF_LOGI("%s: enter.", __func__);
+    AUDIO_DEVICE_LOG_INFO("enter.");
     if ((hs == NULL) || (pdev == NULL)) {
-        HDF_LOGE("%s: hs or pdev is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs or pdev is NULL.");
         return -EINVAL;
     }
 
     hs->inDev = devm_input_allocate_device(&pdev->dev);
     if (hs->inDev == NULL) {
-        HDF_LOGE("%s: failed to allocate input device.", __func__);
+        AUDIO_DEVICE_LOG_ERR("failed to allocate input device.");
         ret = -ENOMEM;
         return ret;
     }
@@ -460,11 +460,11 @@ static int32_t CreateAndRegisterInputDevice(struct platform_device *pdev, struct
     // register the input device
     ret = input_register_device(hs->inDev);
     if (ret) {
-        HDF_LOGE("%s: failed to register input device.", __func__);
+        AUDIO_DEVICE_LOG_ERR("failed to register input device.");
         return ret;
     }
     input_set_capability(hs->inDev, EV_KEY, HOOK_KEY_CODE);
-    HDF_LOGI("%s: done.", __func__);
+    AUDIO_DEVICE_LOG_INFO("%s: done.");
 
     return ret;
 }
@@ -477,7 +477,7 @@ static int32_t SetHeadsetIrqEnable(struct device *dev, struct HeadsetPriv *hs)
     uint32_t irq;
 
     if ((hs == NULL) || (hs->pdata == NULL) || (dev == NULL)) {
-        HDF_LOGE("%s: hs, pdata or dev is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs, pdata or dev is NULL.");
         return HDF_ERR_INVALID_PARAM;
     }
 
@@ -486,13 +486,13 @@ static int32_t SetHeadsetIrqEnable(struct device *dev, struct HeadsetPriv *hs)
         irqType = GPIO_IRQ_TRIGGER_RISING | GPIO_IRQ_TRIGGER_FALLING | GPIO_IRQ_USING_THREAD;
         ret = GpioSetIrq(pdata->hsGpio, irqType, HeadsetInterrupt, NULL);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: failed headset adc probe ret=%d.", __func__, ret);
+            AUDIO_DEVICE_LOG_ERR("failed headset adc probe ret=%d.", ret);
             return ret;
         }
 
         ret = GpioEnableIrq(pdata->hsGpio);
         if (ret != HDF_SUCCESS) {
-            HDF_LOGE("%s: enable irq fail! ret:%d\n", __func__, ret);
+            AUDIO_DEVICE_LOG_ERR("enable irq fail! ret:%d\n", ret);
             (void)GpioUnsetIrq(pdata->hsGpio, NULL);
             return ret;
         }
@@ -502,7 +502,7 @@ static int32_t SetHeadsetIrqEnable(struct device *dev, struct HeadsetPriv *hs)
             enable_irq_wake(irq);
         }
     } else {
-        HDF_LOGE("%s: failed init headset,please full hook_io_init function in board.", __func__);
+        AUDIO_DEVICE_LOG_ERR("failed init headset,please full hook_io_init function in board.");
         ret = -EEXIST;
         return ret;
     }
@@ -515,52 +515,52 @@ int32_t AnalogHeadsetAdcInit(struct platform_device *pdev, struct HeadsetPdata *
     int32_t ret;
     struct HeadsetPriv *hs;
 
-    HDF_LOGI("%s: enter.", __func__);
+    AUDIO_DEVICE_LOG_INFO("%s: enter.");
     hs = (struct HeadsetPriv *)OsalMemCalloc(sizeof(*hs));
     if (hs == NULL) {
-        HDF_LOGE("%s: failed to allocate driver data.", __func__);
+        AUDIO_DEVICE_LOG_ERR("failed to allocate driver data.");
         return HDF_ERR_MALLOC_FAIL;
     }
     g_hsInfo = hs;
     InitHeadsetPriv(hs, pdata);
     hs->edev = devm_extcon_dev_allocate(&pdev->dev, g_hsCable);
     if (IS_ERR(hs->edev)) {
-        HDF_LOGE("%s: failed to allocate extcon device.", __func__);
+        AUDIO_DEVICE_LOG_ERR("failed to allocate extcon device.");
         return-ENOMEM;
     }
     ret = devm_extcon_dev_register(&pdev->dev, hs->edev);
     if (ret < 0) {
-        HDF_LOGE("%s: extcon_dev_register() failed: %d.", __func__, ret);
+        AUDIO_DEVICE_LOG_ERR("extcon_dev_register() failed: %d.", ret);
         return ret;
     }
     ret = InitWorkData(hs);
     if (ret != HDF_SUCCESS) {
-        HDF_LOGE("%s: [InitWorkData] failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("[InitWorkData] failed");
         return ret;
     }
     // Create and register the input driver
     ret = CreateAndRegisterInputDevice(pdev, hs);
     if (ret != 0) {
-        HDF_LOGE("%s: [CreateAndRegisterInputDevice] failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("[CreateAndRegisterInputDevice] failed");
         return ret;
     }
     ret = CreateAndRegisterHdfInputDevice((void *)hs, pdata->device);
     if (ret != 0) {
-        HDF_LOGE("%s: [CreateAndRegisterHdfInputDevice] failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("[CreateAndRegisterHdfInputDevice] failed");
         return ret;
     }
     ret = SetHeadsetIrqEnable(&pdev->dev, hs);
     if (ret != 0) {
-        HDF_LOGE("%s: [SetHeadsetIrqEnable] failed", __func__);
+        AUDIO_DEVICE_LOG_ERR("[SetHeadsetIrqEnable] failed");
         return ret;
     }
-    HDF_LOGI("%s: success.", __func__);
+    AUDIO_DEVICE_LOG_INFO("%s: success.");
     return ret;
 }
 
 int AnalogHeadsetAdcSuspend(struct platform_device *pdev, pm_message_t state)
 {
-    HDF_LOGD("%s: %d enter.", __func__, __LINE__);
+    AUDIO_DEVICE_LOG_DEBUG("%d enter.");
     (void)pdev;
     (void)state;
 
@@ -569,7 +569,7 @@ int AnalogHeadsetAdcSuspend(struct platform_device *pdev, pm_message_t state)
 
 int AnalogHeadsetAdcResume(struct platform_device *pdev)
 {
-    HDF_LOGD("%s: %d enter.", __func__, __LINE__);
+    AUDIO_DEVICE_LOG_DEBUG("%d enter.");
     (void)pdev;
 
     return 0;
@@ -579,7 +579,7 @@ void AnalogHeadsetAdcRelease(struct HeadsetPdata *pdata)
 {
     struct HeadsetPriv *hs = g_hsInfo;
     if (hs == NULL) {
-        HDF_LOGE("%s: hs is NULL.", __func__);
+        AUDIO_DEVICE_LOG_ERR("hs is NULL.");
         return;
     }
     (void)pdata;
