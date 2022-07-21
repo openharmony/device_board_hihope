@@ -100,22 +100,24 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
         AUDIO_DEVICE_LOG_ERR("failed to allocate regmap: %ld\n", PTR_ERR(g_chip->regmap));
         return HDF_FAILURE;
     }
-    if (CodecGetConfigInfo(device, &(g_chip->codec)) !=  HDF_SUCCESS) {
+
+    if (CodecGetConfigInfo(device, &g_rk809Data) !=  HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-    if (CodecSetConfigInfoOfControls(&(g_chip->codec),  &(g_chip->dai)) != HDF_SUCCESS) {
+    if (CodecSetConfigInfoOfControls(&g_rk809Data,  &g_rk809DaiData) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-    ret = CodecGetServiceName(device, &(g_chip->codec.drvCodecName));
+    ret = CodecGetServiceName(device, &(g_rk809Data.drvCodecName));
     if (ret !=  HDF_SUCCESS) {
         return ret;
     }
-    ret = CodecGetDaiName(device,  &(g_chip->dai.drvDaiName));
+    ret = CodecGetDaiName(device,  &(g_rk809DaiData.drvDaiName));
     if (ret != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
-    OsalMutexInit(&g_chip->codec.mutex);
-    ret = AudioRegisterCodec(device, &(g_chip->codec), &(g_chip->dai));
+    OsalMutexInit(&g_rk809Data.mutex);
+    OsalMutexInit(&g_rk809DaiData.mutex);
+    ret = AudioRegisterCodec(device, &g_rk809Data, &g_rk809DaiData);
     if (ret !=  HDF_SUCCESS) {
         return ret;
     }
@@ -137,7 +139,8 @@ static void RK809DriverRelease(struct HdfDeviceObject *device)
         }
         devm_kfree(&g_chip->pdev->dev, g_chip);
     }
-    OsalMutexDestroy(&g_chip->codec.mutex);
+    OsalMutexDestroy(&g_rk809Data.mutex);
+    OsalMutexDestroy(&g_rk809DaiData.mutex);
 
     if (device->priv != NULL) {
         OsalMemFree(device->priv);
