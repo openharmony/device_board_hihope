@@ -546,8 +546,7 @@ int32_t AnalogHeadsetAdcInit(struct platform_device *pdev, struct HeadsetPdata *
     }
     ret = CreateAndRegisterHdfInputDevice((void *)hs, pdata->device);
     if (ret != 0) {
-        AUDIO_DEVICE_LOG_ERR("[CreateAndRegisterHdfInputDevice] failed");
-        return ret;
+        AUDIO_DEVICE_LOG_DEBUG("[CreateAndRegisterHdfInputDevice] failed");
     }
     ret = SetHeadsetIrqEnable(&pdev->dev, hs);
     if (ret != 0) {
