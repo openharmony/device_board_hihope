@@ -16,6 +16,7 @@
 #define EV_TYPE_KEY_INDEX       0
 #define KEY_CODE_JACK_INDEX     3
 #define IRQ_CONFIRM_MS1         1
+#define USING_LINUX_INPUT_DEVICE
 
 InputDevice *g_hdfInDev = NULL;
 void InputSetCapability(InputDevice *hdfInDev)
@@ -43,6 +44,11 @@ void SetStateSync(unsigned int id, bool state)
 
 static InputDevice *HdfInputDeviceInstance(void *hs, struct HdfDeviceObject *device)
 {
+#ifdef USING_LINUX_INPUT_DEVICE
+    (void)hs;
+    (void)device;
+    return NULL;
+#else
     int32_t ret;
     InputDevIdentify inputDevId;
     InputDevice *hdfInDev = NULL;
@@ -79,6 +85,7 @@ static InputDevice *HdfInputDeviceInstance(void *hs, struct HdfDeviceObject *dev
     }
 
     return hdfInDev;
+#endif
 }
 
 int32_t CreateAndRegisterHdfInputDevice(void *hs, struct HdfDeviceObject *device)

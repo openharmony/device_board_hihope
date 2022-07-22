@@ -582,8 +582,7 @@ int32_t AnalogHeadsetGpioInit(struct platform_device *pdev, struct HeadsetPdata 
     }
     ret = CreateAndRegisterHdfInputDevice((void *)hs, pdata->device);
     if (ret != 0) {
-        HDF_LOGE("%s: [CreateAndRegisterHdfInputDevice] failed", __func__);
-        return ret;
+        HDF_LOGI("%s: [CreateAndRegisterHdfInputDevice] failed", __func__);
     }
 #ifdef CONFIG_HAS_EARLYSUSPEND
     g_hsEarlySuspend.suspend = NULL;
