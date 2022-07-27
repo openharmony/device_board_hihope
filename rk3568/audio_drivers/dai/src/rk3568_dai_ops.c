@@ -252,20 +252,25 @@ int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, const struct Audi
         return HDF_FAILURE;
     }
 
-    ret = clk_set_rate(i2sTdm->mclk_tx, i2sTdm->mclk_tx_freq);
-    if (ret) {
-        AUDIO_DEVICE_LOG_ERR(" clk_set_rate ret = %d", ret);
-        return ret;
+    if (param->streamType == AUDIO_RENDER_STREAM) {
+        ret = clk_set_rate(i2sTdm->mclk_tx, i2sTdm->mclk_tx_freq);
+        if (ret) {
+            AUDIO_DEVICE_LOG_ERR(" clk_set_rate ret = %d", ret);
+            return ret;
+        }
+        mclkRate = clk_get_rate(i2sTdm->mclk_tx);
+    } else if (param->streamType == AUDIO_CAPTURE_STREAM) {
+        ret = clk_set_rate(i2sTdm->mclk_rx, i2sTdm->mclk_rx_freq);
+        if (ret) {
+            AUDIO_DEVICE_LOG_ERR(" clk_set_rate ret = %d", ret);
+            return ret;
+        }
+        mclkRate = clk_get_rate(i2sTdm->mclk_rx);
+    } else {
+        AUDIO_DEVICE_LOG_ERR("streamType is invalid.");
+        return HDF_FAILURE;
     }
 
-    ret = clk_set_rate(i2sTdm->mclk_rx, i2sTdm->mclk_rx_freq);
-    if (ret) {
-        AUDIO_DEVICE_LOG_ERR(" clk_set_rate ret = %d", ret);
-        return ret;
-    }
-
-    /* mclk_rx is also ok. */
-    mclkRate = clk_get_rate(i2sTdm->mclk_tx);
     bclkRate = i2sTdm->bclk_fs * param->rate;
     bclkDiv = DIV_ROUND_CLOSEST(mclkRate, bclkRate);
     lrclkDiv = bclkRate / param->rate;
@@ -425,11 +430,6 @@ static int32_t Rk3568TxAndRxStart(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioS
 {
     uint32_t val = 0;
 
-    if (i2sTdm == NULL || i2sTdm->regmap == NULL) {
-        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
-        return HDF_FAILURE;
-    }
-
     if (streamType == AUDIO_RENDER_STREAM) {
         if (i2sTdm->mclk_tx == NULL) {
             AUDIO_DEVICE_LOG_ERR("mclk tx is null");
@@ -445,6 +445,7 @@ static int32_t Rk3568TxAndRxStart(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioS
             AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
             return HDF_FAILURE;
         }
+        i2sTdm->txStart = true;
     } else {
         if (i2sTdm->mclk_rx == NULL) {
             AUDIO_DEVICE_LOG_ERR("mclk rx is null");
@@ -465,6 +466,7 @@ static int32_t Rk3568TxAndRxStart(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioS
             AUDIO_DEVICE_LOG_ERR("read register fail: [%04x]", I2S_DMACR);
             return HDF_FAILURE;
         }
+        i2sTdm->rxStart = true;
     }
 
     if (regmap_update_bits(i2sTdm->regmap, I2S_XFER, I2S_XFER_TXS_START | I2S_XFER_RXS_START,
@@ -487,23 +489,23 @@ static int32_t Rk3568TxAndRxStop(struct rk3568_i2s_tdm_dev *i2sTdm, enum AudioSt
     int retry = 10; // retry 10 times
     int ret;
 
-    if (i2sTdm == NULL || i2sTdm->regmap == NULL) {
-        AUDIO_DEVICE_LOG_ERR("i2sTdm is null");
-        return HDF_FAILURE;
-    }
-
     if (streamType == AUDIO_RENDER_STREAM) {
         ret = regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_TDE_ENABLE, I2S_DMACR_TDE_DISABLE);
         if (ret != HDF_SUCCESS) {
             AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
             return HDF_FAILURE;
         }
+        i2sTdm->txStart = false;
     } else {
         ret = regmap_update_bits(i2sTdm->regmap, I2S_DMACR, I2S_DMACR_RDE_ENABLE, I2S_DMACR_RDE_DISABLE);
         if (ret != HDF_SUCCESS) {
             AUDIO_DEVICE_LOG_ERR("regmap_update_bits fail");
             return HDF_FAILURE;
         }
+        i2sTdm->rxStart = false;
+    }
+    if (i2sTdm->txStart || i2sTdm->rxStart) {
+        return HDF_SUCCESS;
     }
 
     ret = regmap_update_bits(i2sTdm->regmap, I2S_XFER,
