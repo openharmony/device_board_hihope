@@ -255,6 +255,8 @@ struct rk3568_i2s_tdm_dev {
     int clk_ppm;
     atomic_t refcount;
     spinlock_t lock; /* xfer lock */
+    bool txStart;
+    bool rxStart;
 };
 
 
