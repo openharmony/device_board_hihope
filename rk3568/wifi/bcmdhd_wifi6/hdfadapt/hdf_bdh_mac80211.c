@@ -1781,21 +1781,21 @@ int32_t WalRemoveIf(struct NetDevice *hnetDev, WifiIfRemove *ifRemove)
     }
     
     HDF_LOGI("%s: ifname=%s, primary netdev %s, remove ifname=%s", __func__,
-        hnetDev->name, netDev->name, ifRemove->ifname);
+        hnetDev->name, netDev->name, ifRemove->ifName);
     for (; i < HDF_INF_MAX; i ++) {
         p2p_hnetdev = g_hdf_infmap[i].hnetdev;
         if (p2p_hnetdev == NULL) {
             continue;
         }
         
-        if (strcmp(p2p_hnetdev->name, ifRemove->ifname) == 0) {
+        if (strcmp(p2p_hnetdev->name, ifRemove->ifName) == 0) {
             // check safely
             if (i == HDF_INF_WLAN0) {
-                HDF_LOGE("%s: don't remove master interface %s", __func__, ifRemove->ifname);
+                HDF_LOGE("%s: don't remove master interface %s", __func__, ifRemove->ifName);
                 continue;
             }
             if (i != HDF_INF_P2P1) {
-                HDF_LOGE("%s: remove %s is not p2p interface (%d %d)", __func__, ifRemove->ifname, i, HDF_INF_P2P1);
+                HDF_LOGE("%s: remove %s is not p2p interface (%d %d)", __func__, ifRemove->ifName, i, HDF_INF_P2P1);
             }
 
             wdev = (struct wireless_dev *)p2p_hnetdev->ieee80211Ptr;
