@@ -14,6 +14,11 @@
 #include "rk_codec_node.h"
 #include <securec.h>
 
+extern "C" {
+#include <jpeglib.h>
+#include <transupp.h>
+}
+
 namespace OHOS::Camera {
 uint32_t RKCodecNode::previewWidth_ = 0;
 uint32_t RKCodecNode::previewHeight_ = 0;
@@ -55,6 +60,52 @@ RetCode RKCodecNode::Flush(const int32_t streamId)
     return RC_OK;
 }
 
+static void RotJpegImg(
+    const unsigned char *inputImg, size_t inputSize, unsigned char **outImg, size_t *outSize, JXFORM_CODE rotDegrees)
+{
+    struct jpeg_decompress_struct inputInfo;
+    struct jpeg_error_mgr jerrIn;
+    struct jpeg_compress_struct outInfo;
+    struct jpeg_error_mgr jerrOut;
+    jvirt_barray_ptr *src_coef_arrays;
+    jvirt_barray_ptr *dst_coef_arrays;
+
+    inputInfo.err = jpeg_std_error(&jerrIn);
+    jpeg_create_decompress(&inputInfo);
+    outInfo.err = jpeg_std_error(&jerrOut);
+    jpeg_create_compress(&outInfo);
+    jpeg_mem_src(&inputInfo, inputImg, inputSize);
+    jpeg_mem_dest(&outInfo, outImg, outSize);
+
+    JCOPY_OPTION copyoption;
+    jpeg_transform_info transformoption;
+    transformoption.transform = rotDegrees;
+    transformoption.perfect = TRUE;
+    transformoption.trim = FALSE;
+    transformoption.force_grayscale = FALSE;
+    transformoption.crop = FALSE;
+
+    jcopy_markers_setup(&inputInfo, copyoption);
+    (void)jpeg_read_header(&inputInfo, TRUE);
+
+    if (!jtransform_request_workspace(&inputInfo, &transformoption)) {
+        CAMERA_LOGE("%s: transformation is not perfect", __func__);
+        return;
+    }
+
+    src_coef_arrays = jpeg_read_coefficients(&inputInfo);
+    jpeg_copy_critical_parameters(&inputInfo, &outInfo);
+    dst_coef_arrays = jtransform_adjust_parameters(&inputInfo, &outInfo, src_coef_arrays, &transformoption);
+    jpeg_write_coefficients(&outInfo, dst_coef_arrays);
+    jcopy_markers_execute(&inputInfo, &outInfo, copyoption);
+    jtransform_execute_transformation(&inputInfo, &outInfo, src_coef_arrays, &transformoption);
+
+    jpeg_finish_compress(&outInfo);
+    jpeg_destroy_compress(&outInfo);
+    (void)jpeg_finish_decompress(&inputInfo);
+    jpeg_destroy_decompress(&inputInfo);
+}
+
 void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height,
     const char* comment, size_t* jpegSize, unsigned char** jpegBuf)
 {
@@ -91,6 +142,16 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
 
     jpeg_finish_compress(&cInfo);
     jpeg_destroy_compress(&cInfo);
+
+    size_t rotJpgSize = 0;
+    unsigned char* rotJpgBuf = nullptr;
+    /* rotate image */
+    RotJpegImg(*jpegBuf, *jpegSize, &rotJpgBuf, &rotJpgSize, JXFORM_ROT_270);
+    if (rotJpgBuf != nullptr && rotJpgSize != 0) {
+        free(*jpegBuf);
+        *jpegBuf = rotJpgBuf;
+        *jpegSize = rotJpgSize;
+    }
 }
 
 int RKCodecNode::findStartCode(unsigned char *data, size_t dataSz)
