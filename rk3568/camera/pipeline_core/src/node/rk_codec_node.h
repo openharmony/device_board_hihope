@@ -17,7 +17,6 @@
 #include <vector>
 #include <condition_variable>
 #include <ctime>
-#include <jpeglib.h>
 #include "device_manager_adapter.h"
 #include "utils.h"
 #include "camera.h"
