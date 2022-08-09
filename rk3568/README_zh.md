@@ -149,11 +149,13 @@ Rockchip RK3568采用四核64位Cortex-A55
 
 安装命令如下：
 
+```
 sudo apt-get update && sudo apt-get install binutils git git-lfs gnupg flex
 bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib
 libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev ccache
 libgl1-mesa-dev libxml2-utils xsltproc unzip m4 bc gnutls-bin python3.8
 python3-pip ruby
+```
 
 **说明：** 
 以上安装命令适用于Ubuntu18.04，其他版本请根据安装包名称采用对应的安装命令。
@@ -168,45 +170,55 @@ python3-pip ruby
 
 3）安装[git客户端](http://git-scm.com/book/zh/v2/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git)和[git-lfs](https://gitee.com/vcs-all-in-one/git-lfs?_from=gitee_search#downloading)并配置用户信息。
 
+```
 git config --global user.name "yourname"
 
 git config --global user.email "your-email-address"
 
 git config --global credential.helper store
+```
 
 4）安装码云repo工具，可以执行如下命令。
 
+```
 curl -s https://gitee.com/oschina/repo/raw/fork_flow/repo-py3 \>
 /usr/local/bin/repo \#如果没有权限，可下载至其他目录，并将其配置到环境变量中
 
 chmod a+x /usr/local/bin/repo
 
 pip3 install -i https://repo.huaweicloud.com/repository/pypi/simple requests
+```
 
 **获取源码操作步骤**
 
 1） 通过repo + ssh 下载（需注册公钥，请参考码云帮助中心）。
 
+```
 repo init -u git@gitee.com:openharmony/manifest.git -b master --no-repo-verify
 
 repo sync -c
 
 repo forall -c 'git lfs pull'
+```
 
 2） 通过repo + https 下载。
 
+```
 repo init -u https://gitee.com/openharmony/manifest.git -b master
 \--no-repo-verify
 
 repo sync -c
 
 repo forall -c 'git lfs pull'
+```
 
 **执行prebuilts**
 
 在源码根目录下执行脚本，安装编译器及二进制工具。
 
+```
 bash build/prebuilts_download.sh
+```
 
 下载的prebuilts二进制默认存放在与OpenHarmony同目录下的OpenHarmony_2.0_canary_prebuilts下。
 
@@ -218,15 +230,19 @@ bash build/prebuilts_download.sh
 
 1） 进入源码根目录，执行如下命令进行版本编译。
 
+```
 ./build.sh --product-name rk3568 –ccache
+```
 
 2） 检查编译结果。编译完成后，log中显示如下：
 
+```
 post_process
 
 =====build rk3568 successful.
 
 2021-09-13 09:22:28
+```
 
 编译所生成的文件都归档在out/rk3568/目录下，结果镜像输出在
 out/rk3568/packages/phone/images/ 目录下。
