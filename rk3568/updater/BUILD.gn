@@ -13,8 +13,11 @@
 
 import("//build/ohos.gni")
 
-ohos_prebuilt_etc("updater_init.cfg") {
-  source = "config/init.cfg"
+updater_usb_init_cfg_path = "//base/startup/init/service/etc/init.usb.cfg"
+updater_init_usb_configfs_path_cfg = "//base/startup/init/service/etc/init.usb.configfs.cfg"
+
+ohos_prebuilt_etc("updater_init_usb.cfg") {
+  source = "{updater_usb_init_cfg_path}"
   install_images = [ "updater" ]
   part_name = "rockchip_products"
 }
@@ -26,7 +29,13 @@ ohos_prebuilt_etc("updater_usb_init.cfg") {
 }
 
 ohos_prebuilt_etc("updater_init_usb_configfs.cfg") {
-  source = "config/init.usb.configfs.cfg"
+  source = "{updater_init_usb_configfs_path_cfg}"
+  install_images = [ "updater" ]
+  part_name = "rockchip_products"
+}
+
+ohos_prebuilt_etc("updater_init_rk3568_usb.cfg") {
+  source = "config/init.rk3568.usb.cfg"
   install_images = [ "updater" ]
   part_name = "rockchip_products"
 }
@@ -49,7 +58,8 @@ group("updater_files") {
     ":fstab.updater",
     ":signing_cert.crt",
     ":updater_init.cfg",
+    ":updater_init_rk3568_usb.cfg",
+    ":updater_init_usb.cfg",
     ":updater_init_usb_configfs.cfg",
-    ":updater_usb_init.cfg",
   ]
 }
