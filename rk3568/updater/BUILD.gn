@@ -13,23 +13,23 @@
 
 import("//build/ohos.gni")
 
-updater_usb_init_cfg_path = "//base/startup/init/service/etc/init.usb.cfg"
-updater_init_usb_configfs_path_cfg = "//base/startup/init/service/etc/init.usb.configfs.cfg"
+updater_usb_init_cfg_path = "//base/startup/init/services/etc/init.usb.cfg"
+updater_init_usb_configfs_path_cfg = "//base/startup/init/services/etc/init.usb.configfs.cfg"
 
-ohos_prebuilt_etc("updater_init_usb.cfg") {
-  source = "{updater_usb_init_cfg_path}"
+ohos_prebuilt_etc("updater_init.cfg") {
+  source = "config/init.cfg"
   install_images = [ "updater" ]
   part_name = "rockchip_products"
 }
 
-ohos_prebuilt_etc("updater_usb_init.cfg") {
-  source = "config/init.usb.cfg"
+ohos_prebuilt_etc("updater_init_usb.cfg") {
+  source = "${updater_usb_init_cfg_path}"
   install_images = [ "updater" ]
   part_name = "rockchip_products"
 }
 
 ohos_prebuilt_etc("updater_init_usb_configfs.cfg") {
-  source = "{updater_init_usb_configfs_path_cfg}"
+  source = "${updater_init_usb_configfs_path_cfg}"
   install_images = [ "updater" ]
   part_name = "rockchip_products"
 }
