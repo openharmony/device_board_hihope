@@ -244,7 +244,10 @@ int32_t ConfigInfoSetToReg(struct rk3568_i2s_tdm_dev *i2sTdm, const struct Audio
 int32_t RK3568I2sTdmSetMclk(struct rk3568_i2s_tdm_dev *i2sTdm, const struct AudioPcmHwParams *param)
 {
     int32_t ret = 0;
-    unsigned int mclkRate, bclkRate, bclkDiv, lrclkDiv;
+    unsigned int mclkRate = 0;
+    unsigned int bclkRate = 0;
+    unsigned int bclkDiv = 0;
+    unsigned int lrclkDiv = 0;
     int32_t fmt = 0;
     int32_t channels = 0;
     if (i2sTdm == NULL || param == NULL) {
