@@ -49,23 +49,23 @@ Rockchip RK3568采用四核64位Cortex-A55
 
 <table>
    <tr>
-        <td rowspan="2">芯片</td> 
-        <td>Rockchip RK3568 芯片</td> 
+        <td rowspan="2">芯片</td>
+        <td>Rockchip RK3568 芯片</td>
    </tr>
    <tr>
         <td >Quad-core Cortex-A55</td>  
     </tr>
    <tr>
-        <td>架构</td> 
-        <td>ARM</td> 
+        <td>架构</td>
+        <td>ARM</td>
    </tr>
     <tr>
-        <td>主频</td> 
-        <td>2.0GHz</td> 
+        <td>主频</td>
+        <td>2.0GHz</td>
    </tr>
     <tr>
-        <td>工作电压</td> 
-        <td>12V/2A</td> 
+        <td>工作电压</td>
+        <td>12V/2A</td>
    </tr>
     <tr>
         <td>内存&存储</td> 
