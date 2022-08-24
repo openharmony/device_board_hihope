@@ -75,7 +75,7 @@ static void RotJpegImg(
     outInfo.err = jpeg_std_error(&jerrOut);
     jpeg_create_compress(&outInfo);
     jpeg_mem_src(&inputInfo, inputImg, inputSize);
-    jpeg_mem_dest(&outInfo, outImg, outSize);
+    jpeg_mem_dest(&outInfo, outImg, (unsigned long *)outSize);
 
     JCOPY_OPTION copyoption;
     jpeg_transform_info transformoption;
@@ -107,7 +107,7 @@ static void RotJpegImg(
 }
 
 void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height,
-    const char* comment, size_t* jpegSize, unsigned char** jpegBuf)
+    const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf)
 {
     struct jpeg_compress_struct cInfo;
     struct jpeg_error_mgr jErr;
@@ -275,7 +275,7 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
 
     int dma_fd = buffer->GetFileDescriptor();
     unsigned char* jBuf = nullptr;
-    size_t jpegSize = 0;
+    unsigned long jpegSize = 0;
     uint32_t tempSize = (previewWidth_ * previewHeight_ * RGB24Width);
 
     void* temp = malloc(tempSize);

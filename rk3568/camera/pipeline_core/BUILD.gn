@@ -121,7 +121,6 @@ ohos_shared_library("camera_pipeline_core") {
     "src/node",
     "//device/soc/rockchip/rk3568/hardware/rga/include",
     "//device/soc/rockchip/rk3568/hardware/mpp/include",
-    "//third_party/libjpeg",
     "//third_party/libexif",
 
     # hcs parser
@@ -144,7 +143,7 @@ ohos_shared_library("camera_pipeline_core") {
     "//drivers/interface/camera/v1_0:libcamera_stub_1.0",
     "//drivers/peripheral/camera/hal/utils:camera_utils",
     "//drivers/peripheral/camera/interfaces/metadata:metadata",
-    "//third_party/libjpeg:libjpeg_static",
+    "//third_party/libjpeg-turbo:turbojpeg_static",
   ]
 
   if (is_standard_system) {
