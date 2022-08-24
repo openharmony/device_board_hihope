@@ -47,7 +47,7 @@ public:
     RetCode Flush(const int32_t streamId);
 private:
     void encodeJpegToMemory(unsigned char* image, int width, int height,
-            const char* comment, size_t* jpegSize, unsigned char** jpegBuf);
+            const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf);
     int findStartCode(unsigned char *data, size_t dataSz);
     void SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<IBuffer>& buffer);
     void Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer);
