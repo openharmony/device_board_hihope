@@ -147,7 +147,7 @@ int32_t Rk3568DaiStartup(const struct AudioCard *card, const struct DaiDevice *d
 
 int RK3568SetI2sFomartVal(const struct AudioPcmHwParams *param)
 {
-    int32_t val;
+    int32_t val = 0;
     if (param == NULL) {
         AUDIO_DEVICE_LOG_ERR("input param is null.");
         return -1;
@@ -166,6 +166,7 @@ int RK3568SetI2sFomartVal(const struct AudioPcmHwParams *param)
             val |= I2S_TXCR_VDW(32); // 32-bit
             break;
         default:
+            AUDIO_DEVICE_LOG_ERR("format error, format is 0x%x", param->format);
             return -1;
     }
     AUDIO_DEVICE_LOG_DEBUG("sucess");
