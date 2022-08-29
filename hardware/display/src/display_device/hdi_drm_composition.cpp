@@ -90,24 +90,24 @@ int32_t HdiDrmComposition::SetSrcProperty(DrmPlane &drmPlane,
 {
     int ret;
 
-    ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_xId(), 0<<16); // 16:shift left 16 bits
+    ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_xId(), 0 << 16); // 16:shift left 16 bits
     DISPLAY_DEBUGLOG("set the fb planeid %{public}d, GetPropSrc_xId %{public}d, displayRect.x %{public}d",
         drmPlane.GetId(), drmPlane.GetPropSrc_xId(), 0);
     DISPLAY_CHK_RETURN((ret < 0), DISPLAY_FAILURE, DISPLAY_LOGE("set the fb planeid fialed errno : %{public}d", errno));
 
-    ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_yId(), 0<<16); // 16:shift left 16 bits
+    ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_yId(), 0 << 16); // 16:shift left 16 bits
     DISPLAY_DEBUGLOG("set the fb planeid %{public}d, GetPropSrc_yId %{public}d, displayRect.y %{public}d",
         drmPlane.GetId(), drmPlane.GetPropSrc_yId(), 0);
     DISPLAY_CHK_RETURN((ret < 0), DISPLAY_FAILURE, DISPLAY_LOGE("set the fb planeid fialed errno : %{public}d", errno));
 
     ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_wId(),
-                                   bufferW<<16); // 16:shift left 16 bits
+                                   bufferW << 16); // 16:shift left 16 bits
     DISPLAY_DEBUGLOG("set the fb planeid %{public}d, GetPropCrtc_wId %{public}d, displayRect.w %{public}d",
         drmPlane.GetId(), drmPlane.GetPropSrc_wId(), bufferW);
     DISPLAY_CHK_RETURN((ret < 0), DISPLAY_FAILURE, DISPLAY_LOGE("set the fb planeid fialed errno : %{public}d", errno));
 
     ret = drmModeAtomicAddProperty(pset, drmPlane.GetId(), drmPlane.GetPropSrc_hId(),
-        bufferH<<16); // 16:shift left 16 bits
+        bufferH << 16); // 16:shift left 16 bits
     DISPLAY_DEBUGLOG("set the fb planeid %{public}d, GetPropSrc_hId %{public}d, displayRect.h %{public}d",
         drmPlane.GetId(), drmPlane.GetPropSrc_hId(), bufferH);
     DISPLAY_CHK_RETURN((ret < 0), DISPLAY_FAILURE, DISPLAY_LOGE("set the fb planeid fialed errno : %{public}d", errno));

@@ -205,7 +205,7 @@ void HdiLayer::WaitAcquireFence()
 {
     int fd = GetAcquireFenceFd();
     if (fd < 0) {
-        DISPLAY_LOGE("fd is invalid");
+        DISPLAY_DEBUGLOG("fd is invalid");
         return;
     }
     sync_wait(fd, mFenceTimeOut);
