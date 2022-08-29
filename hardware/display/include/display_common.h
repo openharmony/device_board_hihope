@@ -30,7 +30,7 @@ extern "C" {
 #undef LOG_TAG
 #undef LOG_DOMAIN
 #define LOG_TAG "DISP"
-#define LOG_DOMAIN 0xD001400
+#define LOG_DOMAIN 0xD002500
 
 #ifndef DISPLAY_UNUSED
 #define DISPLAY_UNUSED(x) (void)(x)
