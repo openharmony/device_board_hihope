@@ -368,7 +368,7 @@ int32_t DeviceInitialize(DeviceFuncs **funcs)
     dFuncs->SetDisplayProperty = SetDisplayProperty;
     dFuncs->Commit = Commit;
     *funcs = dFuncs;
-    DISPLAY_DEBUGLOG("%{public}s: device initialize success", __func__);
+    DISPLAY_DEBUGLOG("device initialize success");
     HdiSession::GetInstance();
     return DISPLAY_SUCCESS;
 }
@@ -401,7 +401,7 @@ int32_t LayerInitialize(LayerFuncs **funcs)
     lFuncs->SetLayerBlendType = SetLayerBlendType;
 
     *funcs = lFuncs;
-    DISPLAY_DEBUGLOG("%{public}s: layer initialize success", __func__);
+    DISPLAY_DEBUGLOG("layer initialize success");
     return DISPLAY_SUCCESS;
 }
 
@@ -409,7 +409,7 @@ int32_t LayerUninitialize(LayerFuncs *funcs)
 {
     DISPLAY_CHK_RETURN((funcs == nullptr), DISPLAY_FAILURE, DISPLAY_LOGE("the funcs is nullptr"));
     free(funcs);
-    DISPLAY_DEBUGLOG("%{public}s: layer uninitialize success", __func__);
+    DISPLAY_DEBUGLOG("layer uninitialize success");
     return DISPLAY_SUCCESS;
 }
 }
