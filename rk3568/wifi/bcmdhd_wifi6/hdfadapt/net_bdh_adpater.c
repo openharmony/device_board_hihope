@@ -152,9 +152,9 @@ int P2pInitNetdev(struct NetDevice *netDevice, WifiIfAdd *ifAdd, int private_dat
         return -1;
     }
 
-    if (NULL == ifAdd) {
+    if (ifAdd == NULL) {
         HDF_LOGE("%s:ifAdd is null!", __func__);
-	return -1;
+        return -1;
     }
 
     memcpy_s(ifName, IFNAMSIZ, ifAdd->ifName, IFNAMSIZ);
