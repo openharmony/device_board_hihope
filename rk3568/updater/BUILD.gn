@@ -15,7 +15,7 @@ import("//build/ohos.gni")
 
 updater_usb_init_cfg_path = "//base/startup/init/services/etc/init.usb.cfg"
 updater_init_usb_configfs_path_cfg =
-    "//base/startup/init/services/etc/init.usb.configfs.cfg"
+    "//drivers/peripheral/usb/cfg/init.usb.configfs.cfg"
 updater_faultloggerd_cfg =
     "//base/hiviewdfx/faultloggerd/services/config/faultloggerd.cfg"
 updater_hilog_cfg = "//base/hiviewdfx/hilog/services/hilogd/etc/hilogd.cfg"
