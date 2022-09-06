@@ -73,6 +73,8 @@ group("updater_files") {
   deps = [
     ":fstab.updater",
     ":signing_cert.crt",
+    ":updater_faultloggerd.cfg",
+    ":updater_hilog.cfg",
     ":updater_init.cfg",
     ":updater_init_rk3568_usb.cfg",
     ":updater_init_usb.cfg",
