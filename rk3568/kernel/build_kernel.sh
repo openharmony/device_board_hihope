@@ -21,6 +21,7 @@ export PRODUCT_PATH=${4}
 export DEVICE_COMPANY=${6}
 export DEVICE_NAME=${7}
 export PRODUCT_COMPANY=${8}
+ENABLE_LTO_O0=${9}
 
 KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/linux-5.10
 KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/linux-5.10
@@ -57,15 +58,15 @@ cp -rf ${3}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
 #config
 cp -rf ${KERNEL_CONFIG_FILE} ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
 
-if [ "enable_ramdisk" == "${9}" ]; then
-	./make-ohos.sh TB-RK3568X0 enable_ramdisk
+if [ "enable_ramdisk" == "${10}" ]; then
+	./make-ohos.sh TB-RK3568X0 enable_ramdisk ${ENABLE_LTO_O0}
 else
-    ./make-ohos.sh TB-RK3568X0 disable_ramdisk
+    ./make-ohos.sh TB-RK3568X0 disable_ramdisk ${ENABLE_LTO_O0}
 fi
 
 mkdir -p ${2}
 
-if [ "enable_ramdisk" != "${9}" ]; then
+if [ "enable_ramdisk" != "${10}" ]; then
 	cp ${KERNEL_OBJ_TMP_PATH}/boot_linux.img ${2}/boot_linux.img
 fi
 cp ${KERNEL_OBJ_TMP_PATH}/resource.img ${2}/resource.img
