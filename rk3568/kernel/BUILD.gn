@@ -32,6 +32,11 @@ action("kernel") {
     device_name,
     product_company,
   ]
+  if (enable_lto_O0) {
+    args += [ "enable_lto_O0" ]
+  } else {
+    args += [ "disable_lto_O0" ]
+  }
   if (enable_ramdisk) {
     args += [ "enable_ramdisk" ]
   }
