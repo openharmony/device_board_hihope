@@ -4,5 +4,5 @@
 /dev/block/platform/fe310000.sdhci/by-name/vendor              /vendor        ext4     ro,barrier=1  wait,required
 /dev/block/platform/fe310000.sdhci/by-name/sys-prod              /sys_prod        ext4     ro,barrier=1  wait
 /dev/block/platform/fe310000.sdhci/by-name/chip-prod              /chip_prod        ext4     ro,barrier=1  wait
-/dev/block/platform/fe310000.sdhci/by-name/userdata               /data       f2fs     discard,noatime,nosuid,nodev  wait,check,fileencryption=software,quota
+/dev/block/platform/fe310000.sdhci/by-name/userdata               /data       f2fs     discard,noatime,nosuid,nodev,fscrypt=2:aes-256-cts:aes-256-xts  wait,check,fileencryption=software,quota
 /dev/block/platform/fe310000.sdhci/by-name/misc /misc none none wait,required
