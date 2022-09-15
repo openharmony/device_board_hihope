@@ -1729,9 +1729,9 @@ int32_t WalAddIf(struct NetDevice *hnetDev, WifiIfAdd *ifAdd)
         return -1;
     }
 
-    ret = BDH6InitNetdev(netDev, get_dhd_priv_data_size(), ifAdd->type, HDF_INF_P2P1);
+    ret = P2pInitNetdev(netDev, ifAdd, get_dhd_priv_data_size(), HDF_INF_P2P1);
     if (ret != 0) {
-        HDF_LOGE("%s:BDH6InitNetdev p2p-p2p0-0 failed", __func__);
+        HDF_LOGE("%s:P2pInitNetdev %s failed", __func__, ifAdd->ifName);
         return HDF_FAILURE;
     }
 

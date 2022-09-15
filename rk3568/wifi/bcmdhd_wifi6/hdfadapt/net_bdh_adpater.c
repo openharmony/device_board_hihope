@@ -67,7 +67,6 @@ void set_krn_wiphy(struct wiphy *pwiphy)
 }
 struct net_device *GetLinuxInfByNetDevice(const struct NetDevice *netDevice);
 struct NetDeviceInterFace *wal_get_net_p2p_ops(void);
-#define WIFI_IFNAME_MAX_SIZE 16
 static wal_addr_idx wal_get_dev_addr_idx(int type)
 {
     wal_addr_idx addr_idx = WAL_ADDR_IDX_BUTT;
@@ -139,39 +138,10 @@ int wal_get_dev_addr(unsigned char *pc_addr, unsigned char addr_len, int type)
     return 0;
 }
 
-
-int32_t GetIfName(int type, char *ifName, uint32_t len)
-{
-    if (ifName == NULL || len == 0) {
-        HDF_LOGE("%s:para is null!", __func__);
-        return -1;
-    }
-    switch (type) {
-        case NL80211_IFTYPE_P2P_DEVICE:
-            if (snprintf_s(ifName, len, len - 1, "p2p%d", 0) < 0) {
-                HDF_LOGE("%s:format ifName failed!", __func__);
-                return -1;
-            }
-            break;
-        case NL80211_IFTYPE_P2P_CLIENT:
-            /*  fall-through */
-        case NL80211_IFTYPE_P2P_GO:
-            if (snprintf_s(ifName, len, len - 1, "p2p-p2p0-%d", 0) < 0) {
-                HDF_LOGE("%s:format ifName failed!", __func__);
-                return -1;
-            }
-            break;
-        default:
-            HDF_LOGE("%s:GetIfName::not supported dev type!", __func__);
-            return -1;
-    }
-    return 0;
-}
-
-int BDH6InitNetdev(struct NetDevice *netDevice, int private_data_size, int type, int ifidx)
+int P2pInitNetdev(struct NetDevice *netDevice, WifiIfAdd *ifAdd, int private_data_size, int ifidx)
 {
     struct NetDevice *hnetdev = NULL;
-    char ifName[WIFI_IFNAME_MAX_SIZE] = {0};
+    char ifName[IFNAMSIZ] = {0};
     struct HdfWifiNetDeviceData *data = NULL;
     struct net_device *netdev = NULL;
     int ret = 0;
@@ -181,10 +151,13 @@ int BDH6InitNetdev(struct NetDevice *netDevice, int private_data_size, int type,
         HDF_LOGE("%s:para is null!", __func__);
         return -1;
     }
-    if (GetIfName(type, ifName, WIFI_IFNAME_MAX_SIZE) != 0) {
-        HDF_LOGE("%s:get ifName failed!", __func__);
+
+    if (ifAdd == NULL) {
+        HDF_LOGE("%s:ifAdd is null!", __func__);
         return -1;
     }
+
+    memcpy_s(ifName, IFNAMSIZ, ifAdd->ifName, IFNAMSIZ);
 	
     hnetdev = NetDeviceInit(ifName, strlen(ifName), WIFI_LINK, FULL_OS);
     if (hnetdev == NULL) {
@@ -215,7 +188,7 @@ int BDH6InitNetdev(struct NetDevice *netDevice, int private_data_size, int type,
     }
 
     // set mac address
-    ret = wal_get_dev_addr(ac_addr, MAC_ADDR_SIZE, type);
+    ret = wal_get_dev_addr(ac_addr, MAC_ADDR_SIZE, ifAdd->type);
     if (ret != 0) {
         HDF_LOGE("generate macaddr for %s failed", hnetdev->name);
     }
@@ -415,11 +388,11 @@ int32_t hdf_p2p_netdev_ioctl(struct NetDevice *netDev, IfReq *req, int32_t cmd)
 #define MC3 3
 #define MC4 4
 #define MC5 5
-int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
+int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, void *addr)
 {
     int32_t retVal = 0;
     struct sockaddr sa;
-    const uint8_t *mac = addr;
+    const uint8_t *mac = (uint8_t *)addr;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
 
     HDF_LOGI("%s: start %s...", __func__, netDev->name);
@@ -444,7 +417,7 @@ int32_t hdf_bdh6_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
     return retVal;
 }
 
-int32_t hdf_p2p_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
+int32_t hdf_p2p_netdev_setmacaddr(struct NetDevice *netDev, void *addr)
 {
     int32_t retVal = 0;
     struct net_device *netdev = GetLinuxInfByNetDevice(netDev);
@@ -456,7 +429,7 @@ int32_t hdf_p2p_netdev_setmacaddr(struct NetDevice *netDev, uint8_t *addr)
         return HDF_FAILURE;
     }
 
-    memcpy_s(netdev->dev_addr, netdev->addr_len, addr, netdev->addr_len);
+    memcpy_s(netdev->dev_addr, netdev->addr_len, (uint8_t *)addr, netdev->addr_len);
     memcpy_s(netDev->macAddr, MAC_ADDR_SIZE, netdev->dev_addr, netdev->addr_len);
     return retVal;
 }

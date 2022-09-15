@@ -19,6 +19,7 @@
 #define NET_BDH_ADAPTER_H
 
 #include <linux/netdevice.h>
+#include "wifi_mac80211_ops.h"
 #include "net_device.h"
 
 
@@ -30,6 +31,7 @@ extern "C" {
 
 void set_krn_netdev(struct NetDevice *hnetdev, struct net_device *netdev, int ifidx);
 struct wiphy *get_krn_wiphy(void);
+int P2pInitNetdev(struct NetDevice *netDevice, WifiIfAdd *ifAdd, int private_data_size, int ifidx);
 
 int32_t hdf_bdh6_netdev_init(struct NetDevice *netDev);
 int32_t hdf_bdh6_netdev_open(struct NetDevice *netDev);

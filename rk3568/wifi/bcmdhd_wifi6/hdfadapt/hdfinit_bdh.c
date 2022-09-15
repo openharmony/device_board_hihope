@@ -141,10 +141,19 @@ static int32_t InitP2pInterface(struct NetDevice *netDevice, struct net_device *
     struct net_device *p2p_netdev = NULL;
     struct NetDevice *p2p_hnetdev = NULL;
     struct bcm_cfg80211 *cfg = NULL;
+    WifiIfAdd ifAdd;
+
+    memset(&ifAdd, 0, sizeof(ifAdd));
+    if (snprintf_s(ifAdd.ifName, IFNAMSIZ, IFNAMSIZ - 1, "p2p%d", 0) < 0) {
+        HDF_LOGE("%s:format ifName failed!", __func__);
+        return HDF_FAILURE;
+    }
+
+    ifAdd.type = NL80211_IFTYPE_P2P_DEVICE;
     // Init interface p2p0
-    ret = BDH6InitNetdev(netDevice, sizeof(void *), NL80211_IFTYPE_P2P_DEVICE, HDF_INF_P2P0);
+    ret = P2pInitNetdev(netDevice, &ifAdd, sizeof(void *), HDF_INF_P2P0);
     if (ret != 0) {
-        HDF_LOGE("%s:BDH6InitNetdev p2p0 failed", __func__);
+        HDF_LOGE("%s:P2pInitNetdev %s failed", __func__, ifAdd.ifName);
         return HDF_FAILURE;
     }
     wiphy = get_linux_wiphy_ndev(netdev);
