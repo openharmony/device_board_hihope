@@ -59,7 +59,10 @@ ohos_prebuilt_etc("updater_init_rk3568_usb.cfg") {
 ohos_prebuilt_etc("signing_cert.crt") {
   source = "config/signing_cert.crt"
   module_install_dir = "/etc/certificate"
-  install_images = [ "system", "updater" ]
+  install_images = [
+    "system",
+    "updater",
+  ]
   part_name = "rockchip_products"
 }
 
