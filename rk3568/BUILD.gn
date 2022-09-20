@@ -12,15 +12,18 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("device.gni")
 
 print("rk3568_group in")
 group("rk3568_group") {
   deps = [
-    "bootanimation:bootanimation",
     "cfg:init_configs",
     "distributedhardware:distributedhardware",
     "kernel:kernel",
     "updater:updater_files",
     "//device/soc/rockchip/rk3568/hardware:hardware_group",
   ]
+  if (is_support_boot_animation) {
+    deps += [ "bootanimation:bootanimation" ]
+  }
 }
