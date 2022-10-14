@@ -58,11 +58,21 @@ cp -rf ${3}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
 #config
 cp -rf ${KERNEL_CONFIG_FILE} ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
 
-if [ "enable_ramdisk" == "${10}" ]; then
-	./make-ohos.sh TB-RK3568X0 enable_ramdisk ${ENABLE_LTO_O0}
-else
-    ./make-ohos.sh TB-RK3568X0 disable_ramdisk ${ENABLE_LTO_O0}
-fi
+ramdisk_arg="disable_ramdisk"
+make_ohos_env="GPUDRIVER=mali"
+for i in "$@" 
+do
+	case $i in
+		enable_ramdisk)
+			ramdisk_arg=enable_ramdisk
+			;;
+		enable_mesa3d)
+			make_ohos_env="GPUDRIVER=mesa3d"
+			python ${ROOT_DIR}/third_party/mesa3d/ohos/modifyDtsi.py ${KERNEL_SRC_TMP_PATH}/arch/arm64/boot/dts/rockchip/rk3568.dtsi
+			;;
+	esac
+done
+eval $make_ohos_env ./make-ohos.sh TB-RK3568X0 $ramdisk_arg ${ENABLE_LTO_O0}
 
 mkdir -p ${2}
 
