@@ -23,5 +23,5 @@ ohos_shared_library("rebootloader") {
   }
   part_name = "rockchip_products"
   install_enable = true
-  install_images = [ "vendor" ]
+  install_images = [ chipset_base_dir ]
 }
