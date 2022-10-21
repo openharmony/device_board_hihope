@@ -21,14 +21,6 @@ struct AudioDaiOps g_daiDeviceOps = {
     .Trigger = Rk3568NormalTrigger,
 };
 
-struct DaiData g_daiData = {
-    .Read = Rk3568DeviceReadReg,
-    .Write = Rk3568DeviceWriteReg,
-    .DaiInit = Rk3568DaiDeviceInit,
-    .ops = &g_daiDeviceOps,
-};
-
-
 /* HdfDriverEntry implementations */
 static int32_t DaiDriverBind(struct HdfDeviceObject *device)
 {
@@ -48,21 +40,20 @@ static int32_t DaiDriverBind(struct HdfDeviceObject *device)
 
     daiHost->device = device;
     device->service = &daiHost->service;
-    g_daiData.daiInitFlag = false;
 
     AUDIO_DRIVER_LOG_DEBUG("success!");
     return HDF_SUCCESS;
 }
 
 
-static int32_t DaiGetServiceName(const struct HdfDeviceObject *device)
+static int32_t DaiGetServiceName(const struct HdfDeviceObject *device, struct DaiData *daiData)
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;
     int32_t ret;
     AUDIO_DRIVER_LOG_DEBUG("entry!");
 
-    if (device == NULL) {
+    if (device == NULL || daiData == NULL) {
         AUDIO_DEVICE_LOG_ERR("input para is nullptr.");
         return HDF_FAILURE;
     }
@@ -78,7 +69,7 @@ static int32_t DaiGetServiceName(const struct HdfDeviceObject *device)
         return HDF_FAILURE;
     }
 
-    ret = drsOps->GetString(node, "serviceName", &g_daiData.drvDaiName, 0);
+    ret = drsOps->GetString(node, "serviceName", &daiData->drvDaiName, 0);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("read serviceName fail!");
         return ret;
@@ -91,26 +82,50 @@ static int32_t DaiGetServiceName(const struct HdfDeviceObject *device)
 static int32_t DaiDriverInit(struct HdfDeviceObject *device)
 {
     int32_t ret = 0;
+    struct DaiData *daiData = NULL;
+    struct DaiHost *daiHost = NULL;
+
     AUDIO_DRIVER_LOG_DEBUG("entry!");
     if (device == NULL) {
         AUDIO_DEVICE_LOG_ERR("device is nullptr.");
         return HDF_ERR_INVALID_OBJECT;
     }
 
-    if (DaiGetConfigInfo(device, &g_daiData) !=  HDF_SUCCESS) {
+    daiHost = (struct DaiHost *)device->service;
+    if (daiHost == NULL) {
+        AUDIO_DEVICE_LOG_ERR("daiHost is NULL");
+        return HDF_FAILURE;
+    }
+
+    daiData = (struct DaiData *)OsalMemCalloc(sizeof(*daiData));
+    if (daiData == NULL) {
+        AUDIO_DEVICE_LOG_ERR("malloc DaiData fail!");
+        return HDF_FAILURE;
+    }
+    daiData->Read = Rk3568DeviceReadReg,
+    daiData->Write = Rk3568DeviceWriteReg,
+    daiData->DaiInit = Rk3568DaiDeviceInit,
+    daiData->ops = &g_daiDeviceOps,
+    daiData->daiInitFlag = false;
+    OsalMutexInit(&daiData->mutex);
+    daiHost->priv = daiData;
+
+    if (DaiGetConfigInfo(device, daiData) !=  HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("get dai data fail.");
+        OsalMemFree(daiData);
         return HDF_FAILURE;
     }
 
-    if (DaiGetServiceName(device) !=  HDF_SUCCESS) {
+    if (DaiGetServiceName(device, daiData) !=  HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("get service name fail.");
+        OsalMemFree(daiData);
         return HDF_FAILURE;
     }
 
-    OsalMutexInit(&g_daiData.mutex);
-    ret = AudioSocRegisterDai(device, (void *)&g_daiData);
+    ret = AudioSocRegisterDai(device, (void *)daiData);
     if (ret !=  HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("register dai fail.");
+        OsalMemFree(daiData);
         return ret;
     }
 
@@ -120,20 +135,27 @@ static int32_t DaiDriverInit(struct HdfDeviceObject *device)
 
 static void DaiDriverRelease(struct HdfDeviceObject *device)
 {
-    struct DaiHost *daiHost;
+    struct DaiHost *daiHost = NULL;
+    struct DaiData *daiData = NULL;
+
     AUDIO_DRIVER_LOG_DEBUG("entry!");
     if (device == NULL) {
         AUDIO_DEVICE_LOG_ERR("device is NULL");
         return;
     }
 
-    OsalMutexDestroy(&g_daiData.mutex);
-
     daiHost = (struct DaiHost *)device->service;
     if (daiHost == NULL) {
         AUDIO_DEVICE_LOG_ERR("daiHost is NULL");
         return;
     }
+
+    daiData = (struct DaiData *)daiHost->priv;
+    if (daiData != NULL) {
+        OsalMutexDestroy(&daiData->mutex);
+        OsalMemFree(daiData);
+    }
+
     OsalMemFree(daiHost);
     AUDIO_DRIVER_LOG_DEBUG("success!");
 }
