@@ -10,6 +10,7 @@
 #include "gpio_if.h"
 #include "audio_core.h"
 #include "audio_platform_base.h"
+#include "audio_dma_base.h"
 #include "rk3568_dma_ops.h"
 #include "osal_io.h"
 #include "osal_mem.h"
@@ -28,11 +29,6 @@ struct AudioDmaOps g_dmaDeviceOps = {
     .DmaPause = Rk3568DmaPause,
     .DmaResume = Rk3568DmaResume,
     .DmaPointer = Rk3568PcmPointer,
-};
-
-struct PlatformData g_platformData = {
-    .PlatformInit = AudioDmaDeviceInit,
-    .ops = &g_dmaDeviceOps,
 };
 
 /* HdfDriverEntry implementations */
@@ -58,13 +54,13 @@ static int32_t PlatformDriverBind(struct HdfDeviceObject *device)
     return HDF_SUCCESS;
 }
 
-static int32_t PlatformGetServiceName(const struct HdfDeviceObject *device)
+static int32_t PlatformGetServiceName(const struct HdfDeviceObject *device, struct PlatformData *platformData)
 {
     const struct DeviceResourceNode *node = NULL;
     struct DeviceResourceIface *drsOps = NULL;
     int32_t ret;
 
-    if (device == NULL) {
+    if (device == NULL || platformData == NULL) {
         AUDIO_DEVICE_LOG_ERR("para is NULL.");
         return HDF_FAILURE;
     }
@@ -81,7 +77,7 @@ static int32_t PlatformGetServiceName(const struct HdfDeviceObject *device)
         return HDF_FAILURE;
     }
 
-    ret = drsOps->GetString(node, "serviceName", &g_platformData.drvPlatformName, 0);
+    ret = drsOps->GetString(node, "serviceName", &platformData->drvPlatformName, 0);
     if (ret != HDF_SUCCESS) {
         AUDIO_DEVICE_LOG_ERR("read serviceName fail!");
         return ret;
@@ -94,32 +90,54 @@ static int32_t PlatformGetServiceName(const struct HdfDeviceObject *device)
 static int32_t PlatformDriverInit(struct HdfDeviceObject *device)
 {
     int32_t ret;
+    struct PlatformData *platformData = NULL;
+    struct PlatformHost *platformHost = NULL;
 
     if (device == NULL) {
         AUDIO_DEVICE_LOG_ERR("device is NULL.");
         return HDF_ERR_INVALID_OBJECT;
     }
+    platformHost = (struct PlatformHost *)device->service;
+    if (platformHost == NULL) {
+        AUDIO_DEVICE_LOG_ERR("platformHost is NULL");
+        return HDF_FAILURE;
+    }
 
-    ret = PlatformGetServiceName(device);
+    platformData = (struct PlatformData *)OsalMemCalloc(sizeof(*platformData));
+    if (platformData == NULL) {
+        AUDIO_DEVICE_LOG_ERR("malloc PlatformData fail!");
+        return HDF_FAILURE;
+    }
+
+    ret = PlatformGetServiceName(device, platformData);
     if (ret !=  HDF_SUCCESS) {
-        AUDIO_DEVICE_LOG_ERR("get service name fail.");
+        OsalMemFree(platformData);
         return ret;
     }
 
-    OsalMutexInit(&g_platformData.renderBufInfo.buffMutex);
-    OsalMutexInit(&g_platformData.captureBufInfo.buffMutex);
-    ret = AudioSocRegisterPlatform(device, &g_platformData);
+    platformData->PlatformInit = AudioDmaDeviceInit;
+    platformData->ops = &g_dmaDeviceOps;
+    if (AudioDmaGetConfigInfo(device, platformData) !=  HDF_SUCCESS) {
+        OsalMemFree(platformData);
+        return HDF_FAILURE;
+    }
+
+    OsalMutexInit(&platformData->renderBufInfo.buffMutex);
+    OsalMutexInit(&platformData->captureBufInfo.buffMutex);
+    ret = AudioSocRegisterPlatform(device, platformData);
     if (ret !=  HDF_SUCCESS) {
-        AUDIO_DEVICE_LOG_ERR("register dai fail.");
+        OsalMemFree(platformData);
         return ret;
     }
 
+    platformHost->priv = platformData;
     AUDIO_DEVICE_LOG_DEBUG("success.\n");
     return HDF_SUCCESS;
 }
 
 static void PlatformDriverRelease(struct HdfDeviceObject *device)
 {
+    struct PlatformData *platformData = NULL;
     struct PlatformHost *platformHost = NULL;
     if (device == NULL) {
         AUDIO_DEVICE_LOG_ERR("device is NULL");
@@ -132,8 +150,13 @@ static void PlatformDriverRelease(struct HdfDeviceObject *device)
         return;
     }
 
-    OsalMutexDestroy(&g_platformData.renderBufInfo.buffMutex);
-    OsalMutexDestroy(&g_platformData.captureBufInfo.buffMutex);
+    platformData = (struct PlatformData *)platformHost->priv;
+    if (platformData != NULL) {
+        OsalMutexDestroy(&platformData->renderBufInfo.buffMutex);
+        OsalMutexDestroy(&platformData->captureBufInfo.buffMutex);
+        OsalMemFree(platformData);
+    }
+
     OsalMemFree(platformHost);
     AUDIO_DEVICE_LOG_DEBUG("success.\n");
     return;

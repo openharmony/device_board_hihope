@@ -77,7 +77,7 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
     int32_t ret;
     struct regmap_config codecRegmapCfg = getCodecRegmap();
     struct platform_device *codeDev = GetCodecPlatformDevice();
-    struct rk808 *rk808;
+    struct rk808 *rk808 = NULL;
     if (!codeDev) {
         AUDIO_DEVICE_LOG_ERR("codeDev not ready");
         return HDF_FAILURE;
@@ -95,20 +95,21 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
     if (!rk808) {
         return HDF_FAILURE;
     }
+
     g_chip->regmap = devm_regmap_init_i2c(rk808->i2c, &codecRegmapCfg);
     if (IS_ERR(g_chip->regmap)) {
         AUDIO_DEVICE_LOG_ERR("failed to allocate regmap: %ld\n", PTR_ERR(g_chip->regmap));
         return HDF_FAILURE;
     }
 
-    if (CodecGetConfigInfo(device, &g_rk809Data) !=  HDF_SUCCESS) {
+    if (CodecGetConfigInfo(device, &g_rk809Data) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
     if (CodecSetConfigInfoOfControls(&g_rk809Data,  &g_rk809DaiData) != HDF_SUCCESS) {
         return HDF_FAILURE;
     }
     ret = CodecGetServiceName(device, &(g_rk809Data.drvCodecName));
-    if (ret !=  HDF_SUCCESS) {
+    if (ret != HDF_SUCCESS) {
         return ret;
     }
     ret = CodecGetDaiName(device,  &(g_rk809DaiData.drvDaiName));
@@ -118,7 +119,7 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
     OsalMutexInit(&g_rk809Data.mutex);
     OsalMutexInit(&g_rk809DaiData.mutex);
     ret = AudioRegisterCodec(device, &g_rk809Data, &g_rk809DaiData);
-    if (ret !=  HDF_SUCCESS) {
+    if (ret != HDF_SUCCESS) {
         return ret;
     }
     return HDF_SUCCESS;
