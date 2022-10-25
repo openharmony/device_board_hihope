@@ -80,10 +80,17 @@ if [ "enable_ramdisk" != "${10}" ]; then
 	cp ${KERNEL_OBJ_TMP_PATH}/boot_linux.img ${2}/boot_linux.img
 fi
 cp ${KERNEL_OBJ_TMP_PATH}/resource.img ${2}/resource.img
-cp ${3}/loader/parameter.txt ${2}/parameter.txt
 cp ${3}/loader/MiniLoaderAll.bin ${2}/MiniLoaderAll.bin
 cp ${3}/loader/uboot.img ${2}/uboot.img
-cp ${3}/loader/config.cfg ${2}/config.cfg
+
+if [ "enable_absystem" == "${12}" ]; then
+	cp ${3}/loader/parameter_ab.txt ${2}/parameter_ab.txt
+	cp ${3}/loader/config_ab.cfg ${2}/config_ab.cfg
+else
+	cp ${3}/loader/parameter.txt ${2}/parameter.txt
+	cp ${3}/loader/config.cfg ${2}/config.cfg
+fi
+
 popd
 
 ../kernel/src_tmp/linux-5.10/make-boot.sh ..
