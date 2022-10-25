@@ -44,4 +44,7 @@ action("kernel") {
   if (enable_mesa3d) {
     args += [ "enable_mesa3d" ]
   }
+  if (enable_absystem) {
+    args += [ "enable_absystem" ]
+  }
 }
