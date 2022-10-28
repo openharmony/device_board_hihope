@@ -390,6 +390,7 @@ void RKCodecNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
         Yuv420ToRGBA8888(buffer);
     }
 
+    std::vector<std::shared_ptr<IPort>> outPutPorts_;
     outPutPorts_ = GetOutPorts();
     for (auto& it : outPutPorts_) {
         if (it->format_.streamId_ == id) {
