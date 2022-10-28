@@ -56,7 +56,6 @@ private:
 
     static uint32_t                       previewWidth_;
     static uint32_t                       previewHeight_;
-    std::vector<std::shared_ptr<IPort>>   outPutPorts_;
     void* halCtx_ = nullptr;
     int mppStatus_ = 0;
 };
