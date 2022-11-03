@@ -13,6 +13,14 @@
 
 import("//build/ohos.gni")
 
+updater_ueventd_cfg = "//base/startup/init/services/etc/ueventd.cfg"
+
+ohos_prebuilt_etc("updater_ueventd.cfg") {
+  source = "${updater_ueventd_cfg}"
+  install_images = [ "updater" ]
+  part_name = "rockchip_products"
+}
+
 ohos_prebuilt_etc("updater_init.cfg") {
   source = "config/init.cfg"
   install_images = [ "updater" ]
@@ -43,6 +51,7 @@ ohos_prebuilt_etc("fstab.updater") {
 
 group("updater_files") {
   deps = [
+    ":updater_ueventd.cfg",
     ":fstab.updater",
     ":signing_cert.crt",
     ":updater_init.cfg",
