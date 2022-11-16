@@ -29,7 +29,7 @@ KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/linux-5.10
 KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
 KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
 KERNEL_CONFIG_FILE=${ROOT_DIR}/kernel/linux/config/linux-5.10/arch/arm64/configs/rk3568_standard_defconfig
-NEWIP_PATCH_FILE=${ROOT_DIR}/foundation/communication/sfc/newip/apply_newip.sh
+NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/common_modules/newip/apply_newip.sh
 
 rm -rf ${KERNEL_SRC_TMP_PATH}
 mkdir -p ${KERNEL_SRC_TMP_PATH}
