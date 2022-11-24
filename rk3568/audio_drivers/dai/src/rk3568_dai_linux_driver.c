@@ -5,6 +5,7 @@
  * the GPL, or the BSD license, at your option.
  * See the LICENSE file in the root of this repository for complete details.
  */
+
 #include <sound/pcm_params.h>
 #include <sound/dmaengine_pcm.h>
 #include <linux/module.h>
@@ -200,12 +201,8 @@ static int rockchip_i2s_tdm_probe(struct platform_device *pdev)
 
     int ret;
     int val;
-    AUDIO_DEVICE_LOG_DEBUG("enter ");
+    AUDIO_DEVICE_LOG_INFO("enter ");
     temp_i2s_dev = &pdev->dev;
-    if (strcmp(dev_name(temp_i2s_dev), "fe410000.i2s") != 0) {
-        AUDIO_DRIVER_LOG_INFO("failed dmaDevice->name %s ", dev_name(temp_i2s_dev));
-        return 0;
-    }
     AUDIO_DEVICE_LOG_DEBUG("dmaDevice->name %s ", dev_name(temp_i2s_dev));
     i2s_tdm = devm_kzalloc(&pdev->dev, sizeof(*i2s_tdm), GFP_KERNEL);
     if (!i2s_tdm) {
@@ -318,7 +315,6 @@ static int rockchip_i2s_tdm_remove(struct platform_device *pdev)
 
     return 0;
 }
-
 
 static struct platform_driver rockchip_i2s_tdm_driver = {
     .probe = rockchip_i2s_tdm_probe,
