@@ -20,8 +20,8 @@ extern "C" {
 }
 
 namespace OHOS::Camera {
-uint32_t RKCodecNode::previewWidth_ = 0;
-uint32_t RKCodecNode::previewHeight_ = 0;
+uint32_t RKCodecNode::previewWidth_ = 640;
+uint32_t RKCodecNode::previewHeight_ = 480;
 const unsigned long long TIME_CONVERSION_NS_S = 1000000000ULL; /* ns to s */
 
 RKCodecNode::RKCodecNode(const std::string& name, const std::string& type) : NodeBase(name, type)
