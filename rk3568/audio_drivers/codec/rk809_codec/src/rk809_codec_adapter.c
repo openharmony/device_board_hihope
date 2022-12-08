@@ -102,7 +102,11 @@ static int32_t Rk809DriverInit(struct HdfDeviceObject *device)
         return HDF_FAILURE;
     }
 
-    if (CodecGetConfigInfo(device, &g_rk809Data) != HDF_SUCCESS) {
+    if (CodecDaiGetPortConfigInfo(device, &g_rk809DaiData) != HDF_SUCCESS) {
+        return HDF_FAILURE;
+    }
+
+    if (CodecGetConfigInfo(device, &g_rk809Data) !=  HDF_SUCCESS) {
         return HDF_FAILURE;
     }
     if (CodecSetConfigInfoOfControls(&g_rk809Data,  &g_rk809DaiData) != HDF_SUCCESS) {
