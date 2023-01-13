@@ -143,7 +143,7 @@ static int32_t InitP2pInterface(struct NetDevice *netDevice, struct net_device *
     struct bcm_cfg80211 *cfg = NULL;
     WifiIfAdd ifAdd;
 
-    memset(&ifAdd, 0, sizeof(ifAdd));
+    memset_s(&ifAdd, sizeof(ifAdd), 0, sizeof(ifAdd));
     if (snprintf_s(ifAdd.ifName, IFNAMSIZ, IFNAMSIZ - 1, "p2p%d", 0) < 0) {
         HDF_LOGE("%s:format ifName failed!", __func__);
         return HDF_FAILURE;
