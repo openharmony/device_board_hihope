@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (c) 2021 HiHope Open Source Organization .
+# Copyright (c) 2021-2023 HiHope Open Source Organization .
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -57,6 +57,14 @@ cp -rf ${3}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
 
 #config
 cp -rf ${KERNEL_CONFIG_FILE} ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
+
+#selinux config patch
+for arg in "$@"; do
+	if [ "$arg" = "is_release" ]; then
+		echo "close selinux kernel config CONFIG_SECURITY_SELINUX_DEVELOP in release version"
+		${KERNEL_SOURCE}/scripts/config --file ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig -d SECURITY_SELINUX_DEVELOP
+	fi
+done
 
 ramdisk_arg="disable_ramdisk"
 make_ohos_env="GPUDRIVER=mali"
