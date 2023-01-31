@@ -61,6 +61,7 @@ board_cflags = [
   "-ffunction-sections",
   "-MMD",
   "-MP",
+  "-DLOSCFG_BASE_CORE_HILOG",
 ]
 
 board_cxx_flags = board_cflags
