@@ -21,7 +21,10 @@ action("kernel") {
   sources = [ kernel_source_dir ]
 
   product_path = "vendor/$product_company/$product_name"
-  outputs = [ "$root_build_dir/../kernel/src_tmp/linux-5.10/boot_linux" ]
+  outputs = [
+    "$root_build_dir/../kernel/src_tmp/linux-5.10/boot_linux",
+    "$root_build_dir/../kernel/checkpoint/compile_check",
+  ]
   args = [
     rebase_path(kernel_build_script_dir, root_build_dir),
     rebase_path("$root_build_dir/packages/phone/images"),
