@@ -128,6 +128,7 @@ popd
 ../kernel/src_tmp/linux-5.10/make-boot.sh ..
 
 if [ ${KERNEL_SOURCE_CHANGED} -ne 0 ]; then
+    cp ${ROOT_DIR}/out/kernel/checkpoint/last_build.info ${ROOT_DIR}/out/kernel/checkpoint/last_build.backup
     cp ${ROOT_DIR}/out/kernel/checkpoint/current_build.info ${ROOT_DIR}/out/kernel/checkpoint/last_build.info
     echo "kernel compile finish, save build info."
 else
