@@ -38,10 +38,10 @@ function is_kernel_change
 
     for dep in ${DEPS[@]}
     do
-        echo $ROOT_PATH/$dep: >> $BUILD_INFO_PATH/current_build.info
+        echo $dep: >> $BUILD_INFO_PATH/current_build.info
         echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" >> $BUILD_INFO_PATH/current_build.info
         cd $ROOT_PATH/$dep
-        git show --stat >> $BUILD_INFO_PATH/current_build.info
+        git log -n 2 >> $BUILD_INFO_PATH/current_build.info
         cd -
         echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" >> $BUILD_INFO_PATH/current_build.info
     done
