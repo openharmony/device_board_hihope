@@ -204,7 +204,7 @@ static void BDH_EnableEapol(struct NetDevice *netDev)
     WifiEnableEapol eapol;
     const struct Eapol *eapolCB = EapolGetInstance();
     
-    eapol.callback = (void *)HdfWifiEventEapolRecv;
+    eapol.callback = HdfWifiEventEapolRecv;
     eapol.context = NULL;
     
     eapolCB->eapolOp->enableEapol(netDev, (struct EapolEnable *)&eapol);
