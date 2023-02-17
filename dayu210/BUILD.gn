@@ -23,6 +23,7 @@ group("dayu210_group") {
     "updater:updater_files",
     "//device/soc/rockchip/rk3588/hardware:hardware_group",
   ]
+
   #if (is_standard_system) {
   #  deps += [ "startup/reboot_loader:rebootloader" ]
   #}
