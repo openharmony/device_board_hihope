@@ -48,6 +48,7 @@ config("pipe_config") {
 
 ohos_shared_library("camera_pipeline_core") {
   sources = [
+    "$board_camera_path/pipeline_core/src/node/v4l2_source_node_rk.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_codec_node.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_exif_node.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_face_node.cpp",
@@ -161,8 +162,6 @@ ohos_shared_library("camera_pipeline_core") {
     "graphic_chipsetsdk:surface",
     "ipc:ipc_single",
   ]
-
-  defines += [ "RK3588_CAMERA" ]
 
   public_configs = [ ":pipe_config" ]
   install_images = [ chipset_base_dir ]
