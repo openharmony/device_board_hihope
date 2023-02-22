@@ -63,6 +63,7 @@
         </policylist>
         <filefilterlist>
             <filefilter name="defaultFilter" desc="Files not to check">
+                <filteritem type="filepath" name="LICENSE*" desc="license file"/>
                 <filteritem type="filepath" name="rk3568/cfg/fstab.rk3568" desc="配置文件，不能加其他注释"/>
                 <filteritem type="filepath" name="dayu210/cfg/fstab.dayu210" desc="配置文件，不能加其他注释"/>
                 <filteritem type="filepath" name="rk3568/cfg/fstab.required" desc="配置文件，不能加其他注释"/>
