@@ -16,13 +16,17 @@
 
 基于瑞芯微 RK3568，集成双核心架构GPU以及高效能NPU；板载四核64位Cortex-A55 处理器采用22nm先进工艺，主频高达2.0GHz；支持蓝牙、Wi-Fi、音频、视频和摄像头等功能，拥有丰富的扩展接口，支持多种视频输入输出接口；配置双千兆自适应RJ45以太网口，可满足NVR、工业网关等多网口产品需求；通过SODIMM 314P标准接口连接核心板与底板即形成一块完整的AI开发板。
 
+- [DAYU210]
+
+基于瑞芯微 RK3588，采用集成四核Cortex-A76 和四核Cortex-A55，主频高达2.4G；支持蓝牙、Wi-Fi、音频、视频和摄像头等功能，拥有丰富的扩展接口，支持多种视频输入输出接口；可满足NVR、工业网关等多网口产品需求；
+
 ## 目录
 
 ```
 device/board/hihope
 ├── neptune100                            # Neptune100开发板
 ├── rk3568                                # DAYU200开发板
-└── ...
+└── dayu210                               #DAYU210开发板
 ```
 
 ## 使用说明
@@ -32,6 +36,10 @@ neptune100参考：
 
 DAYU200参考:
 - [rk3568](https://gitee.com/openharmony/device_board_hihope/blob/master/rk3568/README_zh.md)
+
+DAYU210参考:
+
+- [dayu210](https://gitee.com/openharmony/device_board_hihope/blob/master/dayu210/README_zh.md)
 
 ## 相关仓
 
