@@ -6890,12 +6890,12 @@ index ed26664f1..8af2bc899 100644
  
  extern struct notifier_block gpio_of_notifier;
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index ca868271f..2a9184156 100644
+index 4e9b3a95f..95994151a 100644
 --- a/drivers/gpu/drm/Kconfig
 +++ b/drivers/gpu/drm/Kconfig
-@@ -31,6 +31,10 @@ config DRM_MIPI_DBI
- 	tristate
+@@ -32,6 +32,10 @@ config DRM_MIPI_DBI
  	depends on DRM
+ 	select DRM_KMS_HELPER
  
 +config DRM_IGNORE_IOTCL_PERMIT
 +	bool "Ignore drm ioctl permission"
@@ -13856,10 +13856,10 @@ index aef226340..da4f085fc 100644
  	return ret;
  }
 diff --git a/drivers/gpu/drm/drm_mipi_dsi.c b/drivers/gpu/drm/drm_mipi_dsi.c
-index 5dd475e82..c73aaab95 100644
+index 2c43d5476..d95bf573a 100644
 --- a/drivers/gpu/drm/drm_mipi_dsi.c
 +++ b/drivers/gpu/drm/drm_mipi_dsi.c
-@@ -355,6 +355,7 @@ static ssize_t mipi_dsi_device_transfer(struct mipi_dsi_device *dsi,
+@@ -356,6 +356,7 @@ static ssize_t mipi_dsi_device_transfer(struct mipi_dsi_device *dsi,
  
  	if (dsi->mode_flags & MIPI_DSI_MODE_LPM)
  		msg->flags |= MIPI_DSI_MSG_USE_LPM;
@@ -59481,10 +59481,10 @@ index b6dc9003b..b7b690972 100644
  static inline int serial8250_request_dma(struct uart_8250_port *p)
  {
 diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
-index 98ce484f1..0b41e81a5 100644
+index 0a7e9491b..760886a2c 100644
 --- a/drivers/tty/serial/8250/8250_core.c
 +++ b/drivers/tty/serial/8250/8250_core.c
-@@ -559,6 +559,7 @@ static void __init serial8250_isa_init_ports(void)
+@@ -565,6 +565,7 @@ static void __init serial8250_isa_init_ports(void)
  static void __init
  serial8250_register_ports(struct uart_driver *drv, struct device *dev)
  {
@@ -59492,7 +59492,7 @@ index 98ce484f1..0b41e81a5 100644
  	int i;
  
  	for (i = 0; i < nr_uarts; i++) {
-@@ -578,6 +579,7 @@ serial8250_register_ports(struct uart_driver *drv, struct device *dev)
+@@ -584,6 +585,7 @@ serial8250_register_ports(struct uart_driver *drv, struct device *dev)
  		serial8250_apply_quirks(up);
  		uart_add_one_port(drv, &up->port);
  	}
@@ -59500,7 +59500,7 @@ index 98ce484f1..0b41e81a5 100644
  }
  
  #ifdef CONFIG_SERIAL_8250_CONSOLE
-@@ -1024,6 +1026,9 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
+@@ -1031,6 +1033,9 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
  		uart->rs485_stop_tx	= up->rs485_stop_tx;
  		uart->dma		= up->dma;
  
@@ -59510,7 +59510,7 @@ index 98ce484f1..0b41e81a5 100644
  		/* Take tx_loadsz from fifosize if it wasn't set separately */
  		if (uart->port.fifosize && !uart->tx_loadsz)
  			uart->tx_loadsz = uart->port.fifosize;
-@@ -1247,7 +1252,11 @@ static void __exit serial8250_exit(void)
+@@ -1254,7 +1259,11 @@ static void __exit serial8250_exit(void)
  #endif
  }
  
@@ -60035,7 +60035,7 @@ index 6d6a78eea..fee4f2933 100644
  	}
  
 diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index 9d60418e4..0189ef36e 100644
+index 71d143c00..754ae9e6b 100644
 --- a/drivers/tty/serial/8250/8250_port.c
 +++ b/drivers/tty/serial/8250/8250_port.c
 @@ -122,8 +122,7 @@ static const struct serial8250_config uart_config[] = {
@@ -60149,7 +60149,7 @@ index 9d60418e4..0189ef36e 100644
  	uart_unlock_and_check_sysrq(port, flags);
  	return 1;
  }
-@@ -2396,7 +2443,11 @@ int serial8250_do_startup(struct uart_port *port)
+@@ -2398,7 +2445,11 @@ int serial8250_do_startup(struct uart_port *port)
  		if (uart_console(port))
  			msg = "forbid DMA for kernel console";
  		else if (serial8250_request_dma(up))
@@ -60161,7 +60161,7 @@ index 9d60418e4..0189ef36e 100644
  		if (msg) {
  			dev_warn_ratelimited(port->dev, "%s\n", msg);
  			up->dma = NULL;
-@@ -2590,6 +2641,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2592,6 +2643,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -60172,7 +60172,7 @@ index 9d60418e4..0189ef36e 100644
  	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
  	if (is_omap1510_8250(up)) {
  		if (baud == 115200) {
-@@ -2609,6 +2664,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2611,6 +2666,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  		serial_port_out(port, UART_LCR, up->lcr | UART_LCR_DLAB);
  
  	serial_dl_write(up, quot);
@@ -60190,7 +60190,7 @@ index 9d60418e4..0189ef36e 100644
  }
  EXPORT_SYMBOL_GPL(serial8250_do_set_divisor);
  
-@@ -2788,6 +2854,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2790,6 +2856,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  	if ((termios->c_cflag & CREAD) == 0)
  		port->ignore_status_mask |= UART_LSR_DR;
  
@@ -60198,7 +60198,7 @@ index 9d60418e4..0189ef36e 100644
  	/*
  	 * CTS flow control flag and modem status interrupts
  	 */
-@@ -2801,6 +2868,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2803,6 +2870,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		up->ier |= UART_IER_RTOIE;
  
  	serial_port_out(port, UART_IER, up->ier);
@@ -60206,7 +60206,7 @@ index 9d60418e4..0189ef36e 100644
  
  	if (up->capabilities & UART_CAP_EFR) {
  		unsigned char efr = 0;
-@@ -2819,16 +2887,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2821,16 +2889,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  			serial_port_out(port, UART_EFR, efr);
  	}
  
@@ -60234,7 +60234,7 @@ index 9d60418e4..0189ef36e 100644
  	if (port->type != PORT_16750) {
  		/* emulated UARTs (Lucent Venus 167x) need two steps */
  		if (up->fcr & UART_FCR_ENABLE_FIFO)
-@@ -2836,6 +2913,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2838,6 +2915,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		serial_port_out(port, UART_FCR, up->fcr);	/* set fcr */
  	}
  	serial8250_set_mctrl(port, port->mctrl);
@@ -60338,162 +60338,36 @@ index b85662243..5e8a04e3d 100644
  	help
  	  This option adds LED triggers for USB host and/or gadget activity.
  
-diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
-index 1433260d9..347fb3d38 100644
---- a/drivers/usb/common/common.c
-+++ b/drivers/usb/common/common.c
-@@ -25,6 +25,12 @@ static const char *const ep_type_names[] = {
- 	[USB_ENDPOINT_XFER_INT] = "intr",
- };
- 
-+/**
-+ * usb_ep_type_string() - Returns human readable-name of the endpoint type.
-+ * @ep_type: The endpoint type to return human-readable name for.  If it's not
-+ *   any of the types: USB_ENDPOINT_XFER_{CONTROL, ISOC, BULK, INT},
-+ *   usually got by usb_endpoint_type(), the string 'unknown' will be returned.
-+ */
- const char *usb_ep_type_string(int ep_type)
- {
- 	if (ep_type < 0 || ep_type >= ARRAY_SIZE(ep_type_names))
-@@ -69,6 +75,19 @@ static const char *const speed_names[] = {
- 	[USB_SPEED_SUPER_PLUS] = "super-speed-plus",
- };
- 
-+static const char *const ssp_rate[] = {
-+	[USB_SSP_GEN_UNKNOWN] = "UNKNOWN",
-+	[USB_SSP_GEN_2x1] = "super-speed-plus-gen2x1",
-+	[USB_SSP_GEN_1x2] = "super-speed-plus-gen1x2",
-+	[USB_SSP_GEN_2x2] = "super-speed-plus-gen2x2",
-+};
-+
-+/**
-+ * usb_speed_string() - Returns human readable-name of the speed.
-+ * @speed: The speed to return human-readable name for.  If it's not
-+ *   any of the speeds defined in usb_device_speed enum, string for
-+ *   USB_SPEED_UNKNOWN will be returned.
-+ */
- const char *usb_speed_string(enum usb_device_speed speed)
- {
- 	if (speed < 0 || speed >= ARRAY_SIZE(speed_names))
-@@ -77,6 +96,14 @@ const char *usb_speed_string(enum usb_device_speed speed)
- }
- EXPORT_SYMBOL_GPL(usb_speed_string);
- 
-+/**
-+ * usb_get_maximum_speed - Get maximum requested speed for a given USB
-+ * controller.
-+ * @dev: Pointer to the given USB controller device
-+ *
-+ * The function gets the maximum speed string from property "maximum-speed",
-+ * and returns the corresponding enum usb_device_speed.
-+ */
- enum usb_device_speed usb_get_maximum_speed(struct device *dev)
- {
- 	const char *maximum_speed;
-@@ -86,12 +113,44 @@ enum usb_device_speed usb_get_maximum_speed(struct device *dev)
- 	if (ret < 0)
- 		return USB_SPEED_UNKNOWN;
- 
--	ret = match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
-+	ret = match_string(ssp_rate, ARRAY_SIZE(ssp_rate), maximum_speed);
-+	if (ret > 0)
-+		return USB_SPEED_SUPER_PLUS;
- 
-+	ret = match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
- 	return (ret < 0) ? USB_SPEED_UNKNOWN : ret;
- }
- EXPORT_SYMBOL_GPL(usb_get_maximum_speed);
- 
-+/**
-+ * usb_get_maximum_ssp_rate - Get the signaling rate generation and lane count
-+ *	of a SuperSpeed Plus capable device.
-+ * @dev: Pointer to the given USB controller device
-+ *
-+ * If the string from "maximum-speed" property is super-speed-plus-genXxY where
-+ * 'X' is the generation number and 'Y' is the number of lanes, then this
-+ * function returns the corresponding enum usb_ssp_rate.
-+ */
-+enum usb_ssp_rate usb_get_maximum_ssp_rate(struct device *dev)
-+{
-+	const char *maximum_speed;
-+	int ret;
-+
-+	ret = device_property_read_string(dev, "maximum-speed", &maximum_speed);
-+	if (ret < 0)
-+		return USB_SSP_GEN_UNKNOWN;
-+
-+	ret = match_string(ssp_rate, ARRAY_SIZE(ssp_rate), maximum_speed);
-+	return (ret < 0) ? USB_SSP_GEN_UNKNOWN : ret;
-+}
-+EXPORT_SYMBOL_GPL(usb_get_maximum_ssp_rate);
-+
-+/**
-+ * usb_state_string - Returns human readable name for the state.
-+ * @state: The state to return a human-readable name for. If it's not
-+ *	any of the states devices in usb_device_state_string enum,
-+ *	the string UNKNOWN will be returned.
-+ */
- const char *usb_state_string(enum usb_device_state state)
- {
- 	static const char *const names[] = {
-@@ -141,6 +200,47 @@ enum usb_dr_mode usb_get_dr_mode(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(usb_get_dr_mode);
- 
-+/**
-+ * usb_decode_interval - Decode bInterval into the time expressed in 1us unit
-+ * @epd: The descriptor of the endpoint
-+ * @speed: The speed that the endpoint works as
-+ *
-+ * Function returns the interval expressed in 1us unit for servicing
-+ * endpoint for data transfers.
-+ */
-+unsigned int usb_decode_interval(const struct usb_endpoint_descriptor *epd,
-+				 enum usb_device_speed speed)
-+{
-+	unsigned int interval = 0;
-+
-+	switch (usb_endpoint_type(epd)) {
-+	case USB_ENDPOINT_XFER_CONTROL:
-+		/* uframes per NAK */
-+		if (speed == USB_SPEED_HIGH)
-+			interval = epd->bInterval;
-+		break;
-+	case USB_ENDPOINT_XFER_ISOC:
-+		interval = 1 << (epd->bInterval - 1);
-+		break;
-+	case USB_ENDPOINT_XFER_BULK:
-+		/* uframes per NAK */
-+		if (speed == USB_SPEED_HIGH && usb_endpoint_dir_out(epd))
-+			interval = epd->bInterval;
-+		break;
-+	case USB_ENDPOINT_XFER_INT:
-+		if (speed >= USB_SPEED_HIGH)
-+			interval = 1 << (epd->bInterval - 1);
-+		else
-+			interval = epd->bInterval;
-+		break;
-+	}
-+
-+	interval *= (speed >= USB_SPEED_HIGH) ? 125 : 1000;
-+
-+	return interval;
-+}
-+EXPORT_SYMBOL_GPL(usb_decode_interval);
-+
- #ifdef CONFIG_OF
- /**
-  * of_usb_get_dr_mode_by_phy - Get dual role mode for the controller device
 diff --git a/drivers/usb/common/debug.c b/drivers/usb/common/debug.c
-index ba849c7bc..a76a086b9 100644
+index f0c0e8db7..a76a086b9 100644
 --- a/drivers/usb/common/debug.c
 +++ b/drivers/usb/common/debug.c
-@@ -207,8 +207,26 @@ static void usb_decode_set_isoch_delay(__u8 wValue, char *str, size_t size)
+@@ -207,28 +207,30 @@ static void usb_decode_set_isoch_delay(__u8 wValue, char *str, size_t size)
  	snprintf(str, size, "Set Isochronous Delay(Delay = %d ns)", wValue);
  }
  
--/*
-- * usb_decode_ctrl - returns a string representation of ctrl request
+-static void usb_decode_ctrl_generic(char *str, size_t size, __u8 bRequestType,
+-				    __u8 bRequest, __u16 wValue, __u16 wIndex,
+-				    __u16 wLength)
+-{
+-	u8 recip = bRequestType & USB_RECIP_MASK;
+-	u8 type = bRequestType & USB_TYPE_MASK;
+-
+-	snprintf(str, size,
+-		 "Type=%s Recipient=%s Dir=%s bRequest=%u wValue=%u wIndex=%u wLength=%u",
+-		 (type == USB_TYPE_STANDARD)    ? "Standard" :
+-		 (type == USB_TYPE_VENDOR)      ? "Vendor" :
+-		 (type == USB_TYPE_CLASS)       ? "Class" : "Unknown",
+-		 (recip == USB_RECIP_DEVICE)    ? "Device" :
+-		 (recip == USB_RECIP_INTERFACE) ? "Interface" :
+-		 (recip == USB_RECIP_ENDPOINT)  ? "Endpoint" : "Unknown",
+-		 (bRequestType & USB_DIR_IN)    ? "IN" : "OUT",
+-		 bRequest, wValue, wIndex, wLength);
+-}
+-
+-static void usb_decode_ctrl_standard(char *str, size_t size, __u8 bRequestType,
+-				     __u8 bRequest, __u16 wValue, __u16 wIndex,
+-				     __u16 wLength)
 +/**
 + * usb_decode_ctrl - Returns human readable representation of control request.
 + * @str: buffer to return a human-readable representation of control request.
@@ -60514,9 +60388,70 @@ index ba849c7bc..a76a086b9 100644
 + *
 + * Important: wValue, wIndex, wLength parameters before invoking this function
 + * should be processed by le16_to_cpu macro.
-  */
- const char *usb_decode_ctrl(char *str, size_t size, __u8 bRequestType,
- 			    __u8 bRequest, __u16 wValue, __u16 wIndex,
++ */
++const char *usb_decode_ctrl(char *str, size_t size, __u8 bRequestType,
++			    __u8 bRequest, __u16 wValue, __u16 wIndex,
++			    __u16 wLength)
+ {
+ 	switch (bRequest) {
+ 	case USB_REQ_GET_STATUS:
+@@ -269,48 +271,14 @@ static void usb_decode_ctrl_standard(char *str, size_t size, __u8 bRequestType,
+ 		usb_decode_set_isoch_delay(wValue, str, size);
+ 		break;
+ 	default:
+-		usb_decode_ctrl_generic(str, size, bRequestType, bRequest,
+-					wValue, wIndex, wLength);
+-		break;
+-	}
+-}
+-
+-/**
+- * usb_decode_ctrl - Returns human readable representation of control request.
+- * @str: buffer to return a human-readable representation of control request.
+- *       This buffer should have about 200 bytes.
+- * @size: size of str buffer.
+- * @bRequestType: matches the USB bmRequestType field
+- * @bRequest: matches the USB bRequest field
+- * @wValue: matches the USB wValue field (CPU byte order)
+- * @wIndex: matches the USB wIndex field (CPU byte order)
+- * @wLength: matches the USB wLength field (CPU byte order)
+- *
+- * Function returns decoded, formatted and human-readable description of
+- * control request packet.
+- *
+- * The usage scenario for this is for tracepoints, so function as a return
+- * use the same value as in parameters. This approach allows to use this
+- * function in TP_printk
+- *
+- * Important: wValue, wIndex, wLength parameters before invoking this function
+- * should be processed by le16_to_cpu macro.
+- */
+-const char *usb_decode_ctrl(char *str, size_t size, __u8 bRequestType,
+-			    __u8 bRequest, __u16 wValue, __u16 wIndex,
+-			    __u16 wLength)
+-{
+-	switch (bRequestType & USB_TYPE_MASK) {
+-	case USB_TYPE_STANDARD:
+-		usb_decode_ctrl_standard(str, size, bRequestType, bRequest,
+-					 wValue, wIndex, wLength);
+-		break;
+-	case USB_TYPE_VENDOR:
+-	case USB_TYPE_CLASS:
+-	default:
+-		usb_decode_ctrl_generic(str, size, bRequestType, bRequest,
+-					wValue, wIndex, wLength);
+-		break;
++		snprintf(str, size, "%02x %02x %02x %02x %02x %02x %02x %02x",
++			 bRequestType, bRequest,
++			 (u8)(cpu_to_le16(wValue) & 0xff),
++			 (u8)(cpu_to_le16(wValue) >> 8),
++			 (u8)(cpu_to_le16(wIndex) & 0xff),
++			 (u8)(cpu_to_le16(wIndex) >> 8),
++			 (u8)(cpu_to_le16(wLength) & 0xff),
++			 (u8)(cpu_to_le16(wLength) >> 8));
+ 	}
+ 
+ 	return str;
 diff --git a/drivers/usb/core/config.c b/drivers/usb/core/config.c
 index 39f1eca60..562a730be 100644
 --- a/drivers/usb/core/config.c
@@ -60542,53 +60477,6 @@ index 39f1eca60..562a730be 100644
  			maxp &= ~i;
  		}
  		fallthrough;
-diff --git a/drivers/usb/core/devices.c b/drivers/usb/core/devices.c
-index 1ef2de6e3..d8b0041de 100644
---- a/drivers/usb/core/devices.c
-+++ b/drivers/usb/core/devices.c
-@@ -157,38 +157,25 @@ static char *usb_dump_endpoint_descriptor(int speed, char *start, char *end,
- 	switch (usb_endpoint_type(desc)) {
- 	case USB_ENDPOINT_XFER_CONTROL:
- 		type = "Ctrl";
--		if (speed == USB_SPEED_HIGH)	/* uframes per NAK */
--			interval = desc->bInterval;
--		else
--			interval = 0;
- 		dir = 'B';			/* ctrl is bidirectional */
- 		break;
- 	case USB_ENDPOINT_XFER_ISOC:
- 		type = "Isoc";
--		interval = 1 << (desc->bInterval - 1);
- 		break;
- 	case USB_ENDPOINT_XFER_BULK:
- 		type = "Bulk";
--		if (speed == USB_SPEED_HIGH && dir == 'O') /* uframes per NAK */
--			interval = desc->bInterval;
--		else
--			interval = 0;
- 		break;
- 	case USB_ENDPOINT_XFER_INT:
- 		type = "Int.";
--		if (speed == USB_SPEED_HIGH || speed >= USB_SPEED_SUPER)
--			interval = 1 << (desc->bInterval - 1);
--		else
--			interval = desc->bInterval;
- 		break;
- 	default:	/* "can't happen" */
- 		return start;
- 	}
--	interval *= (speed == USB_SPEED_HIGH ||
--		     speed >= USB_SPEED_SUPER) ? 125 : 1000;
--	if (interval % 1000)
-+
-+	interval = usb_decode_interval(desc, speed);
-+	if (interval % 1000) {
- 		unit = 'u';
--	else {
-+	} else {
- 		unit = 'm';
- 		interval /= 1000;
- 	}
 diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
 index 4dfa44d6c..6253dce08 100644
 --- a/drivers/usb/core/driver.c
@@ -60636,55 +60524,6 @@ index 4dfa44d6c..6253dce08 100644
  	udev->can_submit = 1;
  
  	/* Resume the device */
-diff --git a/drivers/usb/core/endpoint.c b/drivers/usb/core/endpoint.c
-index 1c2c04079..fc3341f2b 100644
---- a/drivers/usb/core/endpoint.c
-+++ b/drivers/usb/core/endpoint.c
-@@ -84,40 +84,13 @@ static ssize_t interval_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
- 	struct ep_device *ep = to_ep_device(dev);
-+	unsigned int interval;
- 	char unit;
--	unsigned interval = 0;
--	unsigned in;
- 
--	in = (ep->desc->bEndpointAddress & USB_DIR_IN);
--
--	switch (usb_endpoint_type(ep->desc)) {
--	case USB_ENDPOINT_XFER_CONTROL:
--		if (ep->udev->speed == USB_SPEED_HIGH)
--			/* uframes per NAK */
--			interval = ep->desc->bInterval;
--		break;
--
--	case USB_ENDPOINT_XFER_ISOC:
--		interval = 1 << (ep->desc->bInterval - 1);
--		break;
--
--	case USB_ENDPOINT_XFER_BULK:
--		if (ep->udev->speed == USB_SPEED_HIGH && !in)
--			/* uframes per NAK */
--			interval = ep->desc->bInterval;
--		break;
--
--	case USB_ENDPOINT_XFER_INT:
--		if (ep->udev->speed == USB_SPEED_HIGH)
--			interval = 1 << (ep->desc->bInterval - 1);
--		else
--			interval = ep->desc->bInterval;
--		break;
--	}
--	interval *= (ep->udev->speed == USB_SPEED_HIGH) ? 125 : 1000;
--	if (interval % 1000)
-+	interval = usb_decode_interval(ep->desc, ep->udev->speed);
-+	if (interval % 1000) {
- 		unit = 'u';
--	else {
-+	} else {
- 		unit = 'm';
- 		interval /= 1000;
- 	}
 diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
 index ac347f9d5..2e85fcb37 100644
 --- a/drivers/usb/core/hcd.c
@@ -69879,7 +69718,7 @@ index d0070814d..c4178357b 100644
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_handle_transfer);
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_urb_giveback);
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 7b16b6b45..b3bdb4e28 100644
+index 8918e6ae5..9c2fef21a 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
 @@ -20,7 +20,6 @@
@@ -69890,7 +69729,7 @@ index 7b16b6b45..b3bdb4e28 100644
  #include "xhci-debugfs.h"
  #include "xhci-dbgcap.h"
  
-@@ -1324,6 +1323,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
+@@ -1325,6 +1324,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
  			(usb_endpoint_dir_in(desc) ? 1 : 0) - 1;
  	return index;
  }
@@ -69898,7 +69737,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  /* The reverse operation to xhci_get_endpoint_index. Calculate the USB endpoint
   * address from the XHCI endpoint index.
-@@ -1334,6 +1334,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
+@@ -1335,6 +1335,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
  	unsigned int direction = ep_index % 2 ? USB_DIR_OUT : USB_DIR_IN;
  	return direction | number;
  }
@@ -69906,7 +69745,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  /* Find the flag for this endpoint (for use in the control context).  Use the
   * endpoint index to create a bitmask.  The slot context is bit 0, endpoint 0 is
-@@ -1344,15 +1345,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
+@@ -1345,15 +1346,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
  	return 1 << (xhci_get_endpoint_index(desc) + 1);
  }
  
@@ -69922,7 +69761,7 @@ index 7b16b6b45..b3bdb4e28 100644
  /* Compute the last valid endpoint context index.  Basically, this is the
   * endpoint index plus one.  For slot contexts with more than valid endpoint,
   * we find the most significant bit set in the added contexts flags.
-@@ -1519,6 +1511,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
+@@ -1520,6 +1512,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
  		return -ENODEV;
  	}
  
@@ -69934,7 +69773,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	if (usb_endpoint_xfer_isoc(&urb->ep->desc))
  		num_tds = urb->number_of_packets;
  	else if (usb_endpoint_is_bulk_out(&urb->ep->desc) &&
-@@ -1719,7 +1716,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1720,7 +1717,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
  
  	for (; i < urb_priv->num_tds; i++) {
  		td = &urb_priv->td[i];
@@ -69948,7 +69787,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	}
  
  	/* Queue a stop endpoint command, but only if this is
-@@ -1765,8 +1767,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1766,8 +1768,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
   * disabled, so there's no need for mutual exclusion to protect
   * the xhci->devs[slot_id] structure.
   */
@@ -69959,7 +69798,7 @@ index 7b16b6b45..b3bdb4e28 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx, *out_ctx;
-@@ -1826,9 +1828,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1827,9 +1829,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  
  	xhci_endpoint_zero(xhci, xhci->devs[udev->slot_id], ep);
  
@@ -69969,7 +69808,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	xhci_dbg(xhci, "drop ep 0x%x, slot id %d, new drop flags = %#x, new add flags = %#x\n",
  			(unsigned int) ep->desc.bEndpointAddress,
  			udev->slot_id,
-@@ -1836,6 +1835,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1837,6 +1836,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69977,7 +69816,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  /* Add an endpoint to a new possible bandwidth configuration for this device.
   * Only one call to this function is allowed per endpoint before
-@@ -1850,8 +1850,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1851,8 +1851,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
   * configuration or alt setting is installed in the device, so there's no need
   * for mutual exclusion to protect the xhci->devs[slot_id] structure.
   */
@@ -69988,7 +69827,7 @@ index 7b16b6b45..b3bdb4e28 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx;
-@@ -1925,15 +1925,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1926,15 +1926,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  		return -ENOMEM;
  	}
  
@@ -70004,7 +69843,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	ctrl_ctx->add_flags |= cpu_to_le32(added_ctxs);
  	new_add_flags = le32_to_cpu(ctrl_ctx->add_flags);
  
-@@ -1958,6 +1949,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1959,6 +1950,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -70012,7 +69851,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  static void xhci_zero_in_ctx(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev)
  {
-@@ -2867,6 +2859,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
+@@ -2868,6 +2860,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
  			xhci_finish_resource_reservation(xhci, ctrl_ctx);
  		spin_unlock_irqrestore(&xhci->lock, flags);
  	}
@@ -70027,7 +69866,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	return ret;
  }
  
-@@ -2991,6 +2991,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -2992,6 +2992,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  
  	return ret;
  }
@@ -70035,7 +69874,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -3009,12 +3010,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3010,12 +3011,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  	for (i = 0; i < 31; i++) {
  		if (virt_dev->eps[i].new_ring) {
  			xhci_debugfs_remove_endpoint(xhci, virt_dev, i);
@@ -70054,7 +69893,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  		struct xhci_container_ctx *in_ctx,
-@@ -3028,84 +3034,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
+@@ -3029,84 +3035,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  }
  
@@ -70139,7 +69978,7 @@ index 7b16b6b45..b3bdb4e28 100644
  static void xhci_endpoint_disable(struct usb_hcd *hcd,
  				  struct usb_host_endpoint *host_ep)
  {
-@@ -3193,13 +3121,10 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3194,13 +3122,10 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  		return;
  
  	/* Bail out if toggle is already being cleared by a endpoint reset */
@@ -70153,7 +69992,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/* Only interrupt and bulk ep's use data toggle, USB2 spec 5.5.4-> */
  	if (usb_endpoint_xfer_control(&host_ep->desc) ||
  	    usb_endpoint_xfer_isoc(&host_ep->desc))
-@@ -3251,6 +3176,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3252,6 +3177,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(stop_cmd->completion);
  
@@ -70167,7 +70006,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	spin_lock_irqsave(&xhci->lock, flags);
  
  	/* config ep command clears toggle if add and drop ep flags are set */
-@@ -3282,13 +3214,16 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3283,13 +3215,16 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(cfg_cmd->completion);
  
@@ -70186,7 +70025,7 @@ index 7b16b6b45..b3bdb4e28 100644
  }
  
  static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
-@@ -3827,6 +3762,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
+@@ -3828,6 +3763,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
  	/* Wait for the Reset Device command to finish */
  	wait_for_completion(reset_device_cmd->completion);
  
@@ -70200,7 +70039,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/* The Reset Device command can't fail, according to the 0.95/0.96 spec,
  	 * unless we tried to reset a slot ID that wasn't enabled,
  	 * or the device wasn't in the addressed or configured state.
-@@ -3914,6 +3856,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3915,6 +3857,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	struct xhci_slot_ctx *slot_ctx;
  	int i, ret;
  
@@ -70208,7 +70047,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/*
  	 * We called pm_runtime_get_noresume when the device was attached.
  	 * Decrement the counter here to allow controller to runtime suspend
-@@ -3921,6 +3864,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3922,6 +3865,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	 */
  	if (xhci->quirks & XHCI_RESET_ON_RESUME)
  		pm_runtime_put_noidle(hcd->self.controller);
@@ -70216,7 +70055,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  	ret = xhci_check_args(hcd, udev, NULL, 0, true, __func__);
  	/* If the host is halted due to driver unload, we still need to free the
-@@ -3939,8 +3883,9 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3940,8 +3884,9 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		del_timer_sync(&virt_dev->eps[i].stop_cmd_timer);
  	}
  	virt_dev->udev = NULL;
@@ -70228,7 +70067,7 @@ index 7b16b6b45..b3bdb4e28 100644
  }
  
  int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
-@@ -3950,7 +3895,7 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
+@@ -3951,7 +3896,7 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
  	u32 state;
  	int ret = 0;
  
@@ -70237,7 +70076,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	if (!command)
  		return -ENOMEM;
  
-@@ -3975,15 +3920,6 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
+@@ -3976,15 +3921,6 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
  	}
  	xhci_ring_cmd_db(xhci);
  	spin_unlock_irqrestore(&xhci->lock, flags);
@@ -70253,7 +70092,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	return ret;
  }
  
-@@ -4072,6 +4008,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4073,6 +4009,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		xhci_warn(xhci, "Could not allocate xHCI USB device data structures\n");
  		goto disable_slot;
  	}
@@ -70268,7 +70107,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	vdev = xhci->devs[slot_id];
  	slot_ctx = xhci_get_slot_ctx(xhci, vdev->out_ctx);
  	trace_xhci_alloc_dev(slot_ctx);
-@@ -4080,20 +4024,23 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4081,20 +4025,23 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  
  	xhci_debugfs_create_slot(xhci, slot_id);
  
@@ -70294,7 +70133,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  	return 0;
  }
-@@ -4202,6 +4149,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4203,6 +4150,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	/* ctrl tx can take up to 5 sec; XXX: need more time for xHC? */
  	wait_for_completion(command->completion);
  
@@ -70308,7 +70147,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/* FIXME: From section 4.3.4: "Software shall be responsible for timing
  	 * the SetAddress() "recovery interval" required by USB and aborting the
  	 * command on a timeout.
-@@ -4223,7 +4177,6 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4224,7 +4178,6 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  
  		mutex_unlock(&xhci->mutex);
  		ret = xhci_disable_slot(xhci, udev->slot_id);
@@ -70316,7 +70155,7 @@ index 7b16b6b45..b3bdb4e28 100644
  		if (!ret)
  			xhci_alloc_dev(hcd, udev);
  		kfree(command->completion);
-@@ -4286,10 +4239,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4287,10 +4240,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	return ret;
  }
  
@@ -70329,7 +70168,7 @@ index 7b16b6b45..b3bdb4e28 100644
  
  static int xhci_enable_device(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -4349,6 +4303,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4350,6 +4304,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  		return -ENOMEM;
  	}
  
@@ -70344,7 +70183,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	xhci_slot_copy(xhci, command->in_ctx, virt_dev->out_ctx);
  	spin_unlock_irqrestore(&xhci->lock, flags);
  
-@@ -4373,6 +4335,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4374,6 +4336,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  	return ret;
  }
  
@@ -70375,7 +70214,7 @@ index 7b16b6b45..b3bdb4e28 100644
  #ifdef CONFIG_PM
  
  /* BESL to HIRD Encoding array for USB2 LPM */
-@@ -4696,19 +4682,19 @@ static u16 xhci_calculate_u1_timeout(struct xhci_hcd *xhci,
+@@ -4697,19 +4683,19 @@ static u16 xhci_calculate_u1_timeout(struct xhci_hcd *xhci,
  {
  	unsigned long long timeout_ns;
  
@@ -70401,7 +70240,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/* The U1 timeout is encoded in 1us intervals.
  	 * Don't return a timeout of zero, because that's USB3_LPM_DISABLED.
  	 */
-@@ -4760,19 +4746,19 @@ static u16 xhci_calculate_u2_timeout(struct xhci_hcd *xhci,
+@@ -4761,19 +4747,19 @@ static u16 xhci_calculate_u2_timeout(struct xhci_hcd *xhci,
  {
  	unsigned long long timeout_ns;
  
@@ -70427,7 +70266,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	/* The U2 timeout is encoded in 256us intervals */
  	timeout_ns = DIV_ROUND_UP_ULL(timeout_ns, 256 * 1000);
  	/* If the necessary timeout value is bigger than what we can set in the
-@@ -5112,6 +5098,15 @@ static int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+@@ -5113,6 +5099,15 @@ static int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
  		return -ENOMEM;
  	}
  
@@ -70443,7 +70282,7 @@ index 7b16b6b45..b3bdb4e28 100644
  	xhci_slot_copy(xhci, config_cmd->in_ctx, vdev->out_ctx);
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  	slot_ctx = xhci_get_slot_ctx(xhci, config_cmd->in_ctx);
-@@ -5435,10 +5430,20 @@ void xhci_init_driver(struct hc_driver *drv,
+@@ -5436,10 +5431,20 @@ void xhci_init_driver(struct hc_driver *drv,
  			drv->reset = over->reset;
  		if (over->start)
  			drv->start = over->start;
@@ -73295,7 +73134,7 @@ index e90c267e7..2476f1a97 100644
  
  /**
 diff --git a/include/linux/iova.h b/include/linux/iova.h
-index a0637abff..5b4e75fe6 100644
+index 6c19b09e9..0394d44f7 100644
 --- a/include/linux/iova.h
 +++ b/include/linux/iova.h
 @@ -95,6 +95,7 @@ struct iova_domain {
@@ -74253,85 +74092,6 @@ index 40df88728..b41ca9c54 100644
  	struct mac_device_info *(*setup)(void *priv);
  	void *bsp_priv;
  	struct clk *stmmac_clk;
-diff --git a/include/linux/usb/ch9.h b/include/linux/usb/ch9.h
-index 604c6c514..1cffa3474 100644
---- a/include/linux/usb/ch9.h
-+++ b/include/linux/usb/ch9.h
-@@ -36,62 +36,24 @@
- #include <linux/device.h>
- #include <uapi/linux/usb/ch9.h>
- 
--/**
-- * usb_ep_type_string() - Returns human readable-name of the endpoint type.
-- * @ep_type: The endpoint type to return human-readable name for.  If it's not
-- *   any of the types: USB_ENDPOINT_XFER_{CONTROL, ISOC, BULK, INT},
-- *   usually got by usb_endpoint_type(), the string 'unknown' will be returned.
-- */
--extern const char *usb_ep_type_string(int ep_type);
-+/* USB 3.2 SuperSpeed Plus phy signaling rate generation and lane count */
- 
--/**
-- * usb_speed_string() - Returns human readable-name of the speed.
-- * @speed: The speed to return human-readable name for.  If it's not
-- *   any of the speeds defined in usb_device_speed enum, string for
-- *   USB_SPEED_UNKNOWN will be returned.
-- */
--extern const char *usb_speed_string(enum usb_device_speed speed);
-+enum usb_ssp_rate {
-+	USB_SSP_GEN_UNKNOWN = 0,
-+	USB_SSP_GEN_2x1,
-+	USB_SSP_GEN_1x2,
-+	USB_SSP_GEN_2x2,
-+};
- 
--/**
-- * usb_get_maximum_speed - Get maximum requested speed for a given USB
-- * controller.
-- * @dev: Pointer to the given USB controller device
-- *
-- * The function gets the maximum speed string from property "maximum-speed",
-- * and returns the corresponding enum usb_device_speed.
-- */
-+extern const char *usb_ep_type_string(int ep_type);
-+extern const char *usb_speed_string(enum usb_device_speed speed);
- extern enum usb_device_speed usb_get_maximum_speed(struct device *dev);
--
--/**
-- * usb_state_string - Returns human readable name for the state.
-- * @state: The state to return a human-readable name for. If it's not
-- *	any of the states devices in usb_device_state_string enum,
-- *	the string UNKNOWN will be returned.
-- */
-+extern enum usb_ssp_rate usb_get_maximum_ssp_rate(struct device *dev);
- extern const char *usb_state_string(enum usb_device_state state);
-+unsigned int usb_decode_interval(const struct usb_endpoint_descriptor *epd,
-+				 enum usb_device_speed speed);
- 
- #ifdef CONFIG_TRACING
--/**
-- * usb_decode_ctrl - Returns human readable representation of control request.
-- * @str: buffer to return a human-readable representation of control request.
-- *       This buffer should have about 200 bytes.
-- * @size: size of str buffer.
-- * @bRequestType: matches the USB bmRequestType field
-- * @bRequest: matches the USB bRequest field
-- * @wValue: matches the USB wValue field (CPU byte order)
-- * @wIndex: matches the USB wIndex field (CPU byte order)
-- * @wLength: matches the USB wLength field (CPU byte order)
-- *
-- * Function returns decoded, formatted and human-readable description of
-- * control request packet.
-- *
-- * The usage scenario for this is for tracepoints, so function as a return
-- * use the same value as in parameters. This approach allows to use this
-- * function in TP_printk
-- *
-- * Important: wValue, wIndex, wLength parameters before invoking this function
-- * should be processed by le16_to_cpu macro.
-- */
- extern const char *usb_decode_ctrl(char *str, size_t size, __u8 bRequestType,
- 				   __u8 bRequest, __u16 wValue, __u16 wIndex,
- 				   __u16 wLength);
 diff --git a/include/linux/usb/composite.h b/include/linux/usb/composite.h
 index a2d229ab6..4d352204e 100644
 --- a/include/linux/usb/composite.h
@@ -75614,33 +75374,6 @@ index f51bc8f36..7e3fe68af 100644
  
  #define UART_IIR	2	/* In:  Interrupt ID Register */
  #define UART_IIR_NO_INT		0x01 /* No interrupts pending */
-diff --git a/include/uapi/linux/usb/ch9.h b/include/uapi/linux/usb/ch9.h
-index 0f865ae4b..17ce56198 100644
---- a/include/uapi/linux/usb/ch9.h
-+++ b/include/uapi/linux/usb/ch9.h
-@@ -968,9 +968,22 @@ struct usb_ssp_cap_descriptor {
- 	__le32 bmSublinkSpeedAttr[1]; /* list of sublink speed attrib entries */
- #define USB_SSP_SUBLINK_SPEED_SSID	(0xf)		/* sublink speed ID */
- #define USB_SSP_SUBLINK_SPEED_LSE	(0x3 << 4)	/* Lanespeed exponent */
-+#define USB_SSP_SUBLINK_SPEED_LSE_BPS		0
-+#define USB_SSP_SUBLINK_SPEED_LSE_KBPS		1
-+#define USB_SSP_SUBLINK_SPEED_LSE_MBPS		2
-+#define USB_SSP_SUBLINK_SPEED_LSE_GBPS		3
-+
- #define USB_SSP_SUBLINK_SPEED_ST	(0x3 << 6)	/* Sublink type */
-+#define USB_SSP_SUBLINK_SPEED_ST_SYM_RX		0
-+#define USB_SSP_SUBLINK_SPEED_ST_ASYM_RX	1
-+#define USB_SSP_SUBLINK_SPEED_ST_SYM_TX		2
-+#define USB_SSP_SUBLINK_SPEED_ST_ASYM_TX	3
-+
- #define USB_SSP_SUBLINK_SPEED_RSVD	(0x3f << 8)	/* Reserved */
- #define USB_SSP_SUBLINK_SPEED_LP	(0x3 << 14)	/* Link protocol */
-+#define USB_SSP_SUBLINK_SPEED_LP_SS		0
-+#define USB_SSP_SUBLINK_SPEED_LP_SSP		1
-+
- #define USB_SSP_SUBLINK_SPEED_LSM	(0xff << 16)	/* Lanespeed mantissa */
- } __attribute__((packed));
- 
 diff --git a/include/uapi/linux/usb/g_uvc.h b/include/uapi/linux/usb/g_uvc.h
 index 652f169a0..428926e35 100644
 --- a/include/uapi/linux/usb/g_uvc.h
