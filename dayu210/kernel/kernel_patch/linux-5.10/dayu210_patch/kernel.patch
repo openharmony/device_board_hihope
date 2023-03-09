@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 3de4fd1f3..a13ea5c69 100644
+index 6ff585d93..e53cd2a24 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -491,14 +491,16 @@ LINUXINCLUDE    := \
+@@ -493,14 +493,16 @@ LINUXINCLUDE    := \
  		-I$(objtree)/arch/$(SRCARCH)/include/generated \
  		$(if $(building_out_of_srctree),-I$(srctree)/include) \
  		-I$(objtree)/include \
@@ -21,7 +21,7 @@ index 3de4fd1f3..a13ea5c69 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -951,9 +953,6 @@ endif
+@@ -956,9 +958,6 @@ endif
  # arch Makefile may override CC so keep this after arch Makefile is included
  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  
@@ -31,7 +31,7 @@ index 3de4fd1f3..a13ea5c69 100644
  # Variable Length Arrays (VLAs) should not be used anywhere in the kernel
  KBUILD_CFLAGS += -Wvla
  
-@@ -1391,7 +1390,7 @@ kselftest-merge:
+@@ -1396,7 +1395,7 @@ kselftest-merge:
  # Devicetree files
  
  ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
@@ -10233,7 +10233,7 @@ index 70ab4fbdc..48fc36d56 100644
  	cec->adap->owner = THIS_MODULE;
  
 diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
-index b10228b9e..dfd89f79f 100644
+index 356c7d0bd..dfd89f79f 100644
 --- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
 +++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
 @@ -9,6 +9,8 @@
@@ -11967,24 +11967,29 @@ index b10228b9e..dfd89f79f 100644
  		/*
  		 * If the RX sense status indicates we're disconnected,
  		 * clear the software rxsense status.
-@@ -2983,7 +3805,7 @@ EXPORT_SYMBOL_GPL(dw_hdmi_setup_rx_sense);
+@@ -2983,8 +3805,7 @@ EXPORT_SYMBOL_GPL(dw_hdmi_setup_rx_sense);
  static irqreturn_t dw_hdmi_irq(int irq, void *dev_id)
  {
  	struct dw_hdmi *hdmi = dev_id;
 -	u8 intr_stat, phy_int_pol, phy_pol_mask, phy_stat;
+-	enum drm_connector_status status = connector_status_unknown;
 +	u8 intr_stat, phy_int_pol, phy_pol_mask, phy_stat, hdcp_stat;
  
  	intr_stat = hdmi_readb(hdmi, HDMI_IH_PHY_STAT0);
  	phy_int_pol = hdmi_readb(hdmi, HDMI_PHY_POL0);
-@@ -3024,25 +3846,21 @@ static irqreturn_t dw_hdmi_irq(int irq, void *dev_id)
+@@ -3023,29 +3844,23 @@ static irqreturn_t dw_hdmi_irq(int irq, void *dev_id)
+ 			cec_notifier_phys_addr_invalidate(hdmi->cec_notifier);
+ 			mutex_unlock(&hdmi->cec_notifier_mutex);
  		}
+-
+-		if (phy_stat & HDMI_PHY_HPD)
+-			status = connector_status_connected;
+-
+-		if (!(phy_stat & (HDMI_PHY_HPD | HDMI_PHY_RX_SENSE)))
+-			status = connector_status_disconnected;
  	}
  
--	if (intr_stat & HDMI_IH_PHY_STAT0_HPD) {
--		enum drm_connector_status status = phy_int_pol & HDMI_PHY_HPD
--						 ? connector_status_connected
--						 : connector_status_disconnected;
--
+-	if (status != connector_status_unknown) {
 -		dev_dbg(hdmi->dev, "EVENT=%s\n",
 -			status == connector_status_connected ?
 -			"plugin" : "plugout");
@@ -12015,7 +12020,7 @@ index b10228b9e..dfd89f79f 100644
  	return IRQ_HANDLED;
  }
  
-@@ -3176,12 +3994,363 @@ static void dw_hdmi_init_hw(struct dw_hdmi *hdmi)
+@@ -3179,12 +3994,363 @@ static void dw_hdmi_init_hw(struct dw_hdmi *hdmi)
  	 * Even if we are using a separate i2c adapter doing this doesn't
  	 * hurt.
  	 */
@@ -12380,7 +12385,7 @@ index b10228b9e..dfd89f79f 100644
  /* -----------------------------------------------------------------------------
   * Probe/remove API, used from platforms based on the DRM bridge API.
   */
-@@ -3190,6 +4359,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3193,6 +4359,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  {
  	struct device *dev = &pdev->dev;
  	struct device_node *np = dev->of_node;
@@ -12388,7 +12393,7 @@ index b10228b9e..dfd89f79f 100644
  	struct platform_device_info pdevinfo;
  	struct device_node *ddc_node;
  	struct dw_hdmi_cec_data cec;
-@@ -3202,11 +4372,13 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3205,11 +4372,13 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  	u8 prod_id1;
  	u8 config0;
  	u8 config3;
@@ -12402,7 +12407,7 @@ index b10228b9e..dfd89f79f 100644
  	hdmi->plat_data = plat_data;
  	hdmi->dev = dev;
  	hdmi->sample_rate = 48000;
-@@ -3337,7 +4509,24 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3340,7 +4509,24 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		 prod_id1 & HDMI_PRODUCT_ID1_HDCP ? "with" : "without",
  		 hdmi->phy.name);
  
@@ -12428,7 +12433,7 @@ index b10228b9e..dfd89f79f 100644
  
  	irq = platform_get_irq(pdev, 0);
  	if (irq < 0) {
-@@ -3345,6 +4534,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3348,6 +4534,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		goto err_iahb;
  	}
  
@@ -12436,7 +12441,7 @@ index b10228b9e..dfd89f79f 100644
  	ret = devm_request_threaded_irq(dev, irq, dw_hdmi_hardirq,
  					dw_hdmi_irq, IRQF_SHARED,
  					dev_name(dev), hdmi);
-@@ -3380,8 +4570,20 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3383,8 +4570,20 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		hdmi->ddc = dw_hdmi_i2c_adapter(hdmi);
  		if (IS_ERR(hdmi->ddc))
  			hdmi->ddc = NULL;
@@ -12457,7 +12462,7 @@ index b10228b9e..dfd89f79f 100644
  	hdmi->bridge.driver_private = hdmi;
  	hdmi->bridge.funcs = &dw_hdmi_bridge_funcs;
  	hdmi->bridge.ops = DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID
-@@ -3390,6 +4592,30 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3393,6 +4592,30 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  	hdmi->bridge.of_node = pdev->dev.of_node;
  #endif
  
@@ -12488,7 +12493,7 @@ index b10228b9e..dfd89f79f 100644
  	memset(&pdevinfo, 0, sizeof(pdevinfo));
  	pdevinfo.parent = dev;
  	pdevinfo.id = PLATFORM_DEVID_AUTO;
-@@ -3404,7 +4630,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3407,7 +4630,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		audio.base = hdmi->regs;
  		audio.irq = irq;
  		audio.hdmi = hdmi;
@@ -12497,7 +12502,7 @@ index b10228b9e..dfd89f79f 100644
  		hdmi->enable_audio = dw_hdmi_ahb_audio_enable;
  		hdmi->disable_audio = dw_hdmi_ahb_audio_disable;
  
-@@ -3417,7 +4643,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3420,7 +4643,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		struct dw_hdmi_i2s_audio_data audio;
  
  		audio.hdmi	= hdmi;
@@ -12506,7 +12511,7 @@ index b10228b9e..dfd89f79f 100644
  		audio.write	= hdmi_writeb;
  		audio.read	= hdmi_readb;
  		hdmi->enable_audio = dw_hdmi_i2s_audio_enable;
-@@ -3443,8 +4669,40 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3446,8 +4669,40 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  		hdmi->cec = platform_device_register_full(&pdevinfo);
  	}
  
@@ -12547,7 +12552,7 @@ index b10228b9e..dfd89f79f 100644
  	return hdmi;
  
  err_iahb:
-@@ -3454,7 +4712,10 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
+@@ -3457,7 +4712,10 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
  err_isfr:
  	clk_disable_unprepare(hdmi->isfr_clk);
  err_res:
@@ -12559,7 +12564,7 @@ index b10228b9e..dfd89f79f 100644
  
  	return ERR_PTR(ret);
  }
-@@ -3462,16 +4723,35 @@ EXPORT_SYMBOL_GPL(dw_hdmi_probe);
+@@ -3465,16 +4723,35 @@ EXPORT_SYMBOL_GPL(dw_hdmi_probe);
  
  void dw_hdmi_remove(struct dw_hdmi *hdmi)
  {
@@ -12595,7 +12600,7 @@ index b10228b9e..dfd89f79f 100644
  	clk_disable_unprepare(hdmi->iahb_clk);
  	clk_disable_unprepare(hdmi->isfr_clk);
  	if (hdmi->cec_clk)
-@@ -3489,7 +4769,7 @@ EXPORT_SYMBOL_GPL(dw_hdmi_remove);
+@@ -3492,7 +4769,7 @@ EXPORT_SYMBOL_GPL(dw_hdmi_remove);
   */
  struct dw_hdmi *dw_hdmi_bind(struct platform_device *pdev,
  			     struct drm_encoder *encoder,
@@ -12604,7 +12609,7 @@ index b10228b9e..dfd89f79f 100644
  {
  	struct dw_hdmi *hdmi;
  	int ret;
-@@ -3505,6 +4785,9 @@ struct dw_hdmi *dw_hdmi_bind(struct platform_device *pdev,
+@@ -3508,6 +4785,9 @@ struct dw_hdmi *dw_hdmi_bind(struct platform_device *pdev,
  		return ERR_PTR(ret);
  	}
  
@@ -12614,7 +12619,7 @@ index b10228b9e..dfd89f79f 100644
  	return hdmi;
  }
  EXPORT_SYMBOL_GPL(dw_hdmi_bind);
-@@ -3515,9 +4798,87 @@ void dw_hdmi_unbind(struct dw_hdmi *hdmi)
+@@ -3518,9 +4798,87 @@ void dw_hdmi_unbind(struct dw_hdmi *hdmi)
  }
  EXPORT_SYMBOL_GPL(dw_hdmi_unbind);
  
@@ -13586,10 +13591,10 @@ index 722c7ebe4..e2241a5fd 100644
  		  .num_planes = 3, .char_per_block = { 2, 2, 2 },
  		  .block_w = { 1, 1, 1 }, .block_h = { 1, 1, 1 }, .hsub = 0,
 diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
-index 4606cc938..83fc51b13 100644
+index c160a45a4..73818ffa0 100644
 --- a/drivers/gpu/drm/drm_ioctl.c
 +++ b/drivers/gpu/drm/drm_ioctl.c
-@@ -537,6 +537,7 @@ int drm_version(struct drm_device *dev, void *data,
+@@ -543,6 +543,7 @@ int drm_version(struct drm_device *dev, void *data,
   */
  int drm_ioctl_permit(u32 flags, struct drm_file *file_priv)
  {
@@ -13597,7 +13602,7 @@ index 4606cc938..83fc51b13 100644
  	/* ROOT_ONLY is only for CAP_SYS_ADMIN */
  	if (unlikely((flags & DRM_ROOT_ONLY) && !capable(CAP_SYS_ADMIN)))
  		return -EACCES;
-@@ -555,6 +556,7 @@ int drm_ioctl_permit(u32 flags, struct drm_file *file_priv)
+@@ -561,6 +562,7 @@ int drm_ioctl_permit(u32 flags, struct drm_file *file_priv)
  	if (unlikely(!(flags & DRM_RENDER_ALLOW) &&
  		     drm_is_render_client(file_priv)))
  		return -EACCES;
@@ -13605,7 +13610,7 @@ index 4606cc938..83fc51b13 100644
  
  	return 0;
  }
-@@ -678,9 +680,9 @@ static const struct drm_ioctl_desc drm_ioctls[] = {
+@@ -684,9 +686,9 @@ static const struct drm_ioctl_desc drm_ioctls[] = {
  	DRM_IOCTL_DEF(DRM_IOCTL_MODE_RMFB, drm_mode_rmfb_ioctl, 0),
  	DRM_IOCTL_DEF(DRM_IOCTL_MODE_PAGE_FLIP, drm_mode_page_flip_ioctl, DRM_MASTER),
  	DRM_IOCTL_DEF(DRM_IOCTL_MODE_DIRTYFB, drm_mode_dirtyfb_ioctl, DRM_MASTER),
@@ -39859,7 +39864,7 @@ index d109b9f14..fd755d98a 100644
  MODULE_LICENSE("GPL");
  MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
 diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
-index 66a00b7c7..866249c64 100644
+index 6622e3262..99cf93f58 100644
 --- a/drivers/mmc/core/block.c
 +++ b/drivers/mmc/core/block.c
 @@ -47,10 +47,13 @@
@@ -39905,7 +39910,7 @@ index 66a00b7c7..866249c64 100644
  
  		main_md->part_curr = main_md->part_type;
  		part_err = mmc_blk_part_switch(host->card, md->part_type);
-@@ -1266,6 +1275,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
+@@ -1271,6 +1280,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
  
  	memset(brq, 0, sizeof(struct mmc_blk_request));
  
@@ -39914,7 +39919,7 @@ index 66a00b7c7..866249c64 100644
  	brq->mrq.data = &brq->data;
  	brq->mrq.tag = req->tag;
  
-@@ -1799,6 +1810,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
+@@ -1804,6 +1815,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
  	    err && mmc_blk_reset(md, card->host, type)) {
  		pr_err("%s: recovery failed!\n", req->rq_disk->disk_name);
  		mqrq->retries = MMC_NO_RETRIES;
@@ -39922,7 +39927,7 @@ index 66a00b7c7..866249c64 100644
  		return;
  	}
  
-@@ -2892,6 +2904,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
+@@ -2897,6 +2909,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
  
  #endif /* CONFIG_DEBUG_FS */
  
@@ -39932,7 +39937,7 @@ index 66a00b7c7..866249c64 100644
  static int mmc_blk_probe(struct mmc_card *card)
  {
  	struct mmc_blk_data *md, *part_md;
-@@ -2927,6 +2942,11 @@ static int mmc_blk_probe(struct mmc_card *card)
+@@ -2932,6 +2947,11 @@ static int mmc_blk_probe(struct mmc_card *card)
  
  	dev_set_drvdata(&card->dev, md);
  
@@ -39944,7 +39949,7 @@ index 66a00b7c7..866249c64 100644
  	if (mmc_add_disk(md))
  		goto out;
  
-@@ -2963,6 +2983,12 @@ static void mmc_blk_remove(struct mmc_card *card)
+@@ -2968,6 +2988,12 @@ static void mmc_blk_remove(struct mmc_card *card)
  	struct mmc_blk_data *md = dev_get_drvdata(&card->dev);
  
  	mmc_blk_remove_debugfs(card, md);
@@ -67303,7 +67308,7 @@ index 7bb306741..55e568b3d 100644
  unsigned long xhci_get_resuming_ports(struct usb_hcd *hcd)
  {
 diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
-index 024e8911d..644ddcb26 100644
+index 1fba5605a..f63a7e3ff 100644
 --- a/drivers/usb/host/xhci-mem.c
 +++ b/drivers/usb/host/xhci-mem.c
 @@ -65,7 +65,7 @@ static struct xhci_segment *xhci_segment_alloc(struct xhci_hcd *xhci,
@@ -67517,7 +67522,7 @@ index 024e8911d..644ddcb26 100644
  /*
   * Change an endpoint's internal structure so it supports stream IDs.  The
   * number of requested streams includes stream 0, which cannot be used by device
-@@ -906,7 +961,7 @@ void xhci_free_virt_device(struct xhci_hcd *xhci, int slot_id)
+@@ -911,7 +966,7 @@ void xhci_free_virt_device(struct xhci_hcd *xhci, int slot_id)
  
  	for (i = 0; i < 31; i++) {
  		if (dev->eps[i].ring)
@@ -67526,7 +67531,7 @@ index 024e8911d..644ddcb26 100644
  		if (dev->eps[i].stream_info)
  			xhci_free_stream_info(xhci,
  					dev->eps[i].stream_info);
-@@ -994,6 +1049,8 @@ int xhci_alloc_virt_device(struct xhci_hcd *xhci, int slot_id,
+@@ -999,6 +1054,8 @@ int xhci_alloc_virt_device(struct xhci_hcd *xhci, int slot_id,
  	if (!dev)
  		return 0;
  
@@ -67535,7 +67540,7 @@ index 024e8911d..644ddcb26 100644
  	/* Allocate the (output) device context that will be used in the HC. */
  	dev->out_ctx = xhci_alloc_container_ctx(xhci, XHCI_CTX_TYPE_DEVICE, flags);
  	if (!dev->out_ctx)
-@@ -1012,6 +1069,8 @@ int xhci_alloc_virt_device(struct xhci_hcd *xhci, int slot_id,
+@@ -1017,6 +1074,8 @@ int xhci_alloc_virt_device(struct xhci_hcd *xhci, int slot_id,
  
  	/* Initialize the cancellation list and watchdog timers for each ep */
  	for (i = 0; i < 31; i++) {
@@ -67544,7 +67549,7 @@ index 024e8911d..644ddcb26 100644
  		xhci_init_endpoint_timer(xhci, &dev->eps[i]);
  		INIT_LIST_HEAD(&dev->eps[i].cancelled_td_list);
  		INIT_LIST_HEAD(&dev->eps[i].bw_endpoint_list);
-@@ -1501,8 +1560,16 @@ int xhci_endpoint_init(struct xhci_hcd *xhci,
+@@ -1506,8 +1565,16 @@ int xhci_endpoint_init(struct xhci_hcd *xhci,
  		mult = 0;
  
  	/* Set up the endpoint ring */
@@ -67563,7 +67568,7 @@ index 024e8911d..644ddcb26 100644
  	if (!virt_dev->eps[ep_index].new_ring)
  		return -ENOMEM;
  
-@@ -1769,6 +1836,7 @@ struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
+@@ -1774,6 +1841,7 @@ struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
  	INIT_LIST_HEAD(&command->cmd_list);
  	return command;
  }
@@ -67571,7 +67576,7 @@ index 024e8911d..644ddcb26 100644
  
  struct xhci_command *xhci_alloc_command_with_ctx(struct xhci_hcd *xhci,
  		bool allocate_completion, gfp_t mem_flags)
-@@ -1802,6 +1870,7 @@ void xhci_free_command(struct xhci_hcd *xhci,
+@@ -1807,6 +1875,7 @@ void xhci_free_command(struct xhci_hcd *xhci,
  	kfree(command->completion);
  	kfree(command);
  }
@@ -67579,7 +67584,7 @@ index 024e8911d..644ddcb26 100644
  
  int xhci_alloc_erst(struct xhci_hcd *xhci,
  		    struct xhci_ring *evt_ring,
-@@ -1832,6 +1901,7 @@ int xhci_alloc_erst(struct xhci_hcd *xhci,
+@@ -1837,6 +1906,7 @@ int xhci_alloc_erst(struct xhci_hcd *xhci,
  
  	return 0;
  }
@@ -67587,7 +67592,7 @@ index 024e8911d..644ddcb26 100644
  
  void xhci_free_erst(struct xhci_hcd *xhci, struct xhci_erst *erst)
  {
-@@ -1845,6 +1915,25 @@ void xhci_free_erst(struct xhci_hcd *xhci, struct xhci_erst *erst)
+@@ -1850,6 +1920,25 @@ void xhci_free_erst(struct xhci_hcd *xhci, struct xhci_erst *erst)
  				erst->erst_dma_addr);
  	erst->entries = NULL;
  }
@@ -67613,7 +67618,7 @@ index 024e8911d..644ddcb26 100644
  
  void xhci_mem_cleanup(struct xhci_hcd *xhci)
  {
-@@ -1900,9 +1989,13 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
+@@ -1905,9 +1994,13 @@ void xhci_mem_cleanup(struct xhci_hcd *xhci)
  	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
  			"Freed medium stream array pool");
  
@@ -67630,7 +67635,7 @@ index 024e8911d..644ddcb26 100644
  	xhci->dcbaa = NULL;
  
  	scratchpad_free(xhci);
-@@ -1983,7 +2076,7 @@ static int xhci_test_trb_in_td(struct xhci_hcd *xhci,
+@@ -1988,7 +2081,7 @@ static int xhci_test_trb_in_td(struct xhci_hcd *xhci,
  }
  
  /* TRB math checks for xhci_trb_in_td(), using the command and event rings. */
@@ -67639,7 +67644,7 @@ index 024e8911d..644ddcb26 100644
  {
  	struct {
  		dma_addr_t		input_dma;
-@@ -2103,6 +2196,7 @@ static int xhci_check_trb_in_td_math(struct xhci_hcd *xhci)
+@@ -2108,6 +2201,7 @@ static int xhci_check_trb_in_td_math(struct xhci_hcd *xhci)
  	xhci_dbg(xhci, "TRB math tests passed.\n");
  	return 0;
  }
@@ -67647,7 +67652,7 @@ index 024e8911d..644ddcb26 100644
  
  static void xhci_set_hc_event_deq(struct xhci_hcd *xhci)
  {
-@@ -2442,15 +2536,21 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
+@@ -2447,15 +2541,21 @@ int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
  	 * xHCI section 5.4.6 - doorbell array must be
  	 * "physically contiguous and 64-byte (cache line) aligned".
  	 */
@@ -67731,9 +67736,18 @@ index 8952492d4..4798a3b19 100644
  
  	if (xhci->quirks & XHCI_RESET_ON_RESUME)
 diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
-index dc570ce4e..6384c895d 100644
+index 972a44b2a..6384c895d 100644
 --- a/drivers/usb/host/xhci-plat.c
 +++ b/drivers/usb/host/xhci-plat.c
+@@ -134,7 +134,7 @@ static const struct xhci_plat_priv xhci_plat_renesas_rcar_gen3 = {
+ };
+ 
+ static const struct xhci_plat_priv xhci_plat_brcm = {
+-	.quirks = XHCI_RESET_ON_RESUME | XHCI_SUSPEND_RESUME_CLKS,
++	.quirks = XHCI_RESET_ON_RESUME,
+ };
+ 
+ static const struct of_device_id usb_xhci_of_match[] = {
 @@ -184,6 +184,41 @@ static const struct of_device_id usb_xhci_of_match[] = {
  MODULE_DEVICE_TABLE(of, usb_xhci_of_match);
  #endif
@@ -67817,6 +67831,36 @@ index dc570ce4e..6384c895d 100644
 -		pm_runtime_resume(dev);
 -
  	ret = xhci_priv_suspend_quirk(hcd);
+ 	if (ret)
+ 		return ret;
+@@ -447,16 +488,7 @@ static int __maybe_unused xhci_plat_suspend(struct device *dev)
+ 	 * xhci_suspend() needs `do_wakeup` to know whether host is allowed
+ 	 * to do wakeup during suspend.
+ 	 */
+-	ret = xhci_suspend(xhci, device_may_wakeup(dev));
+-	if (ret)
+-		return ret;
+-
+-	if (!device_may_wakeup(dev) && (xhci->quirks & XHCI_SUSPEND_RESUME_CLKS)) {
+-		clk_disable_unprepare(xhci->clk);
+-		clk_disable_unprepare(xhci->reg_clk);
+-	}
+-
+-	return 0;
++	return xhci_suspend(xhci, device_may_wakeup(dev));
+ }
+ 
+ static int __maybe_unused xhci_plat_resume(struct device *dev)
+@@ -465,11 +497,6 @@ static int __maybe_unused xhci_plat_resume(struct device *dev)
+ 	struct xhci_hcd	*xhci = hcd_to_xhci(hcd);
+ 	int ret;
+ 
+-	if (!device_may_wakeup(dev) && (xhci->quirks & XHCI_SUSPEND_RESUME_CLKS)) {
+-		clk_prepare_enable(xhci->clk);
+-		clk_prepare_enable(xhci->reg_clk);
+-	}
+-
+ 	ret = xhci_priv_resume_quirk(hcd);
  	if (ret)
  		return ret;
 diff --git a/drivers/usb/host/xhci-plat.h b/drivers/usb/host/xhci-plat.h
@@ -69718,7 +69762,7 @@ index d0070814d..c4178357b 100644
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_handle_transfer);
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_urb_giveback);
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 8918e6ae5..9c2fef21a 100644
+index 8918e6ae5..b3bdb4e28 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
 @@ -20,7 +20,6 @@
@@ -69729,7 +69773,17 @@ index 8918e6ae5..9c2fef21a 100644
  #include "xhci-debugfs.h"
  #include "xhci-dbgcap.h"
  
-@@ -1325,6 +1324,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
+@@ -1163,8 +1162,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+ 	/* re-initialize the HC on Restore Error, or Host Controller Error */
+ 	if (temp & (STS_SRE | STS_HCE)) {
+ 		reinit_xhc = true;
+-		if (!xhci->broken_suspend)
+-			xhci_warn(xhci, "xHC error in resume, USBSTS 0x%x, Reinit\n", temp);
++		xhci_warn(xhci, "xHC error in resume, USBSTS 0x%x, Reinit\n", temp);
+ 	}
+ 
+ 	if (reinit_xhc) {
+@@ -1325,6 +1323,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
  			(usb_endpoint_dir_in(desc) ? 1 : 0) - 1;
  	return index;
  }
@@ -69737,7 +69791,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  /* The reverse operation to xhci_get_endpoint_index. Calculate the USB endpoint
   * address from the XHCI endpoint index.
-@@ -1335,6 +1335,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
+@@ -1335,6 +1334,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
  	unsigned int direction = ep_index % 2 ? USB_DIR_OUT : USB_DIR_IN;
  	return direction | number;
  }
@@ -69745,7 +69799,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  /* Find the flag for this endpoint (for use in the control context).  Use the
   * endpoint index to create a bitmask.  The slot context is bit 0, endpoint 0 is
-@@ -1345,15 +1346,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
+@@ -1345,15 +1345,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
  	return 1 << (xhci_get_endpoint_index(desc) + 1);
  }
  
@@ -69761,7 +69815,7 @@ index 8918e6ae5..9c2fef21a 100644
  /* Compute the last valid endpoint context index.  Basically, this is the
   * endpoint index plus one.  For slot contexts with more than valid endpoint,
   * we find the most significant bit set in the added contexts flags.
-@@ -1520,6 +1512,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
+@@ -1520,6 +1511,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
  		return -ENODEV;
  	}
  
@@ -69773,7 +69827,7 @@ index 8918e6ae5..9c2fef21a 100644
  	if (usb_endpoint_xfer_isoc(&urb->ep->desc))
  		num_tds = urb->number_of_packets;
  	else if (usb_endpoint_is_bulk_out(&urb->ep->desc) &&
-@@ -1720,7 +1717,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1720,7 +1716,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
  
  	for (; i < urb_priv->num_tds; i++) {
  		td = &urb_priv->td[i];
@@ -69787,7 +69841,7 @@ index 8918e6ae5..9c2fef21a 100644
  	}
  
  	/* Queue a stop endpoint command, but only if this is
-@@ -1766,8 +1768,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1766,8 +1767,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
   * disabled, so there's no need for mutual exclusion to protect
   * the xhci->devs[slot_id] structure.
   */
@@ -69798,7 +69852,7 @@ index 8918e6ae5..9c2fef21a 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx, *out_ctx;
-@@ -1827,9 +1829,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1827,9 +1828,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  
  	xhci_endpoint_zero(xhci, xhci->devs[udev->slot_id], ep);
  
@@ -69808,7 +69862,7 @@ index 8918e6ae5..9c2fef21a 100644
  	xhci_dbg(xhci, "drop ep 0x%x, slot id %d, new drop flags = %#x, new add flags = %#x\n",
  			(unsigned int) ep->desc.bEndpointAddress,
  			udev->slot_id,
-@@ -1837,6 +1836,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1837,6 +1835,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69816,7 +69870,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  /* Add an endpoint to a new possible bandwidth configuration for this device.
   * Only one call to this function is allowed per endpoint before
-@@ -1851,8 +1851,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1851,8 +1850,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
   * configuration or alt setting is installed in the device, so there's no need
   * for mutual exclusion to protect the xhci->devs[slot_id] structure.
   */
@@ -69827,7 +69881,7 @@ index 8918e6ae5..9c2fef21a 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx;
-@@ -1926,15 +1926,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1926,15 +1925,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  		return -ENOMEM;
  	}
  
@@ -69843,7 +69897,7 @@ index 8918e6ae5..9c2fef21a 100644
  	ctrl_ctx->add_flags |= cpu_to_le32(added_ctxs);
  	new_add_flags = le32_to_cpu(ctrl_ctx->add_flags);
  
-@@ -1959,6 +1950,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1959,6 +1949,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69851,7 +69905,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  static void xhci_zero_in_ctx(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev)
  {
-@@ -2868,6 +2860,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
+@@ -2868,6 +2859,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
  			xhci_finish_resource_reservation(xhci, ctrl_ctx);
  		spin_unlock_irqrestore(&xhci->lock, flags);
  	}
@@ -69866,7 +69920,7 @@ index 8918e6ae5..9c2fef21a 100644
  	return ret;
  }
  
-@@ -2992,6 +2992,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -2992,6 +2991,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  
  	return ret;
  }
@@ -69874,7 +69928,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -3010,12 +3011,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3010,12 +3010,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  	for (i = 0; i < 31; i++) {
  		if (virt_dev->eps[i].new_ring) {
  			xhci_debugfs_remove_endpoint(xhci, virt_dev, i);
@@ -69893,7 +69947,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  		struct xhci_container_ctx *in_ctx,
-@@ -3029,84 +3035,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
+@@ -3029,84 +3034,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  }
  
@@ -69978,7 +70032,7 @@ index 8918e6ae5..9c2fef21a 100644
  static void xhci_endpoint_disable(struct usb_hcd *hcd,
  				  struct usb_host_endpoint *host_ep)
  {
-@@ -3194,13 +3122,10 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3194,13 +3121,10 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  		return;
  
  	/* Bail out if toggle is already being cleared by a endpoint reset */
@@ -69992,7 +70046,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/* Only interrupt and bulk ep's use data toggle, USB2 spec 5.5.4-> */
  	if (usb_endpoint_xfer_control(&host_ep->desc) ||
  	    usb_endpoint_xfer_isoc(&host_ep->desc))
-@@ -3252,6 +3177,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3252,6 +3176,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(stop_cmd->completion);
  
@@ -70006,7 +70060,7 @@ index 8918e6ae5..9c2fef21a 100644
  	spin_lock_irqsave(&xhci->lock, flags);
  
  	/* config ep command clears toggle if add and drop ep flags are set */
-@@ -3283,13 +3215,16 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3283,13 +3214,16 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(cfg_cmd->completion);
  
@@ -70025,7 +70079,7 @@ index 8918e6ae5..9c2fef21a 100644
  }
  
  static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
-@@ -3828,6 +3763,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
+@@ -3828,6 +3762,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
  	/* Wait for the Reset Device command to finish */
  	wait_for_completion(reset_device_cmd->completion);
  
@@ -70039,7 +70093,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/* The Reset Device command can't fail, according to the 0.95/0.96 spec,
  	 * unless we tried to reset a slot ID that wasn't enabled,
  	 * or the device wasn't in the addressed or configured state.
-@@ -3915,6 +3857,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3915,6 +3856,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	struct xhci_slot_ctx *slot_ctx;
  	int i, ret;
  
@@ -70047,7 +70101,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/*
  	 * We called pm_runtime_get_noresume when the device was attached.
  	 * Decrement the counter here to allow controller to runtime suspend
-@@ -3922,6 +3865,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3922,6 +3864,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	 */
  	if (xhci->quirks & XHCI_RESET_ON_RESUME)
  		pm_runtime_put_noidle(hcd->self.controller);
@@ -70055,7 +70109,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  	ret = xhci_check_args(hcd, udev, NULL, 0, true, __func__);
  	/* If the host is halted due to driver unload, we still need to free the
-@@ -3940,8 +3884,9 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3940,8 +3883,9 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		del_timer_sync(&virt_dev->eps[i].stop_cmd_timer);
  	}
  	virt_dev->udev = NULL;
@@ -70067,7 +70121,7 @@ index 8918e6ae5..9c2fef21a 100644
  }
  
  int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
-@@ -3951,7 +3896,7 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
+@@ -3951,7 +3895,7 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
  	u32 state;
  	int ret = 0;
  
@@ -70076,7 +70130,7 @@ index 8918e6ae5..9c2fef21a 100644
  	if (!command)
  		return -ENOMEM;
  
-@@ -3976,15 +3921,6 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
+@@ -3976,15 +3920,6 @@ int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
  	}
  	xhci_ring_cmd_db(xhci);
  	spin_unlock_irqrestore(&xhci->lock, flags);
@@ -70092,7 +70146,7 @@ index 8918e6ae5..9c2fef21a 100644
  	return ret;
  }
  
-@@ -4073,6 +4009,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4073,6 +4008,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		xhci_warn(xhci, "Could not allocate xHCI USB device data structures\n");
  		goto disable_slot;
  	}
@@ -70107,7 +70161,7 @@ index 8918e6ae5..9c2fef21a 100644
  	vdev = xhci->devs[slot_id];
  	slot_ctx = xhci_get_slot_ctx(xhci, vdev->out_ctx);
  	trace_xhci_alloc_dev(slot_ctx);
-@@ -4081,20 +4025,23 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4081,20 +4024,23 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  
  	xhci_debugfs_create_slot(xhci, slot_id);
  
@@ -70133,7 +70187,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  	return 0;
  }
-@@ -4203,6 +4150,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4203,6 +4149,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	/* ctrl tx can take up to 5 sec; XXX: need more time for xHC? */
  	wait_for_completion(command->completion);
  
@@ -70147,7 +70201,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/* FIXME: From section 4.3.4: "Software shall be responsible for timing
  	 * the SetAddress() "recovery interval" required by USB and aborting the
  	 * command on a timeout.
-@@ -4224,7 +4178,6 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4224,7 +4177,6 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  
  		mutex_unlock(&xhci->mutex);
  		ret = xhci_disable_slot(xhci, udev->slot_id);
@@ -70155,7 +70209,7 @@ index 8918e6ae5..9c2fef21a 100644
  		if (!ret)
  			xhci_alloc_dev(hcd, udev);
  		kfree(command->completion);
-@@ -4287,10 +4240,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4287,10 +4239,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	return ret;
  }
  
@@ -70168,7 +70222,7 @@ index 8918e6ae5..9c2fef21a 100644
  
  static int xhci_enable_device(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -4350,6 +4304,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4350,6 +4303,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  		return -ENOMEM;
  	}
  
@@ -70183,7 +70237,7 @@ index 8918e6ae5..9c2fef21a 100644
  	xhci_slot_copy(xhci, command->in_ctx, virt_dev->out_ctx);
  	spin_unlock_irqrestore(&xhci->lock, flags);
  
-@@ -4374,6 +4336,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4374,6 +4335,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  	return ret;
  }
  
@@ -70214,7 +70268,7 @@ index 8918e6ae5..9c2fef21a 100644
  #ifdef CONFIG_PM
  
  /* BESL to HIRD Encoding array for USB2 LPM */
-@@ -4697,19 +4683,19 @@ static u16 xhci_calculate_u1_timeout(struct xhci_hcd *xhci,
+@@ -4697,19 +4682,19 @@ static u16 xhci_calculate_u1_timeout(struct xhci_hcd *xhci,
  {
  	unsigned long long timeout_ns;
  
@@ -70240,7 +70294,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/* The U1 timeout is encoded in 1us intervals.
  	 * Don't return a timeout of zero, because that's USB3_LPM_DISABLED.
  	 */
-@@ -4761,19 +4747,19 @@ static u16 xhci_calculate_u2_timeout(struct xhci_hcd *xhci,
+@@ -4761,19 +4746,19 @@ static u16 xhci_calculate_u2_timeout(struct xhci_hcd *xhci,
  {
  	unsigned long long timeout_ns;
  
@@ -70266,7 +70320,7 @@ index 8918e6ae5..9c2fef21a 100644
  	/* The U2 timeout is encoded in 256us intervals */
  	timeout_ns = DIV_ROUND_UP_ULL(timeout_ns, 256 * 1000);
  	/* If the necessary timeout value is bigger than what we can set in the
-@@ -5113,6 +5099,15 @@ static int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+@@ -5113,6 +5098,15 @@ static int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
  		return -ENOMEM;
  	}
  
@@ -70282,7 +70336,7 @@ index 8918e6ae5..9c2fef21a 100644
  	xhci_slot_copy(xhci, config_cmd->in_ctx, vdev->out_ctx);
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  	slot_ctx = xhci_get_slot_ctx(xhci, config_cmd->in_ctx);
-@@ -5436,10 +5431,20 @@ void xhci_init_driver(struct hc_driver *drv,
+@@ -5436,10 +5430,20 @@ void xhci_init_driver(struct hc_driver *drv,
  			drv->reset = over->reset;
  		if (over->start)
  			drv->start = over->start;
@@ -70304,7 +70358,7 @@ index 8918e6ae5..9c2fef21a 100644
  }
  EXPORT_SYMBOL_GPL(xhci_init_driver);
 diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
-index 6f16a05b1..ebe8ea370 100644
+index e66874000..ebe8ea370 100644
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
 @@ -17,6 +17,7 @@
@@ -70416,15 +70470,16 @@ index 6f16a05b1..ebe8ea370 100644
  };
  
  struct xhci_scratchpad {
-@@ -1887,7 +1905,6 @@ struct xhci_hcd {
+@@ -1887,8 +1905,6 @@ struct xhci_hcd {
  #define XHCI_DISABLE_SPARSE	BIT_ULL(38)
  #define XHCI_SG_TRB_CACHE_SIZE_QUIRK	BIT_ULL(39)
  #define XHCI_NO_SOFT_RETRY	BIT_ULL(40)
 -#define XHCI_EP_CTX_BROKEN_DCS	BIT_ULL(42)
+-#define XHCI_SUSPEND_RESUME_CLKS	BIT_ULL(43)
  
  	unsigned int		num_active_eps;
  	unsigned int		limit_active_eps;
-@@ -1916,6 +1933,14 @@ struct xhci_hcd {
+@@ -1917,6 +1933,14 @@ struct xhci_hcd {
  	struct list_head	regset_list;
  
  	void			*dbc;
@@ -70439,7 +70494,7 @@ index 6f16a05b1..ebe8ea370 100644
  	/* platform-specific data -- must come last */
  	unsigned long		priv[] __aligned(sizeof(s64));
  };
-@@ -1925,8 +1950,15 @@ struct xhci_driver_overrides {
+@@ -1926,8 +1950,15 @@ struct xhci_driver_overrides {
  	size_t extra_priv_size;
  	int (*reset)(struct usb_hcd *hcd);
  	int (*start)(struct usb_hcd *hcd);
@@ -70455,7 +70510,7 @@ index 6f16a05b1..ebe8ea370 100644
  };
  
  #define	XHCI_CFC_DELAY		10
-@@ -2053,10 +2085,6 @@ void xhci_free_device_endpoint_resources(struct xhci_hcd *xhci,
+@@ -2054,10 +2085,6 @@ void xhci_free_device_endpoint_resources(struct xhci_hcd *xhci,
  struct xhci_ring *xhci_dma_to_transfer_ring(
  		struct xhci_virt_ep *ep,
  		u64 address);
@@ -70466,7 +70521,7 @@ index 6f16a05b1..ebe8ea370 100644
  struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
  		bool allocate_completion, gfp_t mem_flags);
  struct xhci_command *xhci_alloc_command_with_ctx(struct xhci_hcd *xhci,
-@@ -2081,8 +2109,13 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
+@@ -2082,8 +2109,13 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
  void xhci_shutdown(struct usb_hcd *hcd);
  void xhci_init_driver(struct hc_driver *drv,
  		      const struct xhci_driver_overrides *over);
@@ -70480,7 +70535,7 @@ index 6f16a05b1..ebe8ea370 100644
  int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id);
  int xhci_ext_cap_init(struct xhci_hcd *xhci);
  
-@@ -2130,13 +2163,6 @@ int xhci_queue_reset_ep(struct xhci_hcd *xhci, struct xhci_command *cmd,
+@@ -2131,13 +2163,6 @@ int xhci_queue_reset_ep(struct xhci_hcd *xhci, struct xhci_command *cmd,
  		enum xhci_ep_reset_type reset_type);
  int xhci_queue_reset_device(struct xhci_hcd *xhci, struct xhci_command *cmd,
  		u32 slot_id);
@@ -70494,7 +70549,7 @@ index 6f16a05b1..ebe8ea370 100644
  void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci, unsigned int slot_id,
  			       unsigned int ep_index, unsigned int stream_id,
  			       struct xhci_td *td);
-@@ -2197,6 +2223,53 @@ static inline struct xhci_ring *xhci_urb_to_transfer_ring(struct xhci_hcd *xhci,
+@@ -2198,6 +2223,53 @@ static inline struct xhci_ring *xhci_urb_to_transfer_ring(struct xhci_hcd *xhci,
  					urb->stream_id);
  }
  
@@ -70936,7 +70991,7 @@ index e5a971b83..a345f2982 100644
  			max_sectors = PAGE_SIZE >> 9;
  		if (queue_max_hw_sectors(sdev->request_queue) > max_sectors)
 diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index 4993227ab..74a63887c 100644
+index 20dcbccb2..8d3848322 100644
 --- a/drivers/usb/storage/unusual_devs.h
 +++ b/drivers/usb/storage/unusual_devs.h
 @@ -406,16 +406,6 @@ UNUSUAL_DEV(  0x04b8, 0x0602, 0x0110, 0x0110,
@@ -70987,7 +71042,7 @@ index 4993227ab..74a63887c 100644
  /*
   * Reported by Hanno Boeck <hanno@gmx.de>
   * Taken from the Lycoris Kernel
-@@ -2308,16 +2297,6 @@ UNUSUAL_DEV(  0x2027, 0xa001, 0x0000, 0x9999,
+@@ -2302,16 +2291,6 @@ UNUSUAL_DEV(  0x2027, 0xa001, 0x0000, 0x9999,
  		USB_SC_DEVICE, USB_PR_DEVICE, usb_stor_euscsi_init,
  		US_FL_SCM_MULT_TARG ),
  
