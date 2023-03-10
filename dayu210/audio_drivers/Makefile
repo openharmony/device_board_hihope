@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 HiHope Open Source Organization .
+# Copyright (C) 2022-2023 HiHope Open Source Organization .
 #
 # This software is licensed under the terms of the GNU General Public
 # License version 2, as published by the Free Software Foundation, and
@@ -31,6 +31,10 @@ ccflags-$(CONFIG_DRIVERS_HDF_AUDIO_RK3588) += \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/core \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/utils \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/osal \
+        -I$(srctree)/drivers/hdf/inner_api/osal/shared \
+        -I$(srctree)/drivers/hdf/inner_api/utils \
+        -I$(srctree)/drivers/hdf/inner_api/core \
+        -I$(srctree)/drivers/hdf/inner_api/host/shared \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/platform \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/config \
         -I$(srctree)/$(KHDF_FRAMEWORK_ROOT_DIR)/include/audio \
