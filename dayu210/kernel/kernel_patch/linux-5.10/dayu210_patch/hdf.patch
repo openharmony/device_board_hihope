@@ -54,7 +54,7 @@ diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
 index 4acb583c9..ddcaf4cdc 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -2,6 +2,15 @@
+@@ -2,6 +2,19 @@
  #
  # Makefile for the HID driver
  #
@@ -65,6 +65,10 @@ index 4acb583c9..ddcaf4cdc 100644
 +             $(HDF_ROOT_DIR)/framework/include/utils \
 +             $(HDF_ROOT_DIR)/framework/include/osal \
 +             $(HDF_ROOT_DIR)/framework/ability/sbuf/include \
++             $(HDF_ROOT_DIR)/inner_api/utils \
++             $(HDF_ROOT_DIR)/inner_api/osal/shared \
++             $(HDF_ROOT_DIR)/inner_api/host/shared \
++             $(HDF_ROOT_DIR)/inner_api/core \
 +             $(HDF_ROOT_DIR)/khdf/osal/include \
 +             $(HDF_ROOT_DIR)/evdev
  hid-y			:= hid-core.o hid-input.o hid-quirks.o
@@ -313,7 +317,7 @@ diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
 index a48e5f2d8..90d25f224 100644
 --- a/drivers/input/misc/Makefile
 +++ b/drivers/input/misc/Makefile
-@@ -85,3 +85,17 @@ obj-$(CONFIG_INPUT_XEN_KBDDEV_FRONTEND)	+= xen-kbdfront.o
+@@ -85,3 +85,21 @@ obj-$(CONFIG_INPUT_XEN_KBDDEV_FRONTEND)	+= xen-kbdfront.o
  obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
  obj-$(CONFIG_INPUT_IDEAPAD_SLIDEBAR)	+= ideapad_slidebar.o
  
@@ -328,6 +332,10 @@ index a48e5f2d8..90d25f224 100644
 +             -I$(srctree)/drivers/hdf/framework/core/host/include \
 +             -I$(srctree)/drivers/hdf/framework/core/shared/include \
 +             -I$(srctree)/drivers/hdf/framework/utils/include \
++             -I$(srctree)/drivers/hdf/inner_api/osal/shared \
++             -I$(srctree)/drivers/hdf/inner_api/host/shared \
++             -I$(srctree)/drivers/hdf/inner_api/utils \
++             -I$(srctree)/drivers/hdf/inner_api/core \
 +             -I$(srctree)/drivers/hdf/khdf/osal/include
 +ccflags-y +=-I$(srctree)/bounds_checking_function/include \
 +             -I$(srctree)/drivers/hdf/evdev
