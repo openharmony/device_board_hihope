@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index 0e54a4731..6d1a2ad10 100644
+index f98007799..68319e98f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -493,14 +493,16 @@ LINUXINCLUDE    := \
@@ -15620,7 +15620,7 @@ index 81ac9b658..519900c67 100644
  	struct mutex lock;
  	bool connected;
 diff --git a/drivers/gpu/drm/rockchip/dw-mipi-dsi-rockchip.c b/drivers/gpu/drm/rockchip/dw-mipi-dsi-rockchip.c
-index d0c9610ad..96e130da4 100644
+index 82cbfccba..10dea26b0 100644
 --- a/drivers/gpu/drm/rockchip/dw-mipi-dsi-rockchip.c
 +++ b/drivers/gpu/drm/rockchip/dw-mipi-dsi-rockchip.c
 @@ -16,8 +16,9 @@
@@ -16569,8 +16569,8 @@ index d0c9610ad..96e130da4 100644
  		.of_match_table = dw_mipi_dsi_rockchip_dt_ids,
 +		.pm = &dw_mipi_dsi_rockchip_pm_ops,
  		.name	= "dw-mipi-dsi-rockchip",
- 	},
- };
+ 		/*
+ 		 * For dual-DSI display, one DSI pokes at the other DSI's
 diff --git a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
 index 23de359a1..430a35995 100644
 --- a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
@@ -75844,7 +75844,7 @@ index c94c05846..24e7b4532 100644
  		goto fail_dec;
  
 diff --git a/ipc/sem.c b/ipc/sem.c
-index d3b9b73cd..7d9c06b0a 100644
+index 2cb6515ef..7d9c06b0a 100644
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
 @@ -511,7 +511,7 @@ static struct sem_array *sem_alloc(size_t nsems)
@@ -75874,16 +75874,6 @@ index d3b9b73cd..7d9c06b0a 100644
  	if (!new) {
  		ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
  		return ERR_PTR(-ENOMEM);
-@@ -2001,8 +2001,7 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
- 	if (nsops > ns->sc_semopm)
- 		return -E2BIG;
- 	if (nsops > SEMOPM_FAST) {
--		sops = kvmalloc_array(nsops, sizeof(*sops),
--				      GFP_KERNEL_ACCOUNT);
-+		sops = kvmalloc_array(nsops, sizeof(*sops), GFP_KERNEL);
- 		if (sops == NULL)
- 			return -ENOMEM;
- 	}
 diff --git a/ipc/shm.c b/ipc/shm.c
 index b418731d6..471ac3e74 100644
 --- a/ipc/shm.c
