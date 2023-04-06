@@ -45,6 +45,7 @@ public:
     virtual RetCode Capture(const int32_t streamId, const int32_t captureId) override;
     RetCode CancelCapture(const int32_t streamId) override;
     RetCode Flush(const int32_t streamId);
+    RetCode Config(const int32_t streamId, const CaptureMeta& meta) override;
 private:
     void encodeJpegToMemory(unsigned char* image, int width, int height,
             const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf);
@@ -58,6 +59,7 @@ private:
     static uint32_t                       previewHeight_;
     void* halCtx_ = nullptr;
     int mppStatus_ = 0;
+    uint32_t jpegRotation_;
 };
 } // namespace OHOS::Camera
 #endif
