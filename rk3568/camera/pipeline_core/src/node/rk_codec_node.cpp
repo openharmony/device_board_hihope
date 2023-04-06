@@ -27,6 +27,7 @@ const unsigned long long TIME_CONVERSION_NS_S = 1000000000ULL; /* ns to s */
 RKCodecNode::RKCodecNode(const std::string& name, const std::string& type) : NodeBase(name, type)
 {
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
+    jpegRotation_ = static_cast<uint32_t>(JXFORM_ROT_270);
 }
 
 RKCodecNode::~RKCodecNode()
@@ -106,6 +107,41 @@ static void RotJpegImg(
     jpeg_destroy_decompress(&inputInfo);
 }
 
+RetCode RKCodecNode::Config(const int32_t streamId, const CaptureMeta& meta)
+{
+    if (meta == nullptr) {
+        CAMERA_LOGE("meta is nullptr");
+        return RC_ERROR;
+    }
+
+    common_metadata_header_t* data = meta->get();
+    if (data == nullptr) {
+        CAMERA_LOGE("data is nullptr");
+        return RC_ERROR;
+    }
+
+    camera_metadata_item_t entry;
+    int ret = FindCameraMetadataItem(data, OHOS_JPEG_ORIENTATION, &entry);
+    if (ret != 0 || entry.data.i32 == nullptr) {
+        CAMERA_LOGI("tag not found");
+        return RC_ERROR;
+    }
+
+    JXFORM_CODE jxRotation = JXFORM_ROT_270;
+    int32_t ohosRotation = *entry.data.i32;
+    if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_0) {
+        jxRotation = JXFORM_NONE;
+    } else if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_90) {
+        jxRotation = JXFORM_ROT_90;
+    } else if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_180) {
+        jxRotation = JXFORM_ROT_180;
+    } else {
+        jxRotation = JXFORM_ROT_270;
+    }
+    jpegRotation_ = static_cast<uint32_t>(jxRotation);
+    return RC_OK;
+}
+
 void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height,
     const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf)
 {
@@ -146,7 +182,7 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
     size_t rotJpgSize = 0;
     unsigned char* rotJpgBuf = nullptr;
     /* rotate image */
-    RotJpegImg(*jpegBuf, *jpegSize, &rotJpgBuf, &rotJpgSize, JXFORM_ROT_270);
+    RotJpegImg(*jpegBuf, *jpegSize, &rotJpgBuf, &rotJpgSize, static_cast<JXFORM_CODE>(jpegRotation_));
     if (rotJpgBuf != nullptr && rotJpgSize != 0) {
         free(*jpegBuf);
         *jpegBuf = rotJpgBuf;
