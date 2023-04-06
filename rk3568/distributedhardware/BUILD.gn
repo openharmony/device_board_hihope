@@ -16,7 +16,7 @@ ohos_prebuilt_etc("distributed_hardware_components_cfg.json") {
   source = "distributed_hardware_components_cfg.json"
   install_enable = true
   module_install_dir = "etc/distributedhardware/"
-  install_images = [ vendor ]
+  install_images = [ chipset_base_dir ]
   part_name = "rockchip_products"
 }
 
@@ -24,7 +24,7 @@ ohos_prebuilt_etc("dinput_business_event_whitelist.cfg") {
   source = "dinput_business_event_whitelist.cfg"
   install_enable = true
   module_install_dir = "etc/distributedhardware/"
-  install_images = [ vendor ]
+  install_images = [ chipset_base_dir ]
   part_name = "rockchip_products"
 }
 
