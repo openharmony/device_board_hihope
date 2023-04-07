@@ -3,8 +3,6 @@
     "parts": {
         "rockchip_products": {
             "module_list": [
-                "//device/soc/rockchip/${device_name}/hardware/display:display_buffer_model",
-                "//device/soc/rockchip/${device_name}/hardware/display:display_composer_model",
                 "//device/board/hihope/${device_name}:rk3568_group",
                 "//vendor/hihope/${product_name}/bluetooth:libbt_vendor",
                 "//vendor/hihope/${product_name}/bluetooth:BCM4362A2.hcd"
@@ -12,16 +10,7 @@
             "test_list": [
                 "//kernel/linux/build/test:linuxkerneltest"
             ],
-            "inner_kits": [
-                {
-                    "name": "//device/soc/rockchip/rk3568/hardware/display:libdisplay_buffer_vdi_impl",
-                        "header": {
-                            "header_files": [
-                            ],
-                        "header_base": "//device/soc/rockchip/rk3568/hardware/display/src/display_gralloc"
-                    }
-                }
-            ]
+            "inner_kits": []
         }
     }
 }
