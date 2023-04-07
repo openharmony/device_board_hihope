@@ -30,7 +30,7 @@ ohos_prebuilt_etc("dinput_business_event_whitelist.cfg") {
 
 group("distributedhardware") {
   deps = [
+    ":dinput_business_event_whitelist.cfg",
     ":distributed_hardware_components_cfg.json",
-    ":dinput_business_event_whitelist.cfg"
   ]
 }
