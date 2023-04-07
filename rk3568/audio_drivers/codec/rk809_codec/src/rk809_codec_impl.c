@@ -446,11 +446,6 @@ int32_t Rk809DeviceInit(struct AudioCard *audioCard, const struct CodecDevice *d
         return HDF_FAILURE;
     }
 
-    if (AudioSapmSleep(audioCard) != HDF_SUCCESS) {
-        AUDIO_DRIVER_LOG_ERR("add sapm sleep modular failed.");
-        return HDF_FAILURE;
-    }
-
     AUDIO_DRIVER_LOG_DEBUG("success.");
     return HDF_SUCCESS;
 }
