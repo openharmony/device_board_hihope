@@ -23,6 +23,13 @@ group("rk3568_group") {
     "updater:updater_files",
     "//device/soc/rockchip/rk3568/hardware:hardware_group",
   ]
+  if (is_support_graphic) {
+    deps += [
+      "//device/soc/rockchip/${device_name}/hardware/display:display_buffer_model",
+      "//device/soc/rockchip/${device_name}/hardware/display:display_composer_model",
+    ]
+  }
+
   if (is_support_boot_animation) {
     deps += [ "bootanimation:bootanimation" ]
   }
