@@ -9,7 +9,8 @@
             ],
             "test_list": [
                 "//kernel/linux/build/test:linuxkerneltest"
-            ]
+            ],
+            "inner_kits": []
         }
     }
 }
