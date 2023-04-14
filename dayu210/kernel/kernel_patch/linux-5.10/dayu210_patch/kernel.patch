@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index f98007799..68319e98f 100644
+index f99ad7c0b..f464dacde 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -493,14 +493,16 @@ LINUXINCLUDE    := \
@@ -5076,7 +5076,7 @@ index 7475e09b0..d64fc0392 100644
  
  	dma_fence_end_signalling(tmp);
 diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
-index 2594408a1..4fb22001b 100644
+index bbbfa28b2..4fb22001b 100644
 --- a/drivers/dma-buf/dma-heap.c
 +++ b/drivers/dma-buf/dma-heap.c
 @@ -14,7 +14,6 @@
@@ -5270,27 +5270,19 @@ index 2594408a1..4fb22001b 100644
  	unsigned int minor;
  	int ret;
  
-@@ -222,21 +310,19 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+@@ -221,10 +309,20 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+ 		return ERR_PTR(-EINVAL);
  	}
  
- 	/* check the name is unique */
--	mutex_lock(&heap_list_lock);
--	list_for_each_entry(h, &heap_list, list) {
--		if (!strcmp(h->name, exp_info->name)) {
--			mutex_unlock(&heap_list_lock);
--			pr_err("dma_heap: Already registered heap named %s\n",
--			       exp_info->name);
--			return ERR_PTR(-EINVAL);
--		}
++	/* check the name is unique */
 +	heap = dma_heap_find(exp_info->name);
 +	if (heap) {
 +		pr_err("dma_heap: Already registered heap named %s\n",
 +		       exp_info->name);
 +		dma_heap_put(heap);
 +		return ERR_PTR(-EINVAL);
- 	}
--	mutex_unlock(&heap_list_lock);
- 
++	}
++
  	heap = kzalloc(sizeof(*heap), GFP_KERNEL);
  	if (!heap)
  		return ERR_PTR(-ENOMEM);
@@ -5299,7 +5291,7 @@ index 2594408a1..4fb22001b 100644
  	heap->name = exp_info->name;
  	heap->ops = exp_info->ops;
  	heap->priv = exp_info->priv;
-@@ -261,16 +347,20 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+@@ -249,37 +347,27 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
  		goto err1;
  	}
  
@@ -5320,14 +5312,34 @@ index 2594408a1..4fb22001b 100644
 +		err_ret = ERR_CAST(heap->heap_dev);
  		goto err2;
  	}
-+
+ 
+-	mutex_lock(&heap_list_lock);
+-	/* check the name is unique */
+-	list_for_each_entry(h, &heap_list, list) {
+-		if (!strcmp(h->name, exp_info->name)) {
+-			mutex_unlock(&heap_list_lock);
+-			pr_err("dma_heap: Already registered heap named %s\n",
+-			       exp_info->name);
+-			err_ret = ERR_PTR(-EINVAL);
+-			goto err3;
+-		}
+-	}
 +	/* Make sure it doesn't disappear on us */
 +	heap->heap_dev = get_device(heap->heap_dev);
-+
+ 
  	/* Add heap to the list */
- 	mutex_lock(&heap_list_lock);
++	mutex_lock(&heap_list_lock);
  	list_add(&heap->list, &heap_list);
-@@ -286,27 +376,88 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+ 	mutex_unlock(&heap_list_lock);
+ 
+ 	return heap;
+ 
+-err3:
+-	device_destroy(dma_heap_class, heap->heap_devt);
+ err2:
+ 	cdev_del(&heap->heap_cdev);
+ err1:
+@@ -288,27 +376,88 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
  	kfree(heap);
  	return err_ret;
  }
@@ -13981,7 +13993,7 @@ index f135b7959..286edbe1b 100644
  
  /**
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index b7b37082a..1f5ef2ce9 100644
+index 1a87cc445..7c7d10225 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
 @@ -30,6 +30,7 @@
@@ -14428,7 +14440,7 @@ index b7b37082a..1f5ef2ce9 100644
  		connector_type = DRM_MODE_CONNECTOR_DPI;
  		break;
  	case DRM_MODE_CONNECTOR_LVDS:
-@@ -3904,6 +4186,9 @@ static const struct panel_desc arm_rtsm = {
+@@ -3906,6 +4188,9 @@ static const struct panel_desc arm_rtsm = {
  
  static const struct of_device_id platform_of_match[] = {
  	{
@@ -14438,7 +14450,7 @@ index b7b37082a..1f5ef2ce9 100644
  		.compatible = "ampire,am-1280800n3tzqw-t00h",
  		.data = &ampire_am_1280800n3tzqw_t00h,
  	}, {
-@@ -4312,15 +4597,132 @@ static const struct of_device_id platform_of_match[] = {
+@@ -4314,15 +4599,132 @@ static const struct of_device_id platform_of_match[] = {
  };
  MODULE_DEVICE_TABLE(of, platform_of_match);
  
@@ -14572,7 +14584,7 @@ index b7b37082a..1f5ef2ce9 100644
  }
  
  static int panel_simple_platform_remove(struct platform_device *pdev)
-@@ -4555,6 +4957,9 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
+@@ -4557,6 +4959,9 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
  
  static const struct of_device_id dsi_of_match[] = {
  	{
@@ -14582,7 +14594,7 @@ index b7b37082a..1f5ef2ce9 100644
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01
  	}, {
-@@ -4581,9 +4986,33 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4583,9 +4988,33 @@ static const struct of_device_id dsi_of_match[] = {
  };
  MODULE_DEVICE_TABLE(of, dsi_of_match);
  
@@ -14616,7 +14628,7 @@ index b7b37082a..1f5ef2ce9 100644
  	const struct of_device_id *id;
  	int err;
  
-@@ -4591,12 +5020,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
+@@ -4593,12 +5022,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
  	if (!id)
  		return -ENODEV;
  
@@ -39974,7 +39986,7 @@ index 31153f656..0ce5d97d4 100644
 +
  #endif
 diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index eb82f6aac..e3df2f4fd 100644
+index 7d9ec91e0..bf35969a4 100644
 --- a/drivers/mmc/core/core.c
 +++ b/drivers/mmc/core/core.c
 @@ -37,6 +37,7 @@
@@ -40013,7 +40025,7 @@ index eb82f6aac..e3df2f4fd 100644
  
  /**
   * mmc_vdd_to_ocrbitnum - Convert a voltage to the OCR bit number
-@@ -1259,6 +1262,7 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
+@@ -1265,6 +1268,7 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
  	host->ios.timing = timing;
  	mmc_set_ios(host);
  }
@@ -40021,7 +40033,7 @@ index eb82f6aac..e3df2f4fd 100644
  
  /*
   * Select appropriate driver type for host.
-@@ -2057,6 +2061,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
+@@ -2063,6 +2067,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
  }
  EXPORT_SYMBOL(mmc_set_blocklen);
  
@@ -40029,7 +40041,7 @@ index eb82f6aac..e3df2f4fd 100644
  static void mmc_hw_reset_for_init(struct mmc_host *host)
  {
  	mmc_pwrseq_reset(host);
-@@ -2065,6 +2070,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
+@@ -2071,6 +2076,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
  		return;
  	host->ops->hw_reset(host);
  }
@@ -40037,7 +40049,7 @@ index eb82f6aac..e3df2f4fd 100644
  
  /**
   * mmc_hw_reset - reset the card in hardware
-@@ -2137,7 +2143,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
+@@ -2143,7 +2149,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
  	 * Some eMMCs (with VCCQ always on) may not be reset after power up, so
  	 * do a hardware reset if possible.
  	 */
@@ -60040,7 +60052,7 @@ index 6d6a78eea..fee4f2933 100644
  	}
  
 diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index f648fd1d7..d499d2fec 100644
+index 1f231fcda..1cb78f8ea 100644
 --- a/drivers/tty/serial/8250/8250_port.c
 +++ b/drivers/tty/serial/8250/8250_port.c
 @@ -122,8 +122,7 @@ static const struct serial8250_config uart_config[] = {
@@ -60053,7 +60065,7 @@ index f648fd1d7..d499d2fec 100644
  		/* UART_CAP_EFR breaks billionon CF bluetooth card. */
  		.flags		= UART_CAP_FIFO | UART_CAP_SLEEP,
  	},
-@@ -1551,8 +1550,13 @@ static inline void __start_tx(struct uart_port *port)
+@@ -1537,8 +1536,13 @@ static inline void __start_tx(struct uart_port *port)
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -60067,7 +60079,7 @@ index f648fd1d7..d499d2fec 100644
  
  	if (serial8250_set_THRI(up)) {
  		if (up->bugs & UART_BUG_TXEN) {
-@@ -1882,6 +1886,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
+@@ -1868,6 +1872,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
  
  static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  {
@@ -60078,9 +60090,9 @@ index f648fd1d7..d499d2fec 100644
 +		return up->dma->rx_dma(up);
 +#else
  	switch (iir & 0x3f) {
- 	case UART_IIR_RX_TIMEOUT:
- 		serial8250_rx_dma_flush(up);
-@@ -1890,6 +1900,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
+ 	case UART_IIR_RDI:
+ 		if (!up->dma->rx_running)
+@@ -1879,6 +1889,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  		return true;
  	}
  	return up->dma->rx_dma(up);
@@ -60088,7 +60100,7 @@ index f648fd1d7..d499d2fec 100644
  }
  
  /*
-@@ -1900,7 +1911,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1889,7 +1900,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  	unsigned char status;
  	unsigned long flags;
  	struct uart_8250_port *up = up_to_u8250p(port);
@@ -60098,7 +60110,7 @@ index f648fd1d7..d499d2fec 100644
  
  	if (iir & UART_IIR_NO_INT)
  		return 0;
-@@ -1909,6 +1922,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1898,6 +1911,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  
  	status = serial_port_in(port, UART_LSR);
  
@@ -60116,7 +60128,7 @@ index f648fd1d7..d499d2fec 100644
  	/*
  	 * If port is stopped and there are no error conditions in the
  	 * FIFO, then don't drain the FIFO, as this may lead to TTY buffer
-@@ -1926,11 +1950,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1915,11 +1939,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  		if (!up->dma || handle_rx_dma(up, iir))
  			status = serial8250_rx_chars(up, status);
  	}
@@ -60154,7 +60166,7 @@ index f648fd1d7..d499d2fec 100644
  	uart_unlock_and_check_sysrq(port, flags);
  	return 1;
  }
-@@ -2404,7 +2451,11 @@ int serial8250_do_startup(struct uart_port *port)
+@@ -2393,7 +2440,11 @@ int serial8250_do_startup(struct uart_port *port)
  		if (uart_console(port))
  			msg = "forbid DMA for kernel console";
  		else if (serial8250_request_dma(up))
@@ -60166,7 +60178,7 @@ index f648fd1d7..d499d2fec 100644
  		if (msg) {
  			dev_warn_ratelimited(port->dev, "%s\n", msg);
  			up->dma = NULL;
-@@ -2598,6 +2649,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2587,6 +2638,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -60177,7 +60189,7 @@ index f648fd1d7..d499d2fec 100644
  	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
  	if (is_omap1510_8250(up)) {
  		if (baud == 115200) {
-@@ -2617,6 +2672,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2606,6 +2661,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  		serial_port_out(port, UART_LCR, up->lcr | UART_LCR_DLAB);
  
  	serial_dl_write(up, quot);
@@ -60195,7 +60207,7 @@ index f648fd1d7..d499d2fec 100644
  }
  EXPORT_SYMBOL_GPL(serial8250_do_set_divisor);
  
-@@ -2796,6 +2862,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2785,6 +2851,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  	if ((termios->c_cflag & CREAD) == 0)
  		port->ignore_status_mask |= UART_LSR_DR;
  
@@ -60203,7 +60215,7 @@ index f648fd1d7..d499d2fec 100644
  	/*
  	 * CTS flow control flag and modem status interrupts
  	 */
-@@ -2809,6 +2876,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2798,6 +2865,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		up->ier |= UART_IER_RTOIE;
  
  	serial_port_out(port, UART_IER, up->ier);
@@ -60211,7 +60223,7 @@ index f648fd1d7..d499d2fec 100644
  
  	if (up->capabilities & UART_CAP_EFR) {
  		unsigned char efr = 0;
-@@ -2827,16 +2895,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2816,16 +2884,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  			serial_port_out(port, UART_EFR, efr);
  	}
  
@@ -60239,7 +60251,7 @@ index f648fd1d7..d499d2fec 100644
  	if (port->type != PORT_16750) {
  		/* emulated UARTs (Lucent Venus 167x) need two steps */
  		if (up->fcr & UART_FCR_ENABLE_FIFO)
-@@ -2844,6 +2921,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2833,6 +2910,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		serial_port_out(port, UART_FCR, up->fcr);	/* set fcr */
  	}
  	serial8250_set_mctrl(port, port->mctrl);
@@ -60726,7 +60738,7 @@ index f2a3c0b5b..dfd24c966 100644
  	if (ret < 0)
  		goto re_enumerate;
 diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index eb3ea45d5..667bac3b8 100644
+index 6d24d138c..b8164cf15 100644
 --- a/drivers/usb/core/quirks.c
 +++ b/drivers/usb/core/quirks.c
 @@ -322,6 +322,10 @@ static const struct usb_device_id usb_quirk_list[] = {
@@ -60740,7 +60752,7 @@ index eb3ea45d5..667bac3b8 100644
  	/* appletouch */
  	{ USB_DEVICE(0x05ac, 0x021a), .driver_info = USB_QUIRK_RESET_RESUME },
  
-@@ -423,6 +427,10 @@ static const struct usb_device_id usb_quirk_list[] = {
+@@ -426,6 +430,10 @@ static const struct usb_device_id usb_quirk_list[] = {
  	/* Generic RTL8153 based ethernet adapters */
  	{ USB_DEVICE(0x0bda, 0x8153), .driver_info = USB_QUIRK_NO_LPM },
  
@@ -60751,7 +60763,7 @@ index eb3ea45d5..667bac3b8 100644
  	/* SONiX USB DEVICE Touchpad */
  	{ USB_DEVICE(0x0c45, 0x7056), .driver_info =
  			USB_QUIRK_IGNORE_REMOTE_WAKEUP },
-@@ -451,12 +459,6 @@ static const struct usb_device_id usb_quirk_list[] = {
+@@ -454,12 +462,6 @@ static const struct usb_device_id usb_quirk_list[] = {
  	{ USB_DEVICE(0x17ef, 0x1018), .driver_info = USB_QUIRK_RESET_RESUME },
  	{ USB_DEVICE(0x17ef, 0x1019), .driver_info = USB_QUIRK_RESET_RESUME },
  
@@ -70771,10 +70783,19 @@ index 6b5ba6180..3b010bfca 100644
  
  	result = cp210x_gpio_init(serial);
 diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index eea3dd18a..acb8eec14 100644
+index 537ef276c..acb8eec14 100644
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
-@@ -198,8 +198,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -162,8 +162,6 @@ static void option_instat_callback(struct urb *urb);
+ #define NOVATELWIRELESS_PRODUCT_G2		0xA010
+ #define NOVATELWIRELESS_PRODUCT_MC551		0xB001
+ 
+-#define UBLOX_VENDOR_ID				0x1546
+-
+ /* AMOI PRODUCTS */
+ #define AMOI_VENDOR_ID				0x1614
+ #define AMOI_PRODUCT_H01			0x0800
+@@ -200,8 +198,6 @@ static void option_instat_callback(struct urb *urb);
  
  #define DELL_PRODUCT_5821E			0x81d7
  #define DELL_PRODUCT_5821E_ESIM			0x81e0
@@ -70783,7 +70804,15 @@ index eea3dd18a..acb8eec14 100644
  
  #define KYOCERA_VENDOR_ID			0x0c88
  #define KYOCERA_PRODUCT_KPC650			0x17da
-@@ -248,18 +246,12 @@ static void option_instat_callback(struct urb *urb);
+@@ -242,6 +238,7 @@ static void option_instat_callback(struct urb *urb);
+ #define QUECTEL_PRODUCT_UC15			0x9090
+ /* These u-blox products use Qualcomm's vendor ID */
+ #define UBLOX_PRODUCT_R410M			0x90b2
++#define UBLOX_PRODUCT_R6XX			0x90fa
+ /* These Yuga products use Qualcomm's vendor ID */
+ #define YUGA_PRODUCT_CLM920_NC5			0x9625
+ 
+@@ -249,18 +246,12 @@ static void option_instat_callback(struct urb *urb);
  /* These Quectel products use Quectel's vendor ID */
  #define QUECTEL_PRODUCT_EC21			0x0121
  #define QUECTEL_PRODUCT_EC25			0x0125
@@ -70802,7 +70831,7 @@ index eea3dd18a..acb8eec14 100644
  
  #define CMOTECH_VENDOR_ID			0x16d8
  #define CMOTECH_PRODUCT_6001			0x6001
-@@ -436,12 +428,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -437,12 +428,6 @@ static void option_instat_callback(struct urb *urb);
  #define CINTERION_PRODUCT_CLS8			0x00b0
  #define CINTERION_PRODUCT_MV31_MBIM		0x00b3
  #define CINTERION_PRODUCT_MV31_RMNET		0x00b7
@@ -70815,7 +70844,7 @@ index eea3dd18a..acb8eec14 100644
  
  /* Olivetti products */
  #define OLIVETTI_VENDOR_ID			0x0b3c
-@@ -577,10 +563,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -578,13 +563,6 @@ static void option_instat_callback(struct urb *urb);
  #define WETELECOM_PRODUCT_6802			0x6802
  #define WETELECOM_PRODUCT_WMD300		0x6803
  
@@ -70823,10 +70852,13 @@ index eea3dd18a..acb8eec14 100644
 -#define OPPO_VENDOR_ID				0x22d9
 -#define OPPO_PRODUCT_R11			0x276c
 -
+-/* Sierra Wireless products */
+-#define SIERRA_VENDOR_ID			0x1199
+-#define SIERRA_PRODUCT_EM9191			0x90d3
  
  /* Device flags */
  
-@@ -1079,10 +1061,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1083,10 +1061,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
  	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5821E_ESIM),
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
@@ -70837,7 +70869,25 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/* ADU-E100, ADU-310 */
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
-@@ -1133,41 +1111,24 @@ static const struct usb_device_id option_ids[] = {
+@@ -1128,16 +1102,8 @@ static const struct usb_device_id option_ids[] = {
+ 	/* u-blox products using Qualcomm vendor ID */
+ 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R410M),
+ 	  .driver_info = RSVD(1) | RSVD(3) },
+-	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x908b),	/* u-blox LARA-R6 00B */
+-	  .driver_info = RSVD(4) },
+-	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x90fa),
++	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R6XX),
+ 	  .driver_info = RSVD(3) },
+-	/* u-blox products */
+-	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1341) },	/* u-blox LARA-L6 */
+-	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1342),		/* u-blox LARA-L6 (RMNET) */
+-	  .driver_info = RSVD(4) },
+-	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1343),		/* u-blox LARA-L6 (ECM) */
+-	  .driver_info = RSVD(4) },
+ 	/* Quectel products using Quectel vendor ID */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC21, 0xff, 0xff, 0xff),
+ 	  .driver_info = NUMEP2 },
+@@ -1145,41 +1111,24 @@ static const struct usb_device_id option_ids[] = {
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC25, 0xff, 0xff, 0xff),
  	  .driver_info = NUMEP2 },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC25, 0xff, 0, 0) },
@@ -70879,7 +70929,7 @@ index eea3dd18a..acb8eec14 100644
  
  	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6001) },
  	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_CMU_300) },
-@@ -1244,28 +1205,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1256,28 +1205,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(0) | RSVD(1) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1056, 0xff),	/* Telit FD980 */
  	  .driver_info = NCTRL(2) | RSVD(3) },
@@ -70908,7 +70958,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910),
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(3) },
  	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910_DUAL_MODEM),
-@@ -1280,8 +1219,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1292,8 +1219,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1203, 0xff),	/* Telit LE910Cx (RNDIS) */
  	  .driver_info = NCTRL(2) | RSVD(3) },
@@ -70917,7 +70967,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE910_USBCFG4),
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) | RSVD(3) },
  	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920),
-@@ -1300,7 +1237,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1312,7 +1237,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1231, 0xff),	/* Telit LE910Cx (RNDIS) */
  	  .driver_info = NCTRL(2) | RSVD(3) },
@@ -70925,7 +70975,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1260),
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1261),
-@@ -1313,16 +1249,8 @@ static const struct usb_device_id option_ids[] = {
+@@ -1325,16 +1249,8 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x7011, 0xff),	/* Telit LE910-S1 (ECM) */
  	  .driver_info = NCTRL(2) },
@@ -70942,7 +70992,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0002, 0xff, 0xff, 0xff),
  	  .driver_info = RSVD(1) },
-@@ -1695,8 +1623,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1707,8 +1623,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(ZTE_VENDOR_ID, 0x1476, 0xff) },	/* GosunCn ZTE WeLink ME3630 (ECM/NCM mode) */
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1481, 0xff, 0x00, 0x00) }, /* ZTE MF871A */
@@ -70951,7 +71001,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1533, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1534, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1535, 0xff, 0xff, 0xff) },
-@@ -1724,6 +1650,7 @@ static const struct usb_device_id option_ids[] = {
+@@ -1736,6 +1650,7 @@ static const struct usb_device_id option_ids[] = {
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0060, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0070, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0073, 0xff, 0xff, 0xff) },
@@ -70959,7 +71009,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0130, 0xff, 0xff, 0xff),
  	  .driver_info = RSVD(1) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0133, 0xff, 0xff, 0xff),
-@@ -2003,18 +1930,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -2015,18 +1930,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(3)},
  	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_RMNET, 0xff),
  	  .driver_info = RSVD(0)},
@@ -70978,7 +71028,7 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD100),
  	  .driver_info = RSVD(4) },
  	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD120),
-@@ -2153,29 +2068,19 @@ static const struct usb_device_id option_ids[] = {
+@@ -2165,32 +2068,19 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
  	{ USB_DEVICE(0x0489, 0xe0b5),						/* Foxconn T77W968 ESIM */
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
@@ -70996,6 +71046,7 @@ index eea3dd18a..acb8eec14 100644
 -	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x010a, 0xff) },			/* Fibocom MA510 (ECM mode) */
  	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0xff, 0x30) },	/* Fibocom FG150 Diag */
  	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0, 0) },		/* Fibocom FG150 AT */
+-	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0111, 0xff) },			/* Fibocom FM160 (MBIM mode) */
  	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a0, 0xff) },			/* Fibocom NL668-AM/NL652-EU (laptop MBIM) */
 -	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a2, 0xff) },			/* Fibocom FM101-GL (laptop MBIM) */
 -	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a4, 0xff),			/* Fibocom FM101-GL (laptop MBIM) */
@@ -71005,6 +71056,8 @@ index eea3dd18a..acb8eec14 100644
  	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1405, 0xff) },			/* GosunCn GM500 MBIM */
  	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1406, 0xff) },			/* GosunCn GM500 ECM/NCM */
 -	{ USB_DEVICE_AND_INTERFACE_INFO(OPPO_VENDOR_ID, OPPO_PRODUCT_R11, 0xff, 0xff, 0x30) },
+-	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0xff, 0x30) },
+-	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0, 0) },
  	{ } /* Terminating entry */
  };
  MODULE_DEVICE_TABLE(usb, option_ids);
@@ -75696,7 +75749,7 @@ index b28817c59..1e650c284 100644
  
  /*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */
 diff --git a/init/Kconfig b/init/Kconfig
-index 0276bb79e..9941ba596 100644
+index 4b5a6fc0f..cf5edde30 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -1352,6 +1352,11 @@ config BLK_DEV_INITRD
