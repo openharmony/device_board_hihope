@@ -23,6 +23,11 @@ if (!defined(defines)) {
 
 declare_args() {
   is_support_boot_animation = true
+  is_support_graphic = true
+}
+
+if (!defined(global_parts_info.graphic_graphic_standard)) {
+  is_support_graphic = false
 }
 
 product_config_path = "//vendor/${product_company}/${product_name}"

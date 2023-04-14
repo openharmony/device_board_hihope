@@ -23,10 +23,13 @@ group("dayu210_group") {
     "updater:updater_files",
     "//device/soc/rockchip/rk3588/hardware:hardware_group",
   ]
+  if (is_support_graphic) {
+    deps += [
+      "//device/soc/rockchip/${device_name}/hardware/display:display_buffer_model",
+      "//device/soc/rockchip/${device_name}/hardware/display:display_composer_model",
+    ]
+  }
 
-  #if (is_standard_system) {
-  #  deps += [ "startup/reboot_loader:rebootloader" ]
-  #}
   if (is_support_boot_animation) {
     deps += [ "bootanimation:bootanimation" ]
   }
