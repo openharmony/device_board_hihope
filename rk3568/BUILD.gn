@@ -29,6 +29,12 @@ group("rk3568_group") {
       "//device/soc/rockchip/${device_name}/hardware/display:display_composer_model",
     ]
   }
+  if (is_support_codec) {
+    deps += [
+      "//device/soc/rockchip/rk3568/hardware/codec:codec_oem_interface",
+      "//device/soc/rockchip/rk3568/hardware/omx_il:lib_omx",
+    ]
+  }
 
   if (is_support_boot_animation) {
     deps += [ "bootanimation:bootanimation" ]
