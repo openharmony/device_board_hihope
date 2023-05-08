@@ -28,6 +28,7 @@ RKCodecNode::RKCodecNode(const std::string& name, const std::string& type) : Nod
 {
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
     jpegRotation_ = static_cast<uint32_t>(JXFORM_ROT_270);
+    jpegQuality_ = 100; // 100:jpeg quality
 }
 
 RKCodecNode::~RKCodecNode()
@@ -107,19 +108,8 @@ static void RotJpegImg(
     jpeg_destroy_decompress(&inputInfo);
 }
 
-RetCode RKCodecNode::Config(const int32_t streamId, const CaptureMeta& meta)
+RetCode RKCodecNode::ConfigJpegOrientation(common_metadata_header_t* data)
 {
-    if (meta == nullptr) {
-        CAMERA_LOGE("meta is nullptr");
-        return RC_ERROR;
-    }
-
-    common_metadata_header_t* data = meta->get();
-    if (data == nullptr) {
-        CAMERA_LOGE("data is nullptr");
-        return RC_ERROR;
-    }
-
     camera_metadata_item_t entry;
     int ret = FindCameraMetadataItem(data, OHOS_JPEG_ORIENTATION, &entry);
     if (ret != 0 || entry.data.i32 == nullptr) {
@@ -142,6 +132,51 @@ RetCode RKCodecNode::Config(const int32_t streamId, const CaptureMeta& meta)
     return RC_OK;
 }
 
+RetCode RKCodecNode::ConfigJpegQuality(common_metadata_header_t* data)
+{
+    camera_metadata_item_t entry;
+    int ret = FindCameraMetadataItem(data, OHOS_JPEG_QUALITY, &entry);
+    if (ret != 0) {
+        CAMERA_LOGI("tag OHOS_JPEG_QUALITY not found");
+        return RC_ERROR;
+    }
+
+    const int HIGH_QUALITY_JPEG = 100;
+    const int MIDDLE_QUALITY_JPEG = 95;
+    const int LOW_QUALITY_JPEG = 85;
+
+    CAMERA_LOGI("OHOS_JPEG_QUALITY is = %{public}d", static_cast<int>(entry.data.u8[0]));
+    if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_LOW) {
+        jpegQuality_ = LOW_QUALITY_JPEG;
+    } else if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_MIDDLE) {
+        jpegQuality_ = MIDDLE_QUALITY_JPEG;
+    } else if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_HIGH) {
+        jpegQuality_ = HIGH_QUALITY_JPEG;
+    } else {
+        jpegQuality_ = HIGH_QUALITY_JPEG;
+    }
+    return RC_OK;
+}
+
+RetCode RKCodecNode::Config(const int32_t streamId, const CaptureMeta& meta)
+{
+    if (meta == nullptr) {
+        CAMERA_LOGE("meta is nullptr");
+        return RC_ERROR;
+    }
+
+    common_metadata_header_t* data = meta->get();
+    if (data == nullptr) {
+        CAMERA_LOGE("data is nullptr");
+        return RC_ERROR;
+    }
+
+    RetCode rc = ConfigJpegOrientation(data);
+
+    rc = ConfigJpegQuality(data);
+    return rc;
+}
+
 void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height,
     const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf)
 {
@@ -150,7 +185,6 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
     JSAMPROW row_pointer[1];
     int row_stride = 0;
     constexpr uint32_t colorMap = 3;
-    constexpr uint32_t compressionRatio = 100;
     constexpr uint32_t pixelsThick = 3;
 
     cInfo.err = jpeg_std_error(&jErr);
@@ -162,7 +196,8 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
     cInfo.in_color_space = JCS_RGB;
 
     jpeg_set_defaults(&cInfo);
-    jpeg_set_quality(&cInfo, compressionRatio, TRUE);
+    CAMERA_LOGE("RKCodecNode::encodeJpegToMemory jpegQuality_ is = %{public}d", jpegQuality_);
+    jpeg_set_quality(&cInfo, jpegQuality_, TRUE);
     jpeg_mem_dest(&cInfo, jpegBuf, jpegSize);
     jpeg_start_compress(&cInfo, TRUE);
 

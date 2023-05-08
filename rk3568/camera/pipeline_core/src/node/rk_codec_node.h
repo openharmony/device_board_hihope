@@ -45,6 +45,8 @@ public:
     virtual RetCode Capture(const int32_t streamId, const int32_t captureId) override;
     RetCode CancelCapture(const int32_t streamId) override;
     RetCode Flush(const int32_t streamId);
+    RetCode ConfigJpegOrientation(common_metadata_header_t* data);
+    RetCode ConfigJpegQuality(common_metadata_header_t* data);
     RetCode Config(const int32_t streamId, const CaptureMeta& meta) override;
 private:
     void encodeJpegToMemory(unsigned char* image, int width, int height,
@@ -60,6 +62,7 @@ private:
     void* halCtx_ = nullptr;
     int mppStatus_ = 0;
     uint32_t jpegRotation_;
+    uint32_t jpegQuality_;
 };
 } // namespace OHOS::Camera
 #endif
