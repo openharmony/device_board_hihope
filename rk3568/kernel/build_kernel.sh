@@ -21,17 +21,26 @@ export PRODUCT_PATH=${4}
 export DEVICE_COMPANY=${6}
 export DEVICE_NAME=${7}
 export PRODUCT_COMPANY=${8}
-ENABLE_LTO_O0=${9}
+KERNEL_FORM=${9}
+KERNEL_PROD=${10}
+ENABLE_LTO_O0=${11}
 
 KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/linux-5.10
 KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/linux-5.10
 KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/linux-5.10
 KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
 KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
-KERNEL_CONFIG_FILE=${ROOT_DIR}/kernel/linux/config/linux-5.10/arch/arm64/configs/rk3568_standard_defconfig
 BUILD_SCRIPT_PATH=${3}
 NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/common_modules/newip/apply_newip.sh
 XPM_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/xpm/apply_xpm.sh
+
+HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10
+DEVICE_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10/${DEVICE_NAME}
+DEFCONFIG_BASE_FILE=${HARMONY_CONFIG_PATH}/base_defconfig
+DEFCONFIG_TYPE_FILE=${HARMONY_CONFIG_PATH}/type/standard_defconfig
+DEFCONFIG_FORM_FILE=${HARMONY_CONFIG_PATH}/form/${KERNEL_FORM}_defconfig
+DEFCONFIG_ARCH_FILE=${DEVICE_CONFIG_PATH}/arch/arm64_defconfig
+DEFCONFIG_PROC_FILE=${DEVICE_CONFIG_PATH}/product/${KERNEL_PROD}_defconfig
 
 RAMDISK_ARG="disable_ramdisk"
 MAKE_OHOS_ENV="GPUDRIVER=mali"
@@ -82,7 +91,16 @@ function copy_and_patch_kernel_source()
     cp -rf ${BUILD_SCRIPT_PATH}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
 
     #config
-    cp -rf ${KERNEL_CONFIG_FILE} ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
+    if [ ! -f "$DEFCONFIG_FORM_FILE" ]; then
+        DEFCONFIG_FORM_FILE=
+        echo "warning no form config file $(DEFCONFIG_FORM_FILE)"
+    fi
+    if [ ! -f "$DEFCONFIG_PROC_FILE" ]; then
+        DEFCONFIG_PROC_FILE=
+        echo "warning no prod config file $(DEFCONFIG_PROC_FILE)"
+    fi
+    bash ${ROOT_DIR}/kernel/linux/linux-5.10/scripts/kconfig/merge_config.sh -O ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/ -m ${DEFCONFIG_TYPE_FILE} ${DEFCONFIG_FORM_FILE} ${DEFCONFIG_ARCH_FILE} ${DEFCONFIG_PROC_FILE} ${DEFCONFIG_BASE_FILE}
+    mv ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/.config ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
 
     #selinux config patch
     for arg in "$@"; do
@@ -114,14 +132,14 @@ eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
 
 mkdir -p ${2}
 
-if [ "enable_ramdisk" != "${10}" ]; then
+if [ "enable_ramdisk" != "${12}" ]; then
     cp ${KERNEL_OBJ_TMP_PATH}/boot_linux.img ${2}/boot_linux.img
 fi
 cp ${KERNEL_OBJ_TMP_PATH}/resource.img ${2}/resource.img
 cp ${3}/loader/MiniLoaderAll.bin ${2}/MiniLoaderAll.bin
 cp ${3}/loader/uboot.img ${2}/uboot.img
 
-if [ "enable_absystem" == "${12}" ]; then
+if [ "enable_absystem" == "${14}" ]; then
     cp ${3}/loader/parameter_ab.txt ${2}/parameter_ab.txt
     cp ${3}/loader/config_ab.cfg ${2}/config_ab.cfg
 else

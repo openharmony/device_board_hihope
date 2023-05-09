@@ -34,6 +34,8 @@ action("kernel") {
     device_company,
     device_name,
     product_company,
+    build_variant,
+    device_type,
   ]
   if (enable_lto_O0) {
     args += [ "enable_lto_O0" ]
