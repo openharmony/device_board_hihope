@@ -31,7 +31,7 @@ KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/linux-5.10
 KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
 KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
 BUILD_SCRIPT_PATH=${3}
-NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/common_modules/newip/apply_newip.sh
+NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/newip/apply_newip.sh
 XPM_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/xpm/apply_xpm.sh
 
 HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10
