@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index f99ad7c0b..f464dacde 100644
+index ccc6d997e..75a7713c9 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -493,14 +493,16 @@ LINUXINCLUDE    := \
@@ -10245,7 +10245,7 @@ index 70ab4fbdc..48fc36d56 100644
  	cec->adap->owner = THIS_MODULE;
  
 diff --git a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
-index 356c7d0bd..dfd89f79f 100644
+index 2c3c743df..268ecdf3c 100644
 --- a/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
 +++ b/drivers/gpu/drm/bridge/synopsys/dw-hdmi.c
 @@ -9,6 +9,8 @@
@@ -38177,7 +38177,7 @@ index e5d86b717..b359fcf2c 100644
 +MODULE_ALIAS("platform:rockchip-iommu");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index 42b295337..2fe3cda02 100644
+index d8cb5bcd6..ed18e141e 100644
 --- a/drivers/irqchip/irq-gic-v3-its.c
 +++ b/drivers/irqchip/irq-gic-v3-its.c
 @@ -2167,6 +2167,8 @@ static struct page *its_allocate_prop_table(gfp_t gfp_flags)
@@ -39986,7 +39986,7 @@ index 31153f656..0ce5d97d4 100644
 +
  #endif
 diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 7d9ec91e0..bf35969a4 100644
+index 8f2465394..34b406fd7 100644
 --- a/drivers/mmc/core/core.c
 +++ b/drivers/mmc/core/core.c
 @@ -37,6 +37,7 @@
@@ -40033,7 +40033,7 @@ index 7d9ec91e0..bf35969a4 100644
  
  /*
   * Select appropriate driver type for host.
-@@ -2063,6 +2067,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
+@@ -2068,6 +2072,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
  }
  EXPORT_SYMBOL(mmc_set_blocklen);
  
@@ -40041,7 +40041,7 @@ index 7d9ec91e0..bf35969a4 100644
  static void mmc_hw_reset_for_init(struct mmc_host *host)
  {
  	mmc_pwrseq_reset(host);
-@@ -2071,6 +2076,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
+@@ -2076,6 +2081,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
  		return;
  	host->ops->hw_reset(host);
  }
@@ -40049,7 +40049,7 @@ index 7d9ec91e0..bf35969a4 100644
  
  /**
   * mmc_hw_reset - reset the card in hardware
-@@ -2143,7 +2149,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
+@@ -2148,7 +2154,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
  	 * Some eMMCs (with VCCQ always on) may not be reset after power up, so
  	 * do a hardware reset if possible.
  	 */
@@ -43265,7 +43265,7 @@ index 8b7ec2457..b0b84244e 100644
  	stmmac_do_void_callback(__priv, dma, rx_watchdog, __args)
  #define stmmac_set_tx_ring_len(__priv, __args...) \
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 41e71a26b..1950a5c94 100644
+index 14ea0168b..212621f59 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 @@ -236,7 +236,7 @@ static void stmmac_clk_csr_set(struct stmmac_priv *priv)
@@ -43324,7 +43324,7 @@ index 41e71a26b..1950a5c94 100644
  	return 0;
  }
  
-@@ -1331,13 +1342,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
+@@ -1339,13 +1350,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
  {
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	struct stmmac_rx_buffer *buf = &rx_q->buf_pool[i];
@@ -43344,7 +43344,7 @@ index 41e71a26b..1950a5c94 100644
  		if (!buf->sec_page)
  			return -ENOMEM;
  
-@@ -2329,6 +2344,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
+@@ -2337,6 +2352,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
  {
  	if (!is_valid_ether_addr(priv->dev->dev_addr)) {
  		stmmac_get_umac_addr(priv, priv->hw, priv->dev->dev_addr, 0);
@@ -43354,7 +43354,7 @@ index 41e71a26b..1950a5c94 100644
  		if (!is_valid_ether_addr(priv->dev->dev_addr))
  			eth_hw_addr_random(priv->dev);
  		dev_info(priv->device, "device MAC address %pM\n",
-@@ -2680,7 +2698,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2688,7 +2706,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
  /**
   * stmmac_hw_setup - setup mac in a usable state.
   *  @dev : pointer to the device structure.
@@ -43363,7 +43363,7 @@ index 41e71a26b..1950a5c94 100644
   *  Description:
   *  this is the main function to setup the HW in a usable state because the
   *  dma engine is reset, the core registers are configured (e.g. AXI,
-@@ -2690,7 +2708,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2698,7 +2716,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
   *  0 on success and an appropriate (-)ve integer as defined in errno.h
   *  file on failure.
   */
@@ -43372,7 +43372,7 @@ index 41e71a26b..1950a5c94 100644
  {
  	struct stmmac_priv *priv = netdev_priv(dev);
  	u32 rx_cnt = priv->plat->rx_queues_to_use;
-@@ -2746,22 +2764,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
+@@ -2754,22 +2772,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
  
  	stmmac_mmc_setup(priv);
  
@@ -43401,7 +43401,7 @@ index 41e71a26b..1950a5c94 100644
  	priv->eee_tw_timer = STMMAC_DEFAULT_TWT_LS;
  
  	/* Convert the timer from msec to usec */
-@@ -3676,6 +3686,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3684,6 +3694,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	int len, dirty = stmmac_rx_dirty(priv, queue);
  	unsigned int entry = rx_q->dirty_rx;
@@ -43412,7 +43412,7 @@ index 41e71a26b..1950a5c94 100644
  
  	len = DIV_ROUND_UP(priv->dma_buf_sz, PAGE_SIZE) * PAGE_SIZE;
  
-@@ -3690,13 +3704,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3698,13 +3712,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  			p = rx_q->dma_rx + entry;
  
  		if (!buf->page) {
@@ -43428,7 +43428,7 @@ index 41e71a26b..1950a5c94 100644
  			if (!buf->sec_page)
  				break;
  
-@@ -5058,7 +5072,7 @@ int stmmac_dvr_probe(struct device *device,
+@@ -5066,7 +5080,7 @@ int stmmac_dvr_probe(struct device *device,
  		dev_info(priv->device, "TSO feature enabled\n");
  	}
  
@@ -43437,7 +43437,7 @@ index 41e71a26b..1950a5c94 100644
  		ndev->hw_features |= NETIF_F_GRO;
  		priv->sph = true;
  		dev_info(priv->device, "SPH feature enabled\n");
-@@ -5430,7 +5444,7 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5438,7 +5452,7 @@ static int __init stmmac_cmdline_opt(char *str)
  	char *opt;
  
  	if (!str || !*str)
@@ -43446,7 +43446,7 @@ index 41e71a26b..1950a5c94 100644
  	while ((opt = strsep(&str, ",")) != NULL) {
  		if (!strncmp(opt, "debug:", 6)) {
  			if (kstrtoint(opt + 6, 0, &debug))
-@@ -5461,11 +5475,11 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5469,11 +5483,11 @@ static int __init stmmac_cmdline_opt(char *str)
  				goto err;
  		}
  	}
@@ -43461,7 +43461,7 @@ index 41e71a26b..1950a5c94 100644
  
  __setup("stmmaceth=", stmmac_cmdline_opt);
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
-index f70d8d1ce..5e57dc125 100644
+index 1ed74cfb6..9468a2be6 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_platform.c
 @@ -508,14 +508,6 @@ stmmac_probe_config_dt(struct platform_device *pdev, const char **mac)
@@ -62875,10 +62875,10 @@ index 3cd294264..658739410 100644
  		/* if the cfg matches and the cfg is non zero */
  		if (cfg && (!ret || (ret == USB_GADGET_DELAYED_STATUS))) {
 diff --git a/drivers/usb/dwc3/gadget.c b/drivers/usb/dwc3/gadget.c
-index 347ba7e4b..d2c27011e 100644
+index 28a1194f8..8e9a2622d 100644
 --- a/drivers/usb/dwc3/gadget.c
 +++ b/drivers/usb/dwc3/gadget.c
-@@ -310,24 +310,13 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
+@@ -311,24 +311,13 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
  	if (DWC3_DEPCMD_CMD(cmd) == DWC3_DEPCMD_STARTTRANSFER) {
  		int link_state;
  
@@ -62906,7 +62906,7 @@ index 347ba7e4b..d2c27011e 100644
  		}
  	}
  
-@@ -416,6 +405,7 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
+@@ -417,6 +406,7 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
  
  	return ret;
  }
@@ -62914,7 +62914,7 @@ index 347ba7e4b..d2c27011e 100644
  
  static int dwc3_send_clear_stall_ep_cmd(struct dwc3_ep *dep)
  {
-@@ -639,8 +629,192 @@ static int dwc3_gadget_set_ep_config(struct dwc3_ep *dep, unsigned int action)
+@@ -640,8 +630,192 @@ static int dwc3_gadget_set_ep_config(struct dwc3_ep *dep, unsigned int action)
  	return dwc3_send_gadget_ep_cmd(dep, DWC3_DEPCMD_SETEPCONFIG, &params);
  }
  
@@ -63109,7 +63109,7 @@ index 347ba7e4b..d2c27011e 100644
  
  /**
   * __dwc3_gadget_ep_enable - initializes a hw endpoint
-@@ -659,6 +833,10 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
+@@ -660,6 +834,10 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
  	int			ret;
  
  	if (!(dep->flags & DWC3_EP_ENABLED)) {
@@ -63120,7 +63120,7 @@ index 347ba7e4b..d2c27011e 100644
  		ret = dwc3_gadget_start_config(dep);
  		if (ret)
  			return ret;
-@@ -741,8 +919,16 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
+@@ -742,8 +920,16 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
  			 * All stream eps will reinitiate stream on NoStream
  			 * rejection until we can determine that the host can
  			 * prime after the first transfer.
@@ -63138,16 +63138,16 @@ index 347ba7e4b..d2c27011e 100644
  		}
  	}
  
-@@ -813,7 +999,7 @@ static int __dwc3_gadget_ep_disable(struct dwc3_ep *dep)
+@@ -808,7 +994,7 @@ static int __dwc3_gadget_ep_disable(struct dwc3_ep *dep)
  
  	dep->stream_capable = false;
  	dep->type = 0;
 -	dep->flags = 0;
 +	dep->flags &= DWC3_EP_TXFIFO_RESIZED;
  
- 	return 0;
- }
-@@ -970,49 +1156,17 @@ static u32 dwc3_calc_trbs_left(struct dwc3_ep *dep)
+ 	/* Clear out the ep descriptors for non-ep0 */
+ 	if (dep->number > 1) {
+@@ -971,49 +1157,17 @@ static u32 dwc3_calc_trbs_left(struct dwc3_ep *dep)
  	return trbs_left;
  }
  
@@ -63203,7 +63203,7 @@ index 347ba7e4b..d2c27011e 100644
  	trb->bpl = lower_32_bits(dma);
  	trb->bph = upper_32_bits(dma);
  
-@@ -1052,10 +1206,10 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1053,10 +1207,10 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  				unsigned int mult = 2;
  				unsigned int maxp = usb_endpoint_maxp(ep->desc);
  
@@ -63216,7 +63216,7 @@ index 347ba7e4b..d2c27011e 100644
  					mult--;
  
  				trb->size |= DWC3_TRB_SIZE_PCM1(mult);
-@@ -1104,19 +1258,6 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1105,19 +1259,6 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  	if (usb_endpoint_xfer_bulk(dep->endpoint.desc) && dep->stream_capable)
  		trb->ctrl |= DWC3_TRB_CTRL_SID_SOFN(stream_id);
  
@@ -63236,7 +63236,7 @@ index 347ba7e4b..d2c27011e 100644
  	trb->ctrl |= DWC3_TRB_CTRL_HWO;
  
  	dwc3_ep_inc_enq(dep);
-@@ -1124,6 +1265,50 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1125,6 +1266,50 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  	trace_dwc3_prepare_trb(dep, trb);
  }
  
@@ -63287,7 +63287,7 @@ index 347ba7e4b..d2c27011e 100644
  static bool dwc3_needs_extra_trb(struct dwc3_ep *dep, struct dwc3_request *req)
  {
  	unsigned int maxp = usb_endpoint_maxp(dep->endpoint.desc);
-@@ -1416,7 +1601,7 @@ static int __dwc3_gadget_kick_transfer(struct dwc3_ep *dep)
+@@ -1417,7 +1602,7 @@ static int __dwc3_gadget_kick_transfer(struct dwc3_ep *dep)
  		dwc3_stop_active_transfer(dep, true, true);
  
  		list_for_each_entry_safe(req, tmp, &dep->started_list, list)
@@ -63296,7 +63296,7 @@ index 347ba7e4b..d2c27011e 100644
  
  		/* If ep isn't started, then there's no end transfer pending */
  		if (!(dep->flags & DWC3_EP_END_TRANSFER_PENDING))
-@@ -1632,7 +1817,7 @@ static int __dwc3_gadget_ep_queue(struct dwc3_ep *dep, struct dwc3_request *req)
+@@ -1633,7 +1818,7 @@ static int __dwc3_gadget_ep_queue(struct dwc3_ep *dep, struct dwc3_request *req)
  	struct dwc3		*dwc = dep->dwc;
  
  	if (!dep->endpoint.desc || !dwc->pullups_connected || !dwc->connected) {
@@ -63305,7 +63305,7 @@ index 347ba7e4b..d2c27011e 100644
  				dep->name);
  		return -ESHUTDOWN;
  	}
-@@ -1745,10 +1930,25 @@ static void dwc3_gadget_ep_cleanup_cancelled_requests(struct dwc3_ep *dep)
+@@ -1746,10 +1931,25 @@ static void dwc3_gadget_ep_cleanup_cancelled_requests(struct dwc3_ep *dep)
  {
  	struct dwc3_request		*req;
  	struct dwc3_request		*tmp;
@@ -63332,7 +63332,7 @@ index 347ba7e4b..d2c27011e 100644
  	}
  }
  
-@@ -1792,7 +1992,8 @@ static int dwc3_gadget_ep_dequeue(struct usb_ep *ep,
+@@ -1793,7 +1993,8 @@ static int dwc3_gadget_ep_dequeue(struct usb_ep *ep,
  			 * cancelled.
  			 */
  			list_for_each_entry_safe(r, t, &dep->started_list, list)
@@ -63342,7 +63342,7 @@ index 347ba7e4b..d2c27011e 100644
  
  			dep->flags &= ~DWC3_EP_WAIT_TRANSFER_COMPLETE;
  
-@@ -1813,8 +2014,6 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
+@@ -1814,8 +2015,6 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
  {
  	struct dwc3_gadget_ep_cmd_params	params;
  	struct dwc3				*dwc = dep->dwc;
@@ -63351,7 +63351,7 @@ index 347ba7e4b..d2c27011e 100644
  	int					ret;
  
  	if (usb_endpoint_xfer_isoc(dep->endpoint.desc)) {
-@@ -1863,16 +2062,14 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
+@@ -1864,16 +2063,14 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
  
  		dwc3_stop_active_transfer(dep, true, true);
  
@@ -63370,7 +63370,7 @@ index 347ba7e4b..d2c27011e 100644
  		ret = dwc3_send_clear_stall_ep_cmd(dep);
  		if (ret) {
  			dev_err(dwc->dev, "failed to clear STALL on %s\n",
-@@ -2071,6 +2268,102 @@ static void dwc3_stop_active_transfers(struct dwc3 *dwc)
+@@ -2072,6 +2269,102 @@ static void dwc3_stop_active_transfers(struct dwc3 *dwc)
  	}
  }
  
@@ -63473,7 +63473,7 @@ index 347ba7e4b..d2c27011e 100644
  static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
  {
  	u32			reg;
-@@ -2093,6 +2386,7 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
+@@ -2094,6 +2387,7 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
  		if (dwc->has_hibernation)
  			reg |= DWC3_DCTL_KEEP_CONNECT;
  
@@ -63481,7 +63481,7 @@ index 347ba7e4b..d2c27011e 100644
  		dwc->pullups_connected = true;
  	} else {
  		reg &= ~DWC3_DCTL_RUN_STOP;
-@@ -2120,42 +2414,16 @@ static void dwc3_gadget_disable_irq(struct dwc3 *dwc);
+@@ -2121,42 +2415,16 @@ static void dwc3_gadget_disable_irq(struct dwc3 *dwc);
  static void __dwc3_gadget_stop(struct dwc3 *dwc);
  static int __dwc3_gadget_start(struct dwc3 *dwc);
  
@@ -63527,7 +63527,7 @@ index 347ba7e4b..d2c27011e 100644
  	/*
  	 * Per databook, when we want to stop the gadget, if a control transfer
  	 * is still in process, complete it and get the core into setup phase.
-@@ -2191,27 +2459,50 @@ static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
+@@ -2192,27 +2460,50 @@ static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
  		return 0;
  	}
  
@@ -63591,7 +63591,7 @@ index 347ba7e4b..d2c27011e 100644
  	pm_runtime_put(dwc->dev);
  
  	return ret;
-@@ -2222,8 +2513,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
+@@ -2223,8 +2514,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
  	u32			reg;
  
  	/* Enable all but Start and End of Frame IRQs */
@@ -63601,7 +63601,7 @@ index 347ba7e4b..d2c27011e 100644
  			DWC3_DEVTEN_CMDCMPLTEN |
  			DWC3_DEVTEN_ERRTICERREN |
  			DWC3_DEVTEN_WKUPEVTEN |
-@@ -2236,7 +2526,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
+@@ -2237,7 +2527,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
  
  	/* On 2.30a and above this bit enables U3/L2-L1 Suspend Events */
  	if (!DWC3_VER_IS_PRIOR(DWC3, 230A))
@@ -63610,7 +63610,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	dwc3_writel(dwc->regs, DWC3_DEVTEN, reg);
  }
-@@ -2279,9 +2569,7 @@ static void dwc3_gadget_setup_nump(struct dwc3 *dwc)
+@@ -2280,9 +2570,7 @@ static void dwc3_gadget_setup_nump(struct dwc3 *dwc)
  	u32 reg;
  
  	ram2_depth = DWC3_GHWPARAMS7_RAM2_DEPTH(dwc->hwparams.hwparams7);
@@ -63621,7 +63621,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	nump = ((ram2_depth * mdwidth / 8) - 24 - 16) / 1024;
  	nump = min_t(u32, nump, 16);
-@@ -2299,6 +2587,15 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
+@@ -2300,6 +2588,15 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
  	int			ret = 0;
  	u32			reg;
  
@@ -63637,7 +63637,7 @@ index 347ba7e4b..d2c27011e 100644
  	/*
  	 * Use IMOD if enabled via dwc->imod_interval. Otherwise, if
  	 * the core supports IMOD, disable it.
-@@ -2327,6 +2624,17 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
+@@ -2328,6 +2625,17 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
  
  	dwc3_gadget_setup_nump(dwc);
  
@@ -63655,7 +63655,7 @@ index 347ba7e4b..d2c27011e 100644
  	/* Start with SuperSpeed Default */
  	dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  
-@@ -2414,6 +2722,7 @@ static int dwc3_gadget_stop(struct usb_gadget *g)
+@@ -2415,6 +2723,7 @@ static int dwc3_gadget_stop(struct usb_gadget *g)
  
  	spin_lock_irqsave(&dwc->lock, flags);
  	dwc->gadget_driver	= NULL;
@@ -63663,7 +63663,7 @@ index 347ba7e4b..d2c27011e 100644
  	spin_unlock_irqrestore(&dwc->lock, flags);
  
  	free_irq(dwc->irq_gadget, dwc->ev_buf);
-@@ -2465,59 +2774,94 @@ static void dwc3_gadget_set_speed(struct usb_gadget *g,
+@@ -2466,59 +2775,94 @@ static void dwc3_gadget_set_speed(struct usb_gadget *g,
  {
  	struct dwc3		*dwc = gadget_to_dwc(g);
  	unsigned long		flags;
@@ -63805,7 +63805,7 @@ index 347ba7e4b..d2c27011e 100644
  	spin_unlock_irqrestore(&dwc->lock, flags);
  }
  
-@@ -2529,7 +2873,11 @@ static const struct usb_gadget_ops dwc3_gadget_ops = {
+@@ -2530,7 +2874,11 @@ static const struct usb_gadget_ops dwc3_gadget_ops = {
  	.udc_start		= dwc3_gadget_start,
  	.udc_stop		= dwc3_gadget_stop,
  	.udc_set_speed		= dwc3_gadget_set_speed,
@@ -63817,7 +63817,7 @@ index 347ba7e4b..d2c27011e 100644
  };
  
  /* -------------------------------------------------------------------------- */
-@@ -2552,12 +2900,10 @@ static int dwc3_gadget_init_control_endpoint(struct dwc3_ep *dep)
+@@ -2553,12 +2901,10 @@ static int dwc3_gadget_init_control_endpoint(struct dwc3_ep *dep)
  static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
  {
  	struct dwc3 *dwc = dep->dwc;
@@ -63832,7 +63832,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	/* MDWIDTH is represented in bits, we need it in bytes */
  	mdwidth /= 8;
-@@ -2599,12 +2945,10 @@ static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
+@@ -2600,12 +2946,10 @@ static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
  static int dwc3_gadget_init_out_endpoint(struct dwc3_ep *dep)
  {
  	struct dwc3 *dwc = dep->dwc;
@@ -63847,7 +63847,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	/* MDWIDTH is represented in bits, convert to bytes */
  	mdwidth /= 8;
-@@ -2856,7 +3200,6 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
+@@ -2857,7 +3201,6 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
  		const struct dwc3_event_depevt *event,
  		struct dwc3_request *req, int status)
  {
@@ -63855,7 +63855,7 @@ index 347ba7e4b..d2c27011e 100644
  	int ret;
  
  	if (req->request.num_mapped_sgs)
-@@ -2877,35 +3220,7 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
+@@ -2878,35 +3221,7 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
  		req->needs_extra_trb = false;
  	}
  
@@ -63892,7 +63892,7 @@ index 347ba7e4b..d2c27011e 100644
  
  out:
  	return ret;
-@@ -2930,6 +3245,11 @@ static void dwc3_gadget_ep_cleanup_completed_requests(struct dwc3_ep *dep,
+@@ -2931,6 +3246,11 @@ static void dwc3_gadget_ep_cleanup_completed_requests(struct dwc3_ep *dep,
  static bool dwc3_gadget_ep_should_continue(struct dwc3_ep *dep)
  {
  	struct dwc3_request	*req;
@@ -63904,7 +63904,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	if (!list_empty(&dep->pending_list))
  		return true;
-@@ -2957,14 +3277,14 @@ static bool dwc3_gadget_endpoint_trbs_complete(struct dwc3_ep *dep,
+@@ -2958,14 +3278,14 @@ static bool dwc3_gadget_endpoint_trbs_complete(struct dwc3_ep *dep,
  	struct dwc3		*dwc = dep->dwc;
  	bool			no_started_trb = true;
  
@@ -63922,7 +63922,7 @@ index 347ba7e4b..d2c27011e 100644
  	if (usb_endpoint_xfer_isoc(dep->endpoint.desc) &&
  		list_empty(&dep->started_list) &&
  		(list_empty(&dep->pending_list) || status == -EXDEV))
-@@ -3063,14 +3383,6 @@ static void dwc3_gadget_endpoint_command_complete(struct dwc3_ep *dep,
+@@ -3064,14 +3384,6 @@ static void dwc3_gadget_endpoint_command_complete(struct dwc3_ep *dep,
  	if (cmd != DWC3_DEPCMD_ENDTRANSFER)
  		return;
  
@@ -63937,7 +63937,7 @@ index 347ba7e4b..d2c27011e 100644
  	dep->flags &= ~DWC3_EP_END_TRANSFER_PENDING;
  	dep->flags &= ~DWC3_EP_TRANSFER_STARTED;
  	dwc3_gadget_ep_cleanup_cancelled_requests(dep);
-@@ -3209,7 +3521,7 @@ static void dwc3_endpoint_interrupt(struct dwc3 *dwc,
+@@ -3210,7 +3522,7 @@ static void dwc3_endpoint_interrupt(struct dwc3 *dwc,
  
  static void dwc3_disconnect_gadget(struct dwc3 *dwc)
  {
@@ -63946,7 +63946,7 @@ index 347ba7e4b..d2c27011e 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->disconnect(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3218,7 +3530,7 @@ static void dwc3_disconnect_gadget(struct dwc3 *dwc)
+@@ -3219,7 +3531,7 @@ static void dwc3_disconnect_gadget(struct dwc3 *dwc)
  
  static void dwc3_suspend_gadget(struct dwc3 *dwc)
  {
@@ -63955,7 +63955,7 @@ index 347ba7e4b..d2c27011e 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->suspend(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3227,7 +3539,7 @@ static void dwc3_suspend_gadget(struct dwc3 *dwc)
+@@ -3228,7 +3540,7 @@ static void dwc3_suspend_gadget(struct dwc3 *dwc)
  
  static void dwc3_resume_gadget(struct dwc3 *dwc)
  {
@@ -63964,7 +63964,7 @@ index 347ba7e4b..d2c27011e 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->resume(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3239,14 +3551,14 @@ static void dwc3_reset_gadget(struct dwc3 *dwc)
+@@ -3240,14 +3552,14 @@ static void dwc3_reset_gadget(struct dwc3 *dwc)
  	if (!dwc->gadget_driver)
  		return;
  
@@ -63981,7 +63981,7 @@ index 347ba7e4b..d2c27011e 100644
  	bool interrupt)
  {
  	struct dwc3_gadget_ep_cmd_params params;
-@@ -3293,11 +3605,20 @@ static void dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force,
+@@ -3294,11 +3606,20 @@ static void dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force,
  	WARN_ON_ONCE(ret);
  	dep->resource_index = 0;
  
@@ -64002,7 +64002,7 @@ index 347ba7e4b..d2c27011e 100644
  
  static void dwc3_clear_stall_all_ep(struct dwc3 *dwc)
  {
-@@ -3412,12 +3733,18 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+@@ -3413,12 +3734,18 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  	struct dwc3_ep		*dep;
  	int			ret;
  	u32			reg;
@@ -64021,7 +64021,7 @@ index 347ba7e4b..d2c27011e 100644
  	/*
  	 * RAMClkSel is reset to 0 after USB reset, so it must be reprogrammed
  	 * each time on Connect Done.
-@@ -3432,6 +3759,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+@@ -3433,6 +3760,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  		dwc->gadget->ep0->maxpacket = 512;
  		dwc->gadget->speed = USB_SPEED_SUPER_PLUS;
@@ -64033,7 +64033,7 @@ index 347ba7e4b..d2c27011e 100644
  		break;
  	case DWC3_DSTS_SUPERSPEED:
  		/*
-@@ -3453,6 +3785,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+@@ -3454,6 +3786,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  		dwc->gadget->ep0->maxpacket = 512;
  		dwc->gadget->speed = USB_SPEED_SUPER;
@@ -64045,7 +64045,7 @@ index 347ba7e4b..d2c27011e 100644
  		break;
  	case DWC3_DSTS_HIGHSPEED:
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(64);
-@@ -3544,7 +3881,7 @@ static void dwc3_gadget_wakeup_interrupt(struct dwc3 *dwc)
+@@ -3545,7 +3882,7 @@ static void dwc3_gadget_wakeup_interrupt(struct dwc3 *dwc)
  	 * implemented.
  	 */
  
@@ -64054,7 +64054,7 @@ index 347ba7e4b..d2c27011e 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->resume(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3689,6 +4026,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3690,6 +4027,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  {
  	switch (event->type) {
  	case DWC3_DEVICE_EVENT_DISCONNECT:
@@ -64062,7 +64062,7 @@ index 347ba7e4b..d2c27011e 100644
  		dwc3_gadget_disconnect_interrupt(dwc);
  		break;
  	case DWC3_DEVICE_EVENT_RESET:
-@@ -3696,6 +4034,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3697,6 +4035,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  		break;
  	case DWC3_DEVICE_EVENT_CONNECT_DONE:
  		dwc3_gadget_conndone_interrupt(dwc);
@@ -64070,7 +64070,7 @@ index 347ba7e4b..d2c27011e 100644
  		break;
  	case DWC3_DEVICE_EVENT_WAKEUP:
  		dwc3_gadget_wakeup_interrupt(dwc);
-@@ -3710,7 +4049,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3711,7 +4050,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  	case DWC3_DEVICE_EVENT_LINK_STATUS_CHANGE:
  		dwc3_gadget_linksts_change_interrupt(dwc, event->event_info);
  		break;
@@ -64079,7 +64079,7 @@ index 347ba7e4b..d2c27011e 100644
  		/* It changed to be suspend event for version 2.30a and above */
  		if (!DWC3_VER_IS_PRIOR(DWC3, 230A)) {
  			/*
-@@ -3778,6 +4117,7 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
+@@ -3779,6 +4118,7 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
  	}
  
  	evt->count = 0;
@@ -64087,7 +64087,7 @@ index 347ba7e4b..d2c27011e 100644
  	ret = IRQ_HANDLED;
  
  	/* Unmask interrupt */
-@@ -3790,9 +4130,6 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
+@@ -3791,9 +4131,6 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
  		dwc3_writel(dwc->regs, DWC3_DEV_IMOD(0), dwc->imod_interval);
  	}
  
@@ -64097,7 +64097,7 @@ index 347ba7e4b..d2c27011e 100644
  	return ret;
  }
  
-@@ -3803,11 +4140,9 @@ static irqreturn_t dwc3_thread_interrupt(int irq, void *_evt)
+@@ -3804,11 +4141,9 @@ static irqreturn_t dwc3_thread_interrupt(int irq, void *_evt)
  	unsigned long flags;
  	irqreturn_t ret = IRQ_NONE;
  
@@ -64109,7 +64109,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	return ret;
  }
-@@ -3958,6 +4293,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -3959,6 +4294,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  	dev->platform_data		= dwc;
  	dwc->gadget->ops		= &dwc3_gadget_ops;
  	dwc->gadget->speed		= USB_SPEED_UNKNOWN;
@@ -64117,7 +64117,7 @@ index 347ba7e4b..d2c27011e 100644
  	dwc->gadget->sg_supported	= true;
  	dwc->gadget->name		= "dwc3-gadget";
  	dwc->gadget->lpm_capable	= !dwc->usb2_gadget_lpm_disable;
-@@ -3984,6 +4320,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -3985,6 +4321,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  				dwc->revision);
  
  	dwc->gadget->max_speed		= dwc->maximum_speed;
@@ -64125,7 +64125,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	/*
  	 * REVISIT: Here we should clear all pending IRQs to be
-@@ -4000,7 +4337,10 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -4001,7 +4338,10 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  		goto err5;
  	}
  
@@ -64137,7 +64137,7 @@ index 347ba7e4b..d2c27011e 100644
  
  	return 0;
  
-@@ -4055,9 +4395,10 @@ int dwc3_gadget_suspend(struct dwc3 *dwc)
+@@ -4056,9 +4396,10 @@ int dwc3_gadget_suspend(struct dwc3 *dwc)
  
  int dwc3_gadget_resume(struct dwc3 *dwc)
  {
@@ -65047,7 +65047,7 @@ index 950c9435b..86bc2bacc 100644
  }
  
 diff --git a/drivers/usb/gadget/function/f_uvc.c b/drivers/usb/gadget/function/f_uvc.c
-index fecdba85a..31cc58171 100644
+index 5d39aff26..c7dea38d9 100644
 --- a/drivers/usb/gadget/function/f_uvc.c
 +++ b/drivers/usb/gadget/function/f_uvc.c
 @@ -124,6 +124,18 @@ static struct usb_interface_descriptor uvc_streaming_intf_alt0 = {
@@ -65182,7 +65182,7 @@ index fecdba85a..31cc58171 100644
  	if (uvc->event_setup_out) {
  		uvc->event_setup_out = 0;
  
-@@ -226,6 +297,11 @@ uvc_function_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
+@@ -227,6 +298,11 @@ uvc_function_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
  	struct v4l2_event v4l2_event;
  	struct uvc_event *uvc_event = (void *)&v4l2_event.u.data;
  
@@ -65194,7 +65194,7 @@ index fecdba85a..31cc58171 100644
  	if ((ctrl->bRequestType & USB_TYPE_MASK) != USB_TYPE_CLASS) {
  		uvcg_info(f, "invalid request type\n");
  		return -EINVAL;
-@@ -260,15 +336,27 @@ static int
+@@ -261,15 +337,27 @@ static int
  uvc_function_get_alt(struct usb_function *f, unsigned interface)
  {
  	struct uvc_device *uvc = to_uvc(f);
@@ -65223,7 +65223,7 @@ index fecdba85a..31cc58171 100644
  }
  
  static int
-@@ -278,10 +366,13 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
+@@ -279,10 +367,13 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
  	struct usb_composite_dev *cdev = f->config->cdev;
  	struct v4l2_event v4l2_event;
  	struct uvc_event *uvc_event = (void *)&v4l2_event.u.data;
@@ -65237,7 +65237,7 @@ index fecdba85a..31cc58171 100644
  	if (interface == uvc->control_intf) {
  		if (alt)
  			return -EINVAL;
-@@ -295,6 +386,14 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
+@@ -296,6 +387,14 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
  
  		usb_ep_enable(uvc->control_ep);
  
@@ -65252,7 +65252,7 @@ index fecdba85a..31cc58171 100644
  		if (uvc->state == UVC_STATE_DISCONNECTED) {
  			memset(&v4l2_event, 0, sizeof(v4l2_event));
  			v4l2_event.type = UVC_EVENT_CONNECT;
-@@ -310,49 +409,94 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
+@@ -311,49 +410,94 @@ uvc_function_set_alt(struct usb_function *f, unsigned interface, unsigned alt)
  	if (interface != uvc->streaming_intf)
  		return -EINVAL;
  
@@ -65378,7 +65378,7 @@ index fecdba85a..31cc58171 100644
  	}
  }
  
-@@ -374,6 +518,30 @@ uvc_function_disable(struct usb_function *f)
+@@ -375,6 +519,30 @@ uvc_function_disable(struct usb_function *f)
  	usb_ep_disable(uvc->control_ep);
  }
  
@@ -65409,7 +65409,7 @@ index fecdba85a..31cc58171 100644
  /* --------------------------------------------------------------------------
   * Connection / disconnection
   */
-@@ -467,32 +635,45 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
+@@ -468,32 +636,45 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
  	const struct uvc_descriptor_header * const *uvc_streaming_cls;
  	const struct usb_descriptor_header * const *uvc_streaming_std;
  	const struct usb_descriptor_header * const *src;
@@ -65458,7 +65458,7 @@ index fecdba85a..31cc58171 100644
  		break;
  	}
  
-@@ -512,12 +693,17 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
+@@ -513,12 +694,17 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
  	 * uvc_{fs|hs}_streaming
  	 */
  
@@ -65477,7 +65477,7 @@ index fecdba85a..31cc58171 100644
  
  	if (speed == USB_SPEED_SUPER) {
  		bytes += uvc_ss_control_comp.bLength;
-@@ -567,7 +753,7 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
+@@ -568,7 +754,7 @@ uvc_copy_descriptors(struct uvc_device *uvc, enum usb_device_speed speed)
  		UVC_COPY_DESCRIPTOR(mem, dst, &uvc_ss_control_comp);
  
  	UVC_COPY_DESCRIPTOR(mem, dst, &uvc_control_cs_ep);
@@ -65486,7 +65486,7 @@ index fecdba85a..31cc58171 100644
  
  	uvc_streaming_header = mem;
  	UVC_COPY_DESCRIPTORS(mem, dst,
-@@ -592,15 +778,24 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -593,15 +779,24 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  	struct usb_ep *ep;
  	struct f_uvc_opts *opts;
  	int ret = -EINVAL;
@@ -65514,7 +65514,7 @@ index fecdba85a..31cc58171 100644
  
  	/* For SS, wMaxPacketSize has to be 1024 if bMaxBurst is not 0 */
  	if (opts->streaming_maxburst &&
-@@ -627,26 +822,46 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -628,26 +823,46 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  		max_packet_size = opts->streaming_maxpacket / 3;
  	}
  
@@ -65581,7 +65581,7 @@ index fecdba85a..31cc58171 100644
  
  	/* Allocate endpoints. */
  	ep = usb_ep_autoconfig(cdev->gadget, &uvc_control_ep);
-@@ -656,23 +871,57 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -657,23 +872,57 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  	}
  	uvc->control_ep = ep;
  
@@ -65649,7 +65649,7 @@ index fecdba85a..31cc58171 100644
  
  	us = usb_gstrings_attach(cdev, uvc_function_strings,
  				 ARRAY_SIZE(uvc_en_us_strings));
-@@ -683,8 +932,12 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -684,8 +933,12 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  	uvc_iad.iFunction = us[UVC_STRING_CONTROL_IDX].id;
  	uvc_control_intf.iInterface = us[UVC_STRING_CONTROL_IDX].id;
  	ret = us[UVC_STRING_STREAMING_IDX].id;
@@ -65664,7 +65664,7 @@ index fecdba85a..31cc58171 100644
  
  	/* Allocate interface IDs. */
  	if ((ret = usb_interface_id(c, f)) < 0)
-@@ -696,8 +949,14 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -697,8 +950,14 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  
  	if ((ret = usb_interface_id(c, f)) < 0)
  		goto error;
@@ -65681,7 +65681,7 @@ index fecdba85a..31cc58171 100644
  	uvc->streaming_intf = ret;
  	opts->streaming_interface = ret;
  
-@@ -747,6 +1006,8 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
+@@ -748,6 +1007,8 @@ uvc_function_bind(struct usb_configuration *c, struct usb_function *f)
  	if (ret < 0)
  		goto v4l2_error;
  
@@ -65690,7 +65690,7 @@ index fecdba85a..31cc58171 100644
  	/* Register a V4L2 device. */
  	ret = uvc_register_video(uvc);
  	if (ret < 0) {
-@@ -785,6 +1046,7 @@ static struct usb_function_instance *uvc_alloc_inst(void)
+@@ -786,6 +1047,7 @@ static struct usb_function_instance *uvc_alloc_inst(void)
  	struct uvc_camera_terminal_descriptor *cd;
  	struct uvc_processing_unit_descriptor *pd;
  	struct uvc_output_terminal_descriptor *od;
@@ -65698,7 +65698,7 @@ index fecdba85a..31cc58171 100644
  	struct uvc_color_matching_descriptor *md;
  	struct uvc_descriptor_header **ctl_cls;
  	int ret;
-@@ -834,6 +1096,34 @@ static struct usb_function_instance *uvc_alloc_inst(void)
+@@ -835,6 +1097,34 @@ static struct usb_function_instance *uvc_alloc_inst(void)
  	od->bSourceID			= 2;
  	od->iTerminal			= 0;
  
@@ -65733,7 +65733,7 @@ index fecdba85a..31cc58171 100644
  	md = &opts->uvc_color_matching;
  	md->bLength			= UVC_DT_COLOR_MATCHING_SIZE;
  	md->bDescriptorType		= USB_DT_CS_INTERFACE;
-@@ -848,7 +1138,8 @@ static struct usb_function_instance *uvc_alloc_inst(void)
+@@ -849,7 +1139,8 @@ static struct usb_function_instance *uvc_alloc_inst(void)
  	ctl_cls[1] = (struct uvc_descriptor_header *)cd;
  	ctl_cls[2] = (struct uvc_descriptor_header *)pd;
  	ctl_cls[3] = (struct uvc_descriptor_header *)od;
@@ -65743,7 +65743,7 @@ index fecdba85a..31cc58171 100644
  	opts->fs_control =
  		(const struct uvc_descriptor_header * const *)ctl_cls;
  
-@@ -858,12 +1149,15 @@ static struct usb_function_instance *uvc_alloc_inst(void)
+@@ -859,12 +1150,15 @@ static struct usb_function_instance *uvc_alloc_inst(void)
  	ctl_cls[1] = (struct uvc_descriptor_header *)cd;
  	ctl_cls[2] = (struct uvc_descriptor_header *)pd;
  	ctl_cls[3] = (struct uvc_descriptor_header *)od;
@@ -65760,7 +65760,7 @@ index fecdba85a..31cc58171 100644
  
  	ret = uvcg_attach_configfs(opts);
  	if (ret < 0) {
-@@ -883,42 +1177,17 @@ static void uvc_free(struct usb_function *f)
+@@ -884,42 +1178,17 @@ static void uvc_free(struct usb_function *f)
  	kfree(uvc);
  }
  
@@ -65805,7 +65805,7 @@ index fecdba85a..31cc58171 100644
  	usb_ep_free_request(cdev->gadget->ep0, uvc->control_req);
  	kfree(uvc->control_buf);
  
-@@ -937,7 +1206,6 @@ static struct usb_function *uvc_alloc(struct usb_function_instance *fi)
+@@ -938,7 +1207,6 @@ static struct usb_function *uvc_alloc(struct usb_function_instance *fi)
  
  	mutex_init(&uvc->video.mutex);
  	uvc->state = UVC_STATE_DISCONNECTED;
@@ -65813,7 +65813,7 @@ index fecdba85a..31cc58171 100644
  	opts = fi_to_f_uvc_opts(fi);
  
  	mutex_lock(&opts->lock);
-@@ -968,12 +1236,14 @@ static struct usb_function *uvc_alloc(struct usb_function_instance *fi)
+@@ -969,12 +1237,14 @@ static struct usb_function *uvc_alloc(struct usb_function_instance *fi)
  	/* Register the function. */
  	uvc->func.name = "uvc";
  	uvc->func.bind = uvc_function_bind;
@@ -67693,116 +67693,27 @@ index d1a42300a..92218383b 100644
  	/*
  	 * Initialize the ring segment pool.  The ring must be a contiguous
 diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
-index 0ee11a937..4798a3b19 100644
+index 9168b492c..0ee11a937 100644
 --- a/drivers/usb/host/xhci-pci.c
 +++ b/drivers/usb/host/xhci-pci.c
-@@ -30,7 +30,6 @@
- #define PCI_VENDOR_ID_FRESCO_LOGIC	0x1b73
- #define PCI_DEVICE_ID_FRESCO_LOGIC_PDK	0x1000
- #define PCI_DEVICE_ID_FRESCO_LOGIC_FL1009	0x1009
--#define PCI_DEVICE_ID_FRESCO_LOGIC_FL1100	0x1100
- #define PCI_DEVICE_ID_FRESCO_LOGIC_FL1400	0x1400
- 
- #define PCI_VENDOR_ID_ETRON		0x1b6f
-@@ -58,12 +57,22 @@
- #define PCI_DEVICE_ID_INTEL_CML_XHCI			0xa3af
+@@ -59,7 +59,6 @@
  #define PCI_DEVICE_ID_INTEL_TIGER_LAKE_XHCI		0x9a13
  #define PCI_DEVICE_ID_INTEL_MAPLE_RIDGE_XHCI		0x1138
--#define PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI		0x51ed
-+#define PCI_DEVICE_ID_INTEL_ALDER_LAKE_XHCI		0x461e
-+#define PCI_DEVICE_ID_INTEL_ALDER_LAKE_N_XHCI		0x464e
-+#define PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI	0x51ed
-+#define PCI_DEVICE_ID_INTEL_RAPTOR_LAKE_XHCI		0xa71e
-+#define PCI_DEVICE_ID_INTEL_METEOR_LAKE_XHCI		0x7ec0
+ #define PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI		0x51ed
+-#define PCI_DEVICE_ID_INTEL_ALDER_LAKE_N_PCH_XHCI	0x54ed
  
  #define PCI_DEVICE_ID_AMD_PROMONTORYA_4			0x43b9
  #define PCI_DEVICE_ID_AMD_PROMONTORYA_3			0x43ba
- #define PCI_DEVICE_ID_AMD_PROMONTORYA_2			0x43bb
- #define PCI_DEVICE_ID_AMD_PROMONTORYA_1			0x43bc
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_1		0x161a
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_2		0x161b
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_3		0x161d
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_4		0x161e
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_5		0x15d6
-+#define PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_6		0x15d7
- 
- #define PCI_DEVICE_ID_ASMEDIA_1042_XHCI			0x1042
- #define PCI_DEVICE_ID_ASMEDIA_1042A_XHCI		0x1142
-@@ -148,10 +157,6 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
- 			pdev->device == PCI_DEVICE_ID_FRESCO_LOGIC_FL1009)
- 		xhci->quirks |= XHCI_BROKEN_STREAMS;
- 
--	if (pdev->vendor == PCI_VENDOR_ID_FRESCO_LOGIC &&
--			pdev->device == PCI_DEVICE_ID_FRESCO_LOGIC_FL1100)
--		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
--
- 	if (pdev->vendor == PCI_VENDOR_ID_NEC)
- 		xhci->quirks |= XHCI_NEC_HOST;
- 
-@@ -241,10 +246,6 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
- 	     pdev->device == PCI_DEVICE_ID_INTEL_DNV_XHCI))
+@@ -243,8 +242,7 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
  		xhci->quirks |= XHCI_MISSING_CAS;
  
--	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
--	    pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI)
--		xhci->quirks |= XHCI_RESET_TO_DEFAULT;
--
  	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
- 	    (pdev->device == PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_2C_XHCI ||
- 	     pdev->device == PCI_DEVICE_ID_INTEL_ALPINE_RIDGE_4C_XHCI ||
-@@ -256,7 +257,12 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
- 	     pdev->device == PCI_DEVICE_ID_INTEL_TITAN_RIDGE_DD_XHCI ||
- 	     pdev->device == PCI_DEVICE_ID_INTEL_ICE_LAKE_XHCI ||
- 	     pdev->device == PCI_DEVICE_ID_INTEL_TIGER_LAKE_XHCI ||
--	     pdev->device == PCI_DEVICE_ID_INTEL_MAPLE_RIDGE_XHCI))
-+	     pdev->device == PCI_DEVICE_ID_INTEL_MAPLE_RIDGE_XHCI ||
-+	     pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_XHCI ||
-+	     pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_N_XHCI ||
-+	     pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI ||
-+	     pdev->device == PCI_DEVICE_ID_INTEL_RAPTOR_LAKE_XHCI ||
-+	     pdev->device == PCI_DEVICE_ID_INTEL_METEOR_LAKE_XHCI))
- 		xhci->quirks |= XHCI_DEFAULT_PM_RUNTIME_ALLOW;
+-	    (pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI ||
+-	     pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_N_PCH_XHCI))
++	    pdev->device == PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI)
+ 		xhci->quirks |= XHCI_RESET_TO_DEFAULT;
  
- 	if (pdev->vendor == PCI_VENDOR_ID_ETRON &&
-@@ -283,20 +289,12 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
- 			pdev->device == 0x3432)
- 		xhci->quirks |= XHCI_BROKEN_STREAMS;
- 
--	if (pdev->vendor == PCI_VENDOR_ID_VIA && pdev->device == 0x3483) {
-+	if (pdev->vendor == PCI_VENDOR_ID_VIA && pdev->device == 0x3483)
- 		xhci->quirks |= XHCI_LPM_SUPPORT;
--		xhci->quirks |= XHCI_EP_CTX_BROKEN_DCS;
--	}
- 
- 	if (pdev->vendor == PCI_VENDOR_ID_ASMEDIA &&
--		pdev->device == PCI_DEVICE_ID_ASMEDIA_1042_XHCI) {
--		/*
--		 * try to tame the ASMedia 1042 controller which reports 0.96
--		 * but appears to behave more like 1.0
--		 */
--		xhci->quirks |= XHCI_SPURIOUS_SUCCESS;
-+		pdev->device == PCI_DEVICE_ID_ASMEDIA_1042_XHCI)
- 		xhci->quirks |= XHCI_BROKEN_STREAMS;
--	}
- 	if (pdev->vendor == PCI_VENDOR_ID_ASMEDIA &&
- 		pdev->device == PCI_DEVICE_ID_ASMEDIA_1042A_XHCI) {
- 		xhci->quirks |= XHCI_TRUST_TX_LENGTH;
-@@ -325,8 +323,13 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
- 	     pdev->device == PCI_DEVICE_ID_AMD_PROMONTORYA_4))
- 		xhci->quirks |= XHCI_NO_SOFT_RETRY;
- 
--	/* xHC spec requires PCI devices to support D3hot and D3cold */
--	if (xhci->hci_version >= 0x120)
-+	if (pdev->vendor == PCI_VENDOR_ID_AMD &&
-+	    (pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_1 ||
-+	    pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_2 ||
-+	    pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_3 ||
-+	    pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_4 ||
-+	    pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_5 ||
-+	    pdev->device == PCI_DEVICE_ID_AMD_YELLOW_CARP_XHCI_6))
- 		xhci->quirks |= XHCI_DEFAULT_PM_RUNTIME_ALLOW;
- 
- 	if (xhci->quirks & XHCI_RESET_ON_RESUME)
+ 	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
 diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
 index 972a44b2a..6384c895d 100644
 --- a/drivers/usb/host/xhci-plat.c
@@ -70663,10 +70574,10 @@ index 059050f13..551132b79 100644
   * TODO: As per spec Isochronous IDT transmissions are supported. We bypass
   * them anyways as we where unable to find a device that matches the
 diff --git a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
-index 6b5ba6180..3b010bfca 100644
+index 8a4a0d4db..d92eece5c 100644
 --- a/drivers/usb/serial/cp210x.c
 +++ b/drivers/usb/serial/cp210x.c
-@@ -242,7 +242,6 @@ static const struct usb_device_id id_table[] = {
+@@ -244,7 +244,6 @@ static const struct usb_device_id id_table[] = {
  	{ USB_DEVICE(0x1FB9, 0x0602) }, /* Lake Shore Model 648 Magnet Power Supply */
  	{ USB_DEVICE(0x1FB9, 0x0700) }, /* Lake Shore Model 737 VSM Controller */
  	{ USB_DEVICE(0x1FB9, 0x0701) }, /* Lake Shore Model 776 Hall Matrix */
@@ -70674,7 +70585,7 @@ index 6b5ba6180..3b010bfca 100644
  	{ USB_DEVICE(0x2626, 0xEA60) }, /* Aruba Networks 7xxx USB Serial Console */
  	{ USB_DEVICE(0x3195, 0xF190) }, /* Link Instruments MSO-19 */
  	{ USB_DEVICE(0x3195, 0xF280) }, /* Link Instruments MSO-28 */
-@@ -266,7 +265,6 @@ struct cp210x_serial_private {
+@@ -268,7 +267,6 @@ struct cp210x_serial_private {
  	speed_t			min_speed;
  	speed_t			max_speed;
  	bool			use_actual_rate;
@@ -70682,7 +70593,7 @@ index 6b5ba6180..3b010bfca 100644
  };
  
  enum cp210x_event_state {
-@@ -1338,16 +1336,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
+@@ -1340,16 +1338,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
  
  static void cp210x_enable_event_mode(struct usb_serial_port *port)
  {
@@ -70699,7 +70610,7 @@ index 6b5ba6180..3b010bfca 100644
  	port_priv->event_state = ES_DATA;
  	port_priv->event_mode = true;
  
-@@ -1755,8 +1749,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1757,8 +1751,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  
  	/*  2 banks of GPIO - One for the pins taken from each serial port */
  	if (intf_num == 0) {
@@ -70708,7 +70619,7 @@ index 6b5ba6180..3b010bfca 100644
  		if (mode.eci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1767,9 +1759,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1769,9 +1761,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_ECI_GPIO_MODE_MASK) >>
  						CP210X_ECI_GPIO_MODE_OFFSET);
@@ -70719,7 +70630,7 @@ index 6b5ba6180..3b010bfca 100644
  		if (mode.sci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1780,6 +1771,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1782,6 +1773,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_SCI_GPIO_MODE_MASK) >>
  						CP210X_SCI_GPIO_MODE_OFFSET);
@@ -70727,7 +70638,7 @@ index 6b5ba6180..3b010bfca 100644
  	} else {
  		return -ENODEV;
  	}
-@@ -2099,46 +2091,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
+@@ -2101,46 +2093,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
  	priv->use_actual_rate = use_actual_rate;
  }
  
@@ -70774,7 +70685,7 @@ index 6b5ba6180..3b010bfca 100644
  static int cp210x_attach(struct usb_serial *serial)
  {
  	int result;
-@@ -2159,7 +2111,6 @@ static int cp210x_attach(struct usb_serial *serial)
+@@ -2161,7 +2113,6 @@ static int cp210x_attach(struct usb_serial *serial)
  
  	usb_set_serial_data(serial, priv);
  
@@ -70783,284 +70694,26 @@ index 6b5ba6180..3b010bfca 100644
  
  	result = cp210x_gpio_init(serial);
 diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index 537ef276c..acb8eec14 100644
+index 5636b8f52..537ef276c 100644
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
-@@ -162,8 +162,6 @@ static void option_instat_callback(struct urb *urb);
- #define NOVATELWIRELESS_PRODUCT_G2		0xA010
- #define NOVATELWIRELESS_PRODUCT_MC551		0xB001
- 
--#define UBLOX_VENDOR_ID				0x1546
--
- /* AMOI PRODUCTS */
- #define AMOI_VENDOR_ID				0x1614
- #define AMOI_PRODUCT_H01			0x0800
-@@ -200,8 +198,6 @@ static void option_instat_callback(struct urb *urb);
- 
- #define DELL_PRODUCT_5821E			0x81d7
- #define DELL_PRODUCT_5821E_ESIM			0x81e0
--#define DELL_PRODUCT_5829E_ESIM			0x81e4
--#define DELL_PRODUCT_5829E			0x81e6
- 
- #define KYOCERA_VENDOR_ID			0x0c88
- #define KYOCERA_PRODUCT_KPC650			0x17da
-@@ -242,6 +238,7 @@ static void option_instat_callback(struct urb *urb);
- #define QUECTEL_PRODUCT_UC15			0x9090
- /* These u-blox products use Qualcomm's vendor ID */
- #define UBLOX_PRODUCT_R410M			0x90b2
-+#define UBLOX_PRODUCT_R6XX			0x90fa
- /* These Yuga products use Qualcomm's vendor ID */
- #define YUGA_PRODUCT_CLM920_NC5			0x9625
- 
-@@ -249,18 +246,12 @@ static void option_instat_callback(struct urb *urb);
- /* These Quectel products use Quectel's vendor ID */
- #define QUECTEL_PRODUCT_EC21			0x0121
- #define QUECTEL_PRODUCT_EC25			0x0125
--#define QUECTEL_PRODUCT_EG91			0x0191
- #define QUECTEL_PRODUCT_EG95			0x0195
- #define QUECTEL_PRODUCT_BG96			0x0296
+@@ -255,7 +255,6 @@ static void option_instat_callback(struct urb *urb);
  #define QUECTEL_PRODUCT_EP06			0x0306
--#define QUECTEL_PRODUCT_EM05G			0x030a
--#define QUECTEL_PRODUCT_EM060K			0x030b
+ #define QUECTEL_PRODUCT_EM05G			0x030a
+ #define QUECTEL_PRODUCT_EM060K			0x030b
+-#define QUECTEL_PRODUCT_EM05G_SG		0x0311
  #define QUECTEL_PRODUCT_EM12			0x0512
  #define QUECTEL_PRODUCT_RM500Q			0x0800
--#define QUECTEL_PRODUCT_RM520N			0x0801
--#define QUECTEL_PRODUCT_EC200S_CN		0x6002
- #define QUECTEL_PRODUCT_EC200T			0x6026
--#define QUECTEL_PRODUCT_RM500K			0x7001
- 
- #define CMOTECH_VENDOR_ID			0x16d8
- #define CMOTECH_PRODUCT_6001			0x6001
-@@ -437,12 +428,6 @@ static void option_instat_callback(struct urb *urb);
- #define CINTERION_PRODUCT_CLS8			0x00b0
- #define CINTERION_PRODUCT_MV31_MBIM		0x00b3
- #define CINTERION_PRODUCT_MV31_RMNET		0x00b7
--#define CINTERION_PRODUCT_MV31_2_MBIM		0x00b8
--#define CINTERION_PRODUCT_MV31_2_RMNET		0x00b9
--#define CINTERION_PRODUCT_MV32_WA		0x00f1
--#define CINTERION_PRODUCT_MV32_WB		0x00f2
--#define CINTERION_PRODUCT_MV32_WA_RMNET		0x00f3
--#define CINTERION_PRODUCT_MV32_WB_RMNET		0x00f4
- 
- /* Olivetti products */
- #define OLIVETTI_VENDOR_ID			0x0b3c
-@@ -578,13 +563,6 @@ static void option_instat_callback(struct urb *urb);
- #define WETELECOM_PRODUCT_6802			0x6802
- #define WETELECOM_PRODUCT_WMD300		0x6803
- 
--/* OPPO products */
--#define OPPO_VENDOR_ID				0x22d9
--#define OPPO_PRODUCT_R11			0x276c
--
--/* Sierra Wireless products */
--#define SIERRA_VENDOR_ID			0x1199
--#define SIERRA_PRODUCT_EM9191			0x90d3
- 
- /* Device flags */
- 
-@@ -1083,10 +1061,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5821E_ESIM),
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
--	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5829E),
--	  .driver_info = RSVD(0) | RSVD(6) },
--	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5829E_ESIM),
--	  .driver_info = RSVD(0) | RSVD(6) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/* ADU-E100, ADU-310 */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
-@@ -1128,16 +1102,8 @@ static const struct usb_device_id option_ids[] = {
- 	/* u-blox products using Qualcomm vendor ID */
- 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R410M),
- 	  .driver_info = RSVD(1) | RSVD(3) },
--	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x908b),	/* u-blox LARA-R6 00B */
--	  .driver_info = RSVD(4) },
--	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x90fa),
-+	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R6XX),
- 	  .driver_info = RSVD(3) },
--	/* u-blox products */
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1341) },	/* u-blox LARA-L6 */
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1342),		/* u-blox LARA-L6 (RMNET) */
--	  .driver_info = RSVD(4) },
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1343),		/* u-blox LARA-L6 (ECM) */
--	  .driver_info = RSVD(4) },
- 	/* Quectel products using Quectel vendor ID */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC21, 0xff, 0xff, 0xff),
- 	  .driver_info = NUMEP2 },
-@@ -1145,41 +1111,24 @@ static const struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC25, 0xff, 0xff, 0xff),
- 	  .driver_info = NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC25, 0xff, 0, 0) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG91, 0xff, 0xff, 0xff),
--	  .driver_info = NUMEP2 },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG91, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0xff, 0xff),
- 	  .driver_info = NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, 0x0203, 0xff), /* BG95-M3 */
--	  .driver_info = ZLP },
- 	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_BG96),
- 	  .driver_info = RSVD(4) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EP06, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) | RSVD(2) | RSVD(3) | RSVD(4) | NUMEP2 },
+ #define QUECTEL_PRODUCT_RM520N			0x0801
+@@ -1161,8 +1160,6 @@ static const struct usb_device_id option_ids[] = {
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EP06, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G, 0xff),
+ 	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G, 0xff),
+ 	  .driver_info = RSVD(6) | ZLP },
+-	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_SG, 0xff),
 -	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0x00, 0x40) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x40) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) | RSVD(2) | RSVD(3) | RSVD(4) | NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0xff, 0x30) },	/* EM160R-GL */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, 0x0700, 0xff), /* BG95 */
--	  .driver_info = RSVD(3) | ZLP },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x30) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x10),
- 	  .driver_info = ZLP },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0x40) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200S_CN, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200T, 0xff, 0, 0) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500K, 0xff, 0x00, 0x00) },
- 
- 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6001) },
- 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_CMU_300) },
-@@ -1256,28 +1205,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(0) | RSVD(1) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1056, 0xff),	/* Telit FD980 */
- 	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1057, 0xff),	/* Telit FN980 */
--	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1058, 0xff),	/* Telit FN980 (PCIe) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1060, 0xff),	/* Telit LN920 (rmnet) */
--	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1061, 0xff),	/* Telit LN920 (MBIM) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1062, 0xff),	/* Telit LN920 (RNDIS) */
--	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1063, 0xff),	/* Telit LN920 (ECM) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1070, 0xff),	/* Telit FN990 (rmnet) */
--	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1071, 0xff),	/* Telit FN990 (MBIM) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1072, 0xff),	/* Telit FN990 (RNDIS) */
--	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1073, 0xff),	/* Telit FN990 (ECM) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1075, 0xff),	/* Telit FN990 (PCIe) */
--	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(3) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910_DUAL_MODEM),
-@@ -1292,8 +1219,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1203, 0xff),	/* Telit LE910Cx (RNDIS) */
- 	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1204, 0xff),	/* Telit LE910Cx (MBIM) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE910_USBCFG4),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) | RSVD(3) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_LE920),
-@@ -1312,7 +1237,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1231, 0xff),	/* Telit LE910Cx (RNDIS) */
- 	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(TELIT_VENDOR_ID, 0x1250, 0xff, 0x00, 0x00) },	/* Telit LE910Cx (rmnet) */
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1260),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1261),
-@@ -1325,16 +1249,8 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x7011, 0xff),	/* Telit LE910-S1 (ECM) */
- 	  .driver_info = NCTRL(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x701a, 0xff),	/* Telit LE910R1 (RNDIS) */
--	  .driver_info = NCTRL(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x701b, 0xff),	/* Telit LE910R1 (ECM) */
--	  .driver_info = NCTRL(2) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9010),				/* Telit SBL FN980 flashing device */
- 	  .driver_info = NCTRL(0) | ZLP },
--	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9200),				/* Telit LE910S1 flashing device */
--	  .driver_info = NCTRL(0) | ZLP },
--	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9201),				/* Telit LE910R1 flashing device */
--	  .driver_info = NCTRL(0) | ZLP },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0002, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) },
-@@ -1707,8 +1623,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(ZTE_VENDOR_ID, 0x1476, 0xff) },	/* GosunCn ZTE WeLink ME3630 (ECM/NCM mode) */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1481, 0xff, 0x00, 0x00) }, /* ZTE MF871A */
--	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1485, 0xff, 0xff, 0xff),  /* ZTE MF286D */
--	  .driver_info = RSVD(5) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1533, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1534, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1535, 0xff, 0xff, 0xff) },
-@@ -1736,6 +1650,7 @@ static const struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0060, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0070, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0073, 0xff, 0xff, 0xff) },
-+	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0094, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0130, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0133, 0xff, 0xff, 0xff),
-@@ -2015,18 +1930,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(3)},
- 	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_RMNET, 0xff),
- 	  .driver_info = RSVD(0)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_2_MBIM, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_2_RMNET, 0xff),
--	  .driver_info = RSVD(0)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WA, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WA_RMNET, 0xff),
--	  .driver_info = RSVD(0) },
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WB, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WB_RMNET, 0xff),
--	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD100),
- 	  .driver_info = RSVD(4) },
- 	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD120),
-@@ -2165,32 +2068,19 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
- 	{ USB_DEVICE(0x0489, 0xe0b5),						/* Foxconn T77W968 ESIM */
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
--	{ USB_DEVICE_INTERFACE_CLASS(0x0489, 0xe0db, 0xff),			/* Foxconn T99W265 MBIM */
--	  .driver_info = RSVD(3) },
- 	{ USB_DEVICE(0x1508, 0x1001),						/* Fibocom NL668 (IOT version) */
- 	  .driver_info = RSVD(4) | RSVD(5) | RSVD(6) },
--	{ USB_DEVICE(0x1782, 0x4d10) },						/* Fibocom L610 (AT mode) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x1782, 0x4d11, 0xff) },			/* Fibocom L610 (ECM/RNDIS mode) */
- 	{ USB_DEVICE(0x2cb7, 0x0104),						/* Fibocom NL678 series */
- 	  .driver_info = RSVD(4) | RSVD(5) },
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0105, 0xff),			/* Fibocom NL678 series */
- 	  .driver_info = RSVD(6) },
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0106, 0xff) },			/* Fibocom MA510 (ECM mode w/ diag intf.) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x010a, 0xff) },			/* Fibocom MA510 (ECM mode) */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0xff, 0x30) },	/* Fibocom FG150 Diag */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0, 0) },		/* Fibocom FG150 AT */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0111, 0xff) },			/* Fibocom FM160 (MBIM mode) */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a0, 0xff) },			/* Fibocom NL668-AM/NL652-EU (laptop MBIM) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a2, 0xff) },			/* Fibocom FM101-GL (laptop MBIM) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a4, 0xff),			/* Fibocom FM101-GL (laptop MBIM) */
--	  .driver_info = RSVD(4) },
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2df3, 0x9d03, 0xff) },			/* LongSung M5710 */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1404, 0xff) },			/* GosunCn GM500 RNDIS */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1405, 0xff) },			/* GosunCn GM500 MBIM */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1406, 0xff) },			/* GosunCn GM500 ECM/NCM */
--	{ USB_DEVICE_AND_INTERFACE_INFO(OPPO_VENDOR_ID, OPPO_PRODUCT_R11, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0, 0) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0x00, 0x40) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x30) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x40) },
 diff --git a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
 index b1e844bf3..c81f70530 100644
 --- a/drivers/usb/serial/qcserial.c
@@ -73977,7 +73630,7 @@ index 40d7e98fc..4e8b65492 100644
  	bool			hsq_enabled;
  
 diff --git a/include/linux/mmc/mmc.h b/include/linux/mmc/mmc.h
-index d9a65c6a8..1fb228af9 100644
+index 545578fb8..29e09d23e 100644
 --- a/include/linux/mmc/mmc.h
 +++ b/include/linux/mmc/mmc.h
 @@ -449,4 +449,11 @@ static inline bool mmc_ready_for_data(u32 status)
@@ -74194,7 +73847,7 @@ index 3734cd8f3..1c8d7856c 100644
   * Architecture-specific implementations of sys_reboot commands.
   */
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5bc758263..5da97094e 100644
+index 8cccb207e..6bab73e84 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -837,6 +837,9 @@ struct task_struct {
@@ -74207,7 +73860,7 @@ index 5bc758263..5da97094e 100644
  
  #ifdef CONFIG_PREEMPT_NOTIFIERS
  	/* List of struct preempt_notifier: */
-@@ -1017,6 +1020,10 @@ struct task_struct {
+@@ -1020,6 +1023,10 @@ struct task_struct {
  	u64				stimescaled;
  #endif
  	u64				gtime;
@@ -74218,7 +73871,7 @@ index 5bc758263..5da97094e 100644
  	struct prev_cputime		prev_cputime;
  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
  	struct vtime			vtime;
-@@ -1128,6 +1135,7 @@ struct task_struct {
+@@ -1131,6 +1138,7 @@ struct task_struct {
  	raw_spinlock_t			pi_lock;
  
  	struct wake_q_node		wake_q;
@@ -74226,7 +73879,7 @@ index 5bc758263..5da97094e 100644
  
  #ifdef CONFIG_RT_MUTEXES
  	/* PI waiters blocked on a rt_mutex held by this task: */
-@@ -1352,7 +1360,7 @@ struct task_struct {
+@@ -1355,7 +1363,7 @@ struct task_struct {
  	u64				timer_slack_ns;
  	u64				default_timer_slack_ns;
  
@@ -75897,7 +75550,7 @@ index c94c05846..24e7b4532 100644
  		goto fail_dec;
  
 diff --git a/ipc/sem.c b/ipc/sem.c
-index 2cb6515ef..7d9c06b0a 100644
+index 916f7a90b..d735cecd9 100644
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
 @@ -511,7 +511,7 @@ static struct sem_array *sem_alloc(size_t nsems)
@@ -75980,7 +75633,7 @@ index 08236798d..081d026f1 100644
  };
 +EXPORT_SYMBOL_GPL(freezer_cgrp_subsys);
 diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 332588bf2..098db78ab 100644
+index 2cda6a3ef..7b8933e78 100644
 --- a/kernel/cpu.c
 +++ b/kernel/cpu.c
 @@ -275,11 +275,13 @@ void cpu_maps_update_begin(void)
@@ -76281,7 +75934,7 @@ index af6f23d8b..240805041 100644
  {
  	/* The boot cpu is always logical cpu 0 */
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 401e314ee..3d28e9292 100644
+index 52d70832e..11c6535bb 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -18,6 +18,7 @@
@@ -76471,7 +76124,7 @@ index 401e314ee..3d28e9292 100644
  
  	/* rq->curr == p */
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 5204f7fc5..13ceacb3e 100644
+index 0a94f01a1..932f44711 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -86,6 +86,7 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
@@ -76519,7 +76172,7 @@ index 5204f7fc5..13ceacb3e 100644
  
  		r = removed_runnable;
  		sub_positive(&sa->runnable_avg, r);
-@@ -5237,7 +5228,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
+@@ -5361,7 +5352,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
  /*
   * When a group wakes up we want to make sure that its quota is not already
   * expired/exceeded, otherwise it may be allowed to steal additional ticks of
@@ -76528,7 +76181,7 @@ index 5204f7fc5..13ceacb3e 100644
   */
  static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
  {
-@@ -10697,8 +10688,20 @@ void nohz_balance_enter_idle(int cpu)
+@@ -10821,8 +10812,20 @@ void nohz_balance_enter_idle(int cpu)
  	SCHED_WARN_ON(cpu != smp_processor_id());
  
  	/* If this CPU is going down, then nothing needs to be done: */
