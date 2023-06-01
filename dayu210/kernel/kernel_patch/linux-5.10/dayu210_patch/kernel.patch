@@ -824,7 +824,7 @@ index ccd5c270c..b978af08d 100644
  		div->width = div_width;
  		div->lock = lock;
 diff --git a/drivers/clk/rockchip/clk-pll.c b/drivers/clk/rockchip/clk-pll.c
-index bbbf9ce42..92fe99b4b 100644
+index d0bd513ff..5687b5d8f 100644
 --- a/drivers/clk/rockchip/clk-pll.c
 +++ b/drivers/clk/rockchip/clk-pll.c
 @@ -15,6 +15,9 @@
@@ -1755,7 +1755,7 @@ index bbbf9ce42..92fe99b4b 100644
  	default:
  		pr_warn("%s: Unknown pll type for pll clk %s\n",
  			__func__, name);
-@@ -987,3 +1706,316 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
+@@ -988,3 +1707,316 @@ struct clk *rockchip_clk_register_pll(struct rockchip_clk_provider *ctx,
  	kfree(pll);
  	return mux_clk;
  }
@@ -13582,7 +13582,7 @@ index 537e7de8e..01670305d 100644
  }
  EXPORT_SYMBOL(drm_send_event);
 diff --git a/drivers/gpu/drm/drm_fourcc.c b/drivers/gpu/drm/drm_fourcc.c
-index 722c7ebe4..e2241a5fd 100644
+index 92152c06b..f20307985 100644
 --- a/drivers/gpu/drm/drm_fourcc.c
 +++ b/drivers/gpu/drm/drm_fourcc.c
 @@ -278,6 +278,16 @@ const struct drm_format_info *__drm_format_info(u32 format)
@@ -13601,7 +13601,7 @@ index 722c7ebe4..e2241a5fd 100644
 +#endif
  		{ .format = DRM_FORMAT_Q410,		.depth = 0,
  		  .num_planes = 3, .char_per_block = { 2, 2, 2 },
- 		  .block_w = { 1, 1, 1 }, .block_h = { 1, 1, 1 }, .hsub = 0,
+ 		  .block_w = { 1, 1, 1 }, .block_h = { 1, 1, 1 }, .hsub = 1,
 diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
 index c160a45a4..73818ffa0 100644
 --- a/drivers/gpu/drm/drm_ioctl.c
@@ -29891,7 +29891,7 @@ index 857d97cdc..8c2b38419 100644
 +extern const struct component_ops vop2_component_ops;
  #endif /* _ROCKCHIP_DRM_VOP_H */
 diff --git a/drivers/gpu/drm/rockchip/rockchip_lvds.c b/drivers/gpu/drm/rockchip/rockchip_lvds.c
-index 7c20b4a24..ca2838db8 100644
+index e2487937c..ca2838db8 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_lvds.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_lvds.c
 @@ -6,98 +6,141 @@
@@ -30081,12 +30081,12 @@ index 7c20b4a24..ca2838db8 100644
 -		return DISPLAY_OUTPUT_DUAL_LVDS;
 +	struct rockchip_lvds *lvds = connector_to_lvds(connector);
 +	struct rockchip_drm_private *private = connector->dev->dev_private;
-+
+ 
 +	if (property == private->connector_id_prop) {
 +		*val = lvds->id;
 +		return 0;
 +	}
- 
++
 +	DRM_ERROR("failed to get rockchip LVDS property\n");
  	return -EINVAL;
  }
@@ -30099,7 +30099,7 @@ index 7c20b4a24..ca2838db8 100644
  };
  
  static int rockchip_lvds_connector_get_modes(struct drm_connector *connector)
-@@ -122,500 +166,235 @@ struct drm_connector_helper_funcs rockchip_lvds_connector_helper_funcs = {
+@@ -122,504 +166,235 @@ struct drm_connector_helper_funcs rockchip_lvds_connector_helper_funcs = {
  	.get_modes = rockchip_lvds_connector_get_modes,
  };
  
@@ -30130,7 +30130,7 @@ index 7c20b4a24..ca2838db8 100644
 -		DRM_DEV_ERROR(lvds->dev, "failed to enable lvds pclk %d\n", ret);
 -		return ret;
 -	}
--	ret = pm_runtime_get_sync(lvds->dev);
+-	ret = pm_runtime_resume_and_get(lvds->dev);
 -	if (ret < 0) {
 -		DRM_DEV_ERROR(lvds->dev, "failed to get pm runtime: %d\n", ret);
 -		clk_disable(lvds->pclk);
@@ -30357,7 +30357,9 @@ index 7c20b4a24..ca2838db8 100644
  	int ret;
  
 -	drm_panel_prepare(lvds->panel);
--
++	if (lvds->funcs->enable)
++		lvds->funcs->enable(lvds);
+ 
 -	ret = rk3288_lvds_poweron(lvds);
 -	if (ret < 0) {
 -		DRM_DEV_ERROR(lvds->dev, "failed to power on LVDS: %d\n", ret);
@@ -30366,64 +30368,66 @@ index 7c20b4a24..ca2838db8 100644
 -	}
 -
 -	ret = rk3288_lvds_grf_config(encoder, mode);
--	if (ret) {
--		DRM_DEV_ERROR(lvds->dev, "failed to configure LVDS: %d\n", ret);
--		drm_panel_unprepare(lvds->panel);
--		return;
--	}
-+	if (lvds->funcs->enable)
-+		lvds->funcs->enable(lvds);
- 
--	ret = rk3288_lvds_set_vop_source(lvds, encoder);
 +	ret = phy_set_mode(lvds->phy, PHY_MODE_LVDS);
  	if (ret) {
--		DRM_DEV_ERROR(lvds->dev, "failed to set VOP source: %d\n", ret);
+-		DRM_DEV_ERROR(lvds->dev, "failed to configure LVDS: %d\n", ret);
 -		drm_panel_unprepare(lvds->panel);
 +		DRM_DEV_ERROR(lvds->dev, "failed to set phy mode: %d\n", ret);
  		return;
  	}
  
--	drm_panel_enable(lvds->panel);
--}
--
--static void rk3288_lvds_encoder_disable(struct drm_encoder *encoder)
--{
--	struct rockchip_lvds *lvds = encoder_to_lvds(encoder);
+-	ret = rk3288_lvds_set_vop_source(lvds, encoder);
+-	if (ret) {
+-		DRM_DEV_ERROR(lvds->dev, "failed to set VOP source: %d\n", ret);
+-		drm_panel_unprepare(lvds->panel);
+-		return;
+-	}
 +	phy_power_on(lvds->phy);
  
--	drm_panel_disable(lvds->panel);
--	rk3288_lvds_poweroff(lvds);
--	drm_panel_unprepare(lvds->panel);
+-	drm_panel_enable(lvds->panel);
 +	if (lvds->secondary)
 +		rockchip_lvds_enable(lvds->secondary);
  }
  
--static int px30_lvds_poweron(struct rockchip_lvds *lvds)
+-static void rk3288_lvds_encoder_disable(struct drm_encoder *encoder)
 +static void rockchip_lvds_disable(struct rockchip_lvds *lvds)
  {
+-	struct rockchip_lvds *lvds = encoder_to_lvds(encoder);
++	if (lvds->funcs->disable)
++		lvds->funcs->disable(lvds);
+ 
+-	drm_panel_disable(lvds->panel);
+-	rk3288_lvds_poweroff(lvds);
+-	drm_panel_unprepare(lvds->panel);
+-}
++	phy_power_off(lvds->phy);
+ 
+-static int px30_lvds_poweron(struct rockchip_lvds *lvds)
+-{
 -	int ret;
 -
--	ret = pm_runtime_get_sync(lvds->dev);
+-	ret = pm_runtime_resume_and_get(lvds->dev);
 -	if (ret < 0) {
 -		DRM_DEV_ERROR(lvds->dev, "failed to get pm runtime: %d\n", ret);
 -		return ret;
 -	}
 -
 -	/* Enable LVDS mode */
--	return regmap_update_bits(lvds->grf, PX30_LVDS_GRF_PD_VO_CON1,
+-	ret = regmap_update_bits(lvds->grf, PX30_LVDS_GRF_PD_VO_CON1,
 -				  PX30_LVDS_MODE_EN(1) | PX30_LVDS_P2S_EN(1),
 -				  PX30_LVDS_MODE_EN(1) | PX30_LVDS_P2S_EN(1));
+-	if (ret)
+-		pm_runtime_put(lvds->dev);
+-
+-	return ret;
 -}
-+	if (lvds->funcs->disable)
-+		lvds->funcs->disable(lvds);
- 
+-
 -static void px30_lvds_poweroff(struct rockchip_lvds *lvds)
 -{
 -	regmap_update_bits(lvds->grf, PX30_LVDS_GRF_PD_VO_CON1,
 -			   PX30_LVDS_MODE_EN(1) | PX30_LVDS_P2S_EN(1),
 -			   PX30_LVDS_MODE_EN(0) | PX30_LVDS_P2S_EN(0));
-+	phy_power_off(lvds->phy);
- 
+-
 -	pm_runtime_put(lvds->dev);
 +	if (lvds->secondary)
 +		rockchip_lvds_disable(lvds->secondary);
@@ -30751,7 +30755,7 @@ index 7c20b4a24..ca2838db8 100644
  		ret = drm_connector_init(drm_dev, connector,
  					 &rockchip_lvds_connector_funcs,
  					 DRM_MODE_CONNECTOR_LVDS);
-@@ -630,34 +409,31 @@ static int rockchip_lvds_bind(struct device *dev, struct device *master,
+@@ -634,34 +409,31 @@ static int rockchip_lvds_bind(struct device *dev, struct device *master,
  
  		ret = drm_connector_attach_encoder(connector, encoder);
  		if (ret < 0) {
@@ -30794,7 +30798,7 @@ index 7c20b4a24..ca2838db8 100644
  	return ret;
  }
  
-@@ -665,13 +441,14 @@ static void rockchip_lvds_unbind(struct device *dev, struct device *master,
+@@ -669,13 +441,14 @@ static void rockchip_lvds_unbind(struct device *dev, struct device *master,
  				void *data)
  {
  	struct rockchip_lvds *lvds = dev_get_drvdata(dev);
@@ -30815,7 +30819,7 @@ index 7c20b4a24..ca2838db8 100644
  }
  
  static const struct component_ops rockchip_lvds_component_ops = {
-@@ -683,56 +460,219 @@ static int rockchip_lvds_probe(struct platform_device *pdev)
+@@ -687,56 +460,219 @@ static int rockchip_lvds_probe(struct platform_device *pdev)
  {
  	struct device *dev = &pdev->dev;
  	struct rockchip_lvds *lvds;
@@ -30879,18 +30883,18 @@ index 7c20b4a24..ca2838db8 100644
 -	dev_set_drvdata(dev, lvds);
 +	return component_add(dev, &rockchip_lvds_component_ops);
 +}
-+
+ 
+-	ret = component_add(&pdev->dev, &rockchip_lvds_component_ops);
+-	if (ret < 0) {
+-		DRM_DEV_ERROR(dev, "failed to add component\n");
+-		clk_unprepare(lvds->pclk);
 +static int rockchip_lvds_remove(struct platform_device *pdev)
 +{
 +	component_del(&pdev->dev, &rockchip_lvds_component_ops);
 +
 +	return 0;
 +}
- 
--	ret = component_add(&pdev->dev, &rockchip_lvds_component_ops);
--	if (ret < 0) {
--		DRM_DEV_ERROR(dev, "failed to add component\n");
--		clk_unprepare(lvds->pclk);
++
 +static void px30_lvds_enable(struct rockchip_lvds *lvds)
 +{
 +	int pipe = drm_of_encoder_active_endpoint_id(lvds->dev->of_node,
@@ -44724,7 +44728,7 @@ index 04c6edc28..d023ff1a1 100644
  obj-$(CONFIG_PCIE_TANGO_SMP8759) += pcie-tango.o
  obj-$(CONFIG_VMD) += vmd.o
 diff --git a/drivers/pci/controller/dwc/pcie-designware.c b/drivers/pci/controller/dwc/pcie-designware.c
-index 2b74ff88c..db8911024 100644
+index 28945351d..2df528706 100644
 --- a/drivers/pci/controller/dwc/pcie-designware.c
 +++ b/drivers/pci/controller/dwc/pcie-designware.c
 @@ -496,6 +496,7 @@ int dw_pcie_link_up(struct dw_pcie *pci)
@@ -58218,10 +58222,10 @@ index a9f97023d..f744c64f1 100644
  };
  MODULE_DEVICE_TABLE(of, rockchip_spi_dt_match);
 diff --git a/drivers/spi/spidev.c b/drivers/spi/spidev.c
-index 859910ec8..da816d5ba 100644
+index 9c5ec9943..ea5293934 100644
 --- a/drivers/spi/spidev.c
 +++ b/drivers/spi/spidev.c
-@@ -682,6 +682,7 @@ static const struct of_device_id spidev_dt_ids[] = {
+@@ -693,6 +693,7 @@ static const struct of_device_id spidev_dt_ids[] = {
  	{ .compatible = "lwn,bk4" },
  	{ .compatible = "dh,dhcom-board" },
  	{ .compatible = "menlo,m53cpld" },
@@ -73847,10 +73851,10 @@ index 3734cd8f3..1c8d7856c 100644
   * Architecture-specific implementations of sys_reboot commands.
   */
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 8cccb207e..6bab73e84 100644
+index d590141f0..6e1cafd23 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
-@@ -837,6 +837,9 @@ struct task_struct {
+@@ -851,6 +851,9 @@ struct task_struct {
  	 */
  	struct uclamp_se		uclamp[UCLAMP_CNT];
  #endif
@@ -73860,7 +73864,7 @@ index 8cccb207e..6bab73e84 100644
  
  #ifdef CONFIG_PREEMPT_NOTIFIERS
  	/* List of struct preempt_notifier: */
-@@ -1020,6 +1023,10 @@ struct task_struct {
+@@ -1034,6 +1037,10 @@ struct task_struct {
  	u64				stimescaled;
  #endif
  	u64				gtime;
@@ -73871,7 +73875,7 @@ index 8cccb207e..6bab73e84 100644
  	struct prev_cputime		prev_cputime;
  #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
  	struct vtime			vtime;
-@@ -1131,6 +1138,7 @@ struct task_struct {
+@@ -1145,6 +1152,7 @@ struct task_struct {
  	raw_spinlock_t			pi_lock;
  
  	struct wake_q_node		wake_q;
@@ -73879,7 +73883,7 @@ index 8cccb207e..6bab73e84 100644
  
  #ifdef CONFIG_RT_MUTEXES
  	/* PI waiters blocked on a rt_mutex held by this task: */
-@@ -1355,7 +1363,7 @@ struct task_struct {
+@@ -1369,7 +1377,7 @@ struct task_struct {
  	u64				timer_slack_ns;
  	u64				default_timer_slack_ns;
  
@@ -75117,7 +75121,7 @@ index 0939aa45e..64e84441c 100644
  	size_t len);
  
 diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-index 5498d7a65..5b5db0381 100644
+index dad9d3b4a..1b26ff448 100644
 --- a/include/uapi/drm/drm_fourcc.h
 +++ b/include/uapi/drm/drm_fourcc.h
 @@ -242,6 +242,8 @@ extern "C" {
@@ -75934,7 +75938,7 @@ index af6f23d8b..240805041 100644
  {
  	/* The boot cpu is always logical cpu 0 */
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 52d70832e..11c6535bb 100644
+index e86758a81..88c49b643 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -18,6 +18,7 @@
@@ -75943,9 +75947,9 @@ index 52d70832e..11c6535bb 100644
  #include <linux/delay.h>
 +#include <linux/wgcm.h>
  
- #include <asm/switch_to.h>
- #include <asm/tlb.h>
-@@ -30,6 +31,7 @@
+ #ifdef CONFIG_QOS_CTRL
+ #include <linux/sched/qos_ctrl.h>
+@@ -34,6 +35,7 @@
  #include "smp.h"
  #include "walt.h"
  #include "rtg/rtg.h"
@@ -75953,7 +75957,7 @@ index 52d70832e..11c6535bb 100644
  
  /*
   * Export tracepoints that act as a bare tracehook (ie: have no trace event
-@@ -46,6 +48,14 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
+@@ -50,6 +52,14 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
  EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_cfs_tp);
  EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
  EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
@@ -75968,7 +75972,7 @@ index 52d70832e..11c6535bb 100644
  
  DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
  
-@@ -659,7 +669,7 @@ int get_nohz_timer_target(void)
+@@ -663,7 +673,7 @@ int get_nohz_timer_target(void)
  	int i, cpu = smp_processor_id(), default_cpu = -1;
  	struct sched_domain *sd;
  
@@ -75977,7 +75981,7 @@ index 52d70832e..11c6535bb 100644
  		if (!idle_cpu(cpu))
  			return cpu;
  		default_cpu = cpu;
-@@ -679,8 +689,20 @@ int get_nohz_timer_target(void)
+@@ -683,8 +693,20 @@ int get_nohz_timer_target(void)
  		}
  	}
  
@@ -76000,7 +76004,7 @@ index 52d70832e..11c6535bb 100644
  	cpu = default_cpu;
  unlock:
  	rcu_read_unlock();
-@@ -1650,11 +1672,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
+@@ -1654,11 +1676,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
  {
  	enqueue_task(rq, p, flags);
  
@@ -76016,7 +76020,7 @@ index 52d70832e..11c6535bb 100644
  	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
  
  	dequeue_task(rq, p, flags);
-@@ -1766,7 +1792,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
+@@ -1770,7 +1796,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
  	if (is_per_cpu_kthread(p))
  		return cpu_online(cpu);
  
@@ -76027,7 +76031,7 @@ index 52d70832e..11c6535bb 100644
  }
  
  /*
-@@ -2429,7 +2457,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
+@@ -2433,7 +2461,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
  			}
  			fallthrough;
  		case possible:
@@ -76036,7 +76040,7 @@ index 52d70832e..11c6535bb 100644
  			state = fail;
  			break;
  
-@@ -2623,6 +2651,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
+@@ -2627,6 +2655,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
  {
  	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
  
@@ -76045,7 +76049,7 @@ index 52d70832e..11c6535bb 100644
  	lockdep_assert_held(&rq->lock);
  
  	if (p->sched_contributes_to_load)
-@@ -3019,6 +3049,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
+@@ -3023,6 +3053,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
  	if (!(p->state & state))
  		goto unlock;
  
@@ -76065,7 +76069,7 @@ index 52d70832e..11c6535bb 100644
  	trace_sched_waking(p);
  
  	/* We're going to change ->state: */
-@@ -3265,6 +3308,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+@@ -3269,6 +3312,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
  #ifdef CONFIG_SCHED_RTG
  	p->rtg_depth = 0;
  #endif
@@ -76074,7 +76078,7 @@ index 52d70832e..11c6535bb 100644
  }
  
  DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
-@@ -5711,16 +5756,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
+@@ -5720,16 +5765,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
  {
  	return _sched_setscheduler(p, policy, param, true);
  }
@@ -76094,7 +76098,7 @@ index 52d70832e..11c6535bb 100644
  
  /**
   * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
-@@ -5740,6 +5788,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
+@@ -5749,6 +5797,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
  {
  	return _sched_setscheduler(p, policy, param, false);
  }
@@ -76102,7 +76106,7 @@ index 52d70832e..11c6535bb 100644
  
  /*
   * SCHED_FIFO is a broken scheduler model; that is, it is fundamentally
-@@ -7047,6 +7096,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
+@@ -7056,6 +7105,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
  	 */
  	update_rq_clock(rq);
  
@@ -76112,7 +76116,7 @@ index 52d70832e..11c6535bb 100644
  	for (;;) {
  		/*
  		 * There's this thread running, bail when that's the only
-@@ -9178,6 +9230,10 @@ void sched_exit(struct task_struct *p)
+@@ -9191,6 +9243,10 @@ void sched_exit(struct task_struct *p)
  	sched_set_group_id(p, 0);
  #endif
  
