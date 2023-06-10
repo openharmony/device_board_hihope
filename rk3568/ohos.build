@@ -5,10 +5,13 @@
             "module_list": [
                 "//device/board/hihope/${device_name}:rk3568_group",
                 "//vendor/hihope/${product_name}/bluetooth:libbt_vendor",
-                "//vendor/hihope/${product_name}/bluetooth:BCM4362A2.hcd"
+                "//vendor/hihope/${product_name}/bluetooth:BCM4362A2.hcd",
+                "//device/board/hihope/${device_name}/camera/vdi_impl/v4l2:chipset_build",
+                "//device/board/hihope/${device_name}/camera/vdi_impl/v4l2:camera_host_vdi_impl_1.0"
             ],
             "test_list": [
-                "//kernel/linux/build/test:linuxkerneltest"
+                "//kernel/linux/build/test:linuxkerneltest",
+                "//device/board/hihope/${device_name}/camera/vdi_impl/v4l2:camera_board_test"
             ],
             "inner_kits": []
         }

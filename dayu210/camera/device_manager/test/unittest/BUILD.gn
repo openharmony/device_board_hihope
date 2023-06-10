@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021 - 2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,74 +12,52 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//device/board/${product_company}/${product_name}/device.gni")
 import("//drivers/hdf_core/adapter/uhdf2/uhdf.gni")
 import("//drivers/peripheral/camera/camera.gni")
 
-module_output_path = "hdf/v4l2_adapter_test"
-
-config("v4l2_utest_config") {
+module_output_path = "$root_out_dir/test/unittest/hdf"
+config("v4l2_device_config") {
   visibility = [ ":*" ]
-
-  cflags = [
-    "-Wall",
-    "-Wextra",
-    "-Werror",
-    "-Wno-error",
+  cflags_cc = [
     "-DGST_DISABLE_DEPRECATED",
     "-DHAVE_CONFIG_H",
     "-DCOLORSPACE=\"videoconvert\"",
-    "-fno-strict-aliasing",
-    "-Wno-sign-compare",
-    "-Wno-builtin-requires-header",
-    "-Wno-unused-variable",
-    "-Wno-unused-label",
-    "-Wno-implicit-function-declaration",
-    "-Wno-format",
-    "-Wno-int-conversion",
-    "-Wno-unused-function",
-    "-Wno-thread-safety-attributes",
-    "-Wno-inconsistent-missing-override",
-    "-fno-rtti",
-    "-fno-exceptions",
-    "-ffunction-sections",
-    "-fdata-sections",
   ]
 }
-
-ohos_unittest("v4l2_adapter_unittest") {
-  test_type = "unittest"
+ohos_unittest("camera_board_device_manager_unittest") {
   testonly = true
   module_out_path = module_output_path
-  sources = [ "unittest/src/utest_v4l2_dev.cpp" ]
-
+  sources = [ "$camera_path/device_manager/test/unittest/v4l2/utest_v4l2_device_manager.cpp" ]
   include_dirs = [
+    "$camera_path/device_manager",
+    "$camera_path/device_manager/include",
+    "$camera_path/device_manager/include/v4l2",
+    "$camera_path/device_manager/src",
+    "$camera_path/device_manager/src/v4l2",
+    "$camera_path/driver_adapter/include",
     "$camera_path/include",
+    "$camera_path/device_manager/test/unittest/v4l2",
+    "$camera_path/utils/event",
+    "$camera_path/adapter/platform/v4l2/src/device_manager/include",
+    "$board_camera_path/device_manager/include",
     "$camera_path/adapter/platform/v4l2/src/driver_adapter/include",
-    "test/unittest/include",
-    "//third_party/googletest/googletest/include/gtest",
-    "//commonlibrary/c_utils/base/include",
   ]
-
   deps = [
-    "$camera_path/adapter/platform/v4l2/src/driver_adapter:camera_v4l2_adapter",
+    "$board_camera_path/device_manager:camera_device_manager",
     "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest",
     "//third_party/googletest:gtest_main",
   ]
-
-  defines += [ "V4L2_UTEST" ]
-
   if (is_standard_system) {
     external_deps = [
       "c_utils:utils",
+      "graphic_chipsetsdk:surface",
+      "hdf_core:libhdf_utils",
       "hiviewdfx_hilog_native:libhilog",
     ]
   } else {
-    external_deps = [
-      "c_utils:utils",
-      "hilog:libhilog",
-    ]
+    external_deps = [ "hilog:libhilog" ]
   }
-
-  public_configs = [ ":v4l2_utest_config" ]
+  external_deps += [ "drivers_interface_camera:metadata" ]
+  public_configs = [ ":v4l2_device_config" ]
 }
