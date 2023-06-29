@@ -24,7 +24,8 @@ uint32_t RKCodecNode::previewWidth_ = 640;
 uint32_t RKCodecNode::previewHeight_ = 480;
 const unsigned long long TIME_CONVERSION_NS_S = 1000000000ULL; /* ns to s */
 
-RKCodecNode::RKCodecNode(const std::string& name, const std::string& type) : NodeBase(name, type)
+RKCodecNode::RKCodecNode(const std::string& name, const std::string& type, const std::string &cameraId)
+    : NodeBase(name, type, cameraId)
 {
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
     jpegRotation_ = static_cast<uint32_t>(JXFORM_ROT_270);
