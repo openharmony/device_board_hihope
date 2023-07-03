@@ -218,11 +218,11 @@ if (product_name == "rk3568_mini_system") {
         "hdf_core:libhdf_ipc_adapter",
         "hdf_core:libhdf_utils",
         "hdf_core:libhdi",
-        "hiviewdfx_hilog_native:libhilog",
+        "hilog:libhilog",
         "ipc:ipc_single",
       ]
       if (use_hitrace) {
-        external_deps += [ "hitrace_native:libhitracechain" ]
+        external_deps += [ "hitrace:libhitracechain" ]
       }
     } else {
       external_deps = [ "hilog:libhilog" ]
@@ -230,7 +230,7 @@ if (product_name == "rk3568_mini_system") {
     external_deps += [
       "drivers_interface_camera:libcamera_stub_1.0",
       "drivers_interface_camera:metadata",
-      "hitrace_native:hitrace_meter",
+      "hitrace:hitrace_meter",
       "ipc:ipc_single",
     ]
     public_configs = [ ":camhdi_impl_config" ]
@@ -267,12 +267,12 @@ if (product_name == "rk3568_mini_system") {
         "hdf_core:libhdf_ipc_adapter",
         "hdf_core:libhdf_utils",
         "hdf_core:libhdi",
-        "hitrace_native:hitrace_meter",
-        "hiviewdfx_hilog_native:libhilog",
+        "hilog:libhilog",
+        "hitrace:hitrace_meter",
         "ipc:ipc_single",
       ]
       if (use_hitrace) {
-        external_deps += [ "hitrace_native:libhitracechain" ]
+        external_deps += [ "hitrace:libhitracechain" ]
       }
     } else {
       external_deps = [ "hilog:libhilog" ]
@@ -280,7 +280,7 @@ if (product_name == "rk3568_mini_system") {
     external_deps += [
       "drivers_interface_camera:libcamera_stub_1.0",
       "drivers_interface_camera:metadata",
-      "hitrace_native:hitrace_meter",
+      "hitrace:hitrace_meter",
       "ipc:ipc_single",
     ]
 
