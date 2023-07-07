@@ -27,7 +27,7 @@ declare_args() {
   is_support_codec = true
 }
 
-if (!defined(global_parts_info.graphic_graphic_standard)) {
+if (!defined(global_parts_info.graphic_graphic_2d)) {
   is_support_graphic = false
 }
 
