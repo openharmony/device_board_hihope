@@ -80,7 +80,6 @@ ohos_unittest("camera_pipeline_core_test_ut") {
   deps = [
     "$board_camera_path/device_manager:camera_device_manager",
     "$board_camera_path/pipeline_core:camera_pipeline_core",
-    "$camera_path/buffer_manager:camera_buffer_manager",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest",
     "//third_party/googletest:gtest_main",
@@ -90,6 +89,11 @@ ohos_unittest("camera_pipeline_core_test_ut") {
     external_deps = [
       "c_utils:utils",
       "drivers_interface_camera:libbuffer_producer_sequenceable_1.0",
+      "drivers_peripheral_camera:peripheral_camera_buffer_manager",
+      "drivers_peripheral_camera:peripheral_camera_device_manager",
+      "drivers_peripheral_camera:peripheral_camera_metadata_manager",
+      "drivers_peripheral_camera:peripheral_camera_pipeline_core",
+      "drivers_peripheral_camera:peripheral_camera_v4l2_adapter",
       "graphic_chipsetsdk:surface",
       "hdf_core:libhdf_utils",
       "hilog:libhilog",
