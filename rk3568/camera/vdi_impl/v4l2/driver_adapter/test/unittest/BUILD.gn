@@ -62,7 +62,6 @@ ohos_unittest("v4l2_adapter_unittest") {
   ]
 
   deps = [
-    "$board_camera_path/driver_adapter:camera_v4l2_adapter",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest",
     "//third_party/googletest:gtest_main",
@@ -73,6 +72,7 @@ ohos_unittest("v4l2_adapter_unittest") {
   if (is_standard_system) {
     external_deps = [
       "c_utils:utils",
+      "drivers_peripheral_camera:peripheral_camera_v4l2_adapter",
       "hdf_core:libhdf_utils",
       "hilog:libhilog",
     ]
