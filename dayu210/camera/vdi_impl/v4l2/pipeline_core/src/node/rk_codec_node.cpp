@@ -20,13 +20,16 @@ extern "C" {
 }
 
 namespace OHOS::Camera {
-uint32_t RKCodecNode::previewWidth_ = 0;
-uint32_t RKCodecNode::previewHeight_ = 0;
+uint32_t RKCodecNode::previewWidth_ = 640;
+uint32_t RKCodecNode::previewHeight_ = 480;
 const unsigned long long TIME_CONVERSION_NS_S = 1000000000ULL; /* ns to s */
 
-RKCodecNode::RKCodecNode(const std::string& name, const std::string& type) : NodeBase(name, type)
+RKCodecNode::RKCodecNode(const std::string& name, const std::string& type, const std::string &cameraId)
+    : NodeBase(name, type, cameraId)
 {
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
+    jpegRotation_ = static_cast<uint32_t>(JXFORM_NONE);
+    jpegQuality_ = 100; // 100:jpeg quality
 }
 
 RKCodecNode::~RKCodecNode()
@@ -61,15 +64,129 @@ RetCode RKCodecNode::Flush(const int32_t streamId)
     return RC_OK;
 }
 
+static void RotJpegImg(
+    const unsigned char *inputImg, size_t inputSize, unsigned char **outImg, size_t *outSize, JXFORM_CODE rotDegrees)
+{
+    struct jpeg_decompress_struct inputInfo;
+    struct jpeg_error_mgr jerrIn;
+    struct jpeg_compress_struct outInfo;
+    struct jpeg_error_mgr jerrOut;
+    jvirt_barray_ptr *src_coef_arrays;
+    jvirt_barray_ptr *dst_coef_arrays;
+
+    inputInfo.err = jpeg_std_error(&jerrIn);
+    jpeg_create_decompress(&inputInfo);
+    outInfo.err = jpeg_std_error(&jerrOut);
+    jpeg_create_compress(&outInfo);
+    jpeg_mem_src(&inputInfo, inputImg, inputSize);
+    jpeg_mem_dest(&outInfo, outImg, (unsigned long *)outSize);
+
+    JCOPY_OPTION copyoption;
+    jpeg_transform_info transformoption;
+    transformoption.transform = rotDegrees;
+    transformoption.perfect = TRUE;
+    transformoption.trim = FALSE;
+    transformoption.force_grayscale = FALSE;
+    transformoption.crop = FALSE;
+
+    jcopy_markers_setup(&inputInfo, copyoption);
+    (void)jpeg_read_header(&inputInfo, TRUE);
+
+    if (!jtransform_request_workspace(&inputInfo, &transformoption)) {
+        CAMERA_LOGE("%s: transformation is not perfect", __func__);
+        return;
+    }
+
+    src_coef_arrays = jpeg_read_coefficients(&inputInfo);
+    jpeg_copy_critical_parameters(&inputInfo, &outInfo);
+    dst_coef_arrays = jtransform_adjust_parameters(&inputInfo, &outInfo, src_coef_arrays, &transformoption);
+    jpeg_write_coefficients(&outInfo, dst_coef_arrays);
+    jcopy_markers_execute(&inputInfo, &outInfo, copyoption);
+    jtransform_execute_transformation(&inputInfo, &outInfo, src_coef_arrays, &transformoption);
+
+    jpeg_finish_compress(&outInfo);
+    jpeg_destroy_compress(&outInfo);
+    (void)jpeg_finish_decompress(&inputInfo);
+    jpeg_destroy_decompress(&inputInfo);
+}
+
+RetCode RKCodecNode::ConfigJpegOrientation(common_metadata_header_t* data)
+{
+    camera_metadata_item_t entry;
+    int ret = FindCameraMetadataItem(data, OHOS_JPEG_ORIENTATION, &entry);
+    if (ret != 0 || entry.data.i32 == nullptr) {
+        CAMERA_LOGI("tag not found");
+        return RC_ERROR;
+    }
+
+    JXFORM_CODE jxRotation = JXFORM_ROT_270;
+    int32_t ohosRotation = *entry.data.i32;
+    if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_0) {
+        jxRotation = JXFORM_NONE;
+    } else if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_90) {
+        jxRotation = JXFORM_ROT_90;
+    } else if (ohosRotation == OHOS_CAMERA_JPEG_ROTATION_180) {
+        jxRotation = JXFORM_ROT_180;
+    } else {
+        jxRotation = JXFORM_ROT_270;
+    }
+    jpegRotation_ = static_cast<uint32_t>(jxRotation);
+    return RC_OK;
+}
+
+RetCode RKCodecNode::ConfigJpegQuality(common_metadata_header_t* data)
+{
+    camera_metadata_item_t entry;
+    int ret = FindCameraMetadataItem(data, OHOS_JPEG_QUALITY, &entry);
+    if (ret != 0) {
+        CAMERA_LOGI("tag OHOS_JPEG_QUALITY not found");
+        return RC_ERROR;
+    }
+
+    const int HIGH_QUALITY_JPEG = 100;
+    const int MIDDLE_QUALITY_JPEG = 95;
+    const int LOW_QUALITY_JPEG = 85;
+
+    CAMERA_LOGI("OHOS_JPEG_QUALITY is = %{public}d", static_cast<int>(entry.data.u8[0]));
+    if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_LOW) {
+        jpegQuality_ = LOW_QUALITY_JPEG;
+    } else if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_MIDDLE) {
+        jpegQuality_ = MIDDLE_QUALITY_JPEG;
+    } else if (*entry.data.i32 == OHOS_CAMERA_JPEG_LEVEL_HIGH) {
+        jpegQuality_ = HIGH_QUALITY_JPEG;
+    } else {
+        jpegQuality_ = HIGH_QUALITY_JPEG;
+    }
+    return RC_OK;
+}
+
+RetCode RKCodecNode::Config(const int32_t streamId, const CaptureMeta& meta)
+{
+    if (meta == nullptr) {
+        CAMERA_LOGE("meta is nullptr");
+        return RC_ERROR;
+    }
+
+    common_metadata_header_t* data = meta->get();
+    if (data == nullptr) {
+        CAMERA_LOGE("data is nullptr");
+        return RC_ERROR;
+    }
+
+    RetCode rc = ConfigJpegOrientation(data);
+
+    rc = ConfigJpegQuality(data);
+    return rc;
+}
+
 void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height,
-    const char* comment, size_t* jpegSize, unsigned char** jpegBuf)
+    const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf)
 {
     struct jpeg_compress_struct cInfo;
     struct jpeg_error_mgr jErr;
     JSAMPROW row_pointer[1];
 
     constexpr uint32_t colorMap = 3;
-    constexpr uint32_t compressionRatio = 100;
     constexpr uint32_t samplingFactor = 2;
     constexpr uint32_t AlgoPara = 2;
     unsigned char yuvBuf[width * colorMap];
@@ -83,8 +200,9 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
     cInfo.in_color_space = JCS_YCbCr;
 
     jpeg_set_defaults(&cInfo);
-    jpeg_set_quality(&cInfo, compressionRatio, TRUE);
-    jpeg_mem_dest(&cInfo, jpegBuf, (unsigned long *)jpegSize);
+    CAMERA_LOGE("RKCodecNode::encodeJpegToMemory jpegQuality_ is = %{public}d", jpegQuality_);
+    jpeg_set_quality(&cInfo, jpegQuality_, TRUE);
+    jpeg_mem_dest(&cInfo, jpegBuf, jpegSize);
 
     cInfo.jpeg_color_space = JCS_YCbCr;
     cInfo.comp_info[0].h_samp_factor = samplingFactor;
@@ -114,6 +232,16 @@ void RKCodecNode::encodeJpegToMemory(unsigned char* image, int width, int height
 
     jpeg_finish_compress(&cInfo);
     jpeg_destroy_compress(&cInfo);
+
+    size_t rotJpgSize = 0;
+    unsigned char* rotJpgBuf = nullptr;
+    /* rotate image */
+    RotJpegImg(*jpegBuf, *jpegSize, &rotJpgBuf, &rotJpgSize, static_cast<JXFORM_CODE>(jpegRotation_));
+    if (rotJpgBuf != nullptr && rotJpgSize != 0) {
+        free(*jpegBuf);
+        *jpegBuf = rotJpgBuf;
+        *jpegSize = rotJpgSize;
+    }
 }
 
 int RKCodecNode::findStartCode(unsigned char *data, size_t dataSz)
@@ -220,7 +348,7 @@ void RKCodecNode::Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer)
     rga_set_rect(&src.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
         buffer->GetWidth(), buffer->GetHeight(), RK_FORMAT_YCbCr_420_SP);
     rga_set_rect(&dst.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
-        buffer->GetWidth(), buffer->GetHeight(), RK_FORMAT_RGBX_8888);
+        buffer->GetWidth(), buffer->GetHeight(), RK_FORMAT_RGBA_8888);
 
     rkRga.RkRgaBlit(&src, &dst, NULL);
     rkRga.RkRgaFlush();
@@ -321,6 +449,7 @@ void RKCodecNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
         Yuv420ToRGBA8888(buffer);
     }
 
+    std::vector<std::shared_ptr<IPort>> outPutPorts_;
     outPutPorts_ = GetOutPorts();
     for (auto& it : outPutPorts_) {
         if (it->format_.streamId_ == id) {

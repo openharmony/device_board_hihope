@@ -1,5 +1,5 @@
 diff --git a/Makefile b/Makefile
-index ccc6d997e..75a7713c9 100644
+index 28dd25f4c..1dcdc0da1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -493,14 +493,16 @@ LINUXINCLUDE    := \
@@ -3512,7 +3512,7 @@ index e363ae04a..bbf10ab42 100644
  		list_del(&priv->node);
  	}
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 30dafe8fc..ffe4eec2d 100644
+index 583423909..6926796dc 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
 @@ -688,8 +688,12 @@ static ssize_t show_##file_name				\
@@ -3609,10 +3609,10 @@ index 29acaf48e..0e51ed256 100644
  }
 +EXPORT_SYMBOL_GPL(cpuidle_governor_latency_req);
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 829128c0c..16b6d8f87 100644
+index c6f460550..db0fe99c8 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1763,6 +1763,40 @@ static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
+@@ -1761,6 +1761,40 @@ static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
  }
  static DEVICE_ATTR_RW(timer);
  
@@ -3653,7 +3653,7 @@ index 829128c0c..16b6d8f87 100644
  static struct attribute *devfreq_attrs[] = {
  	&dev_attr_name.attr,
  	&dev_attr_governor.attr,
-@@ -1775,6 +1809,7 @@ static struct attribute *devfreq_attrs[] = {
+@@ -1773,6 +1807,7 @@ static struct attribute *devfreq_attrs[] = {
  	&dev_attr_max_freq.attr,
  	&dev_attr_trans_stat.attr,
  	&dev_attr_timer.attr,
@@ -15333,7 +15333,7 @@ index 512581698..4726b16a3 100644
  };
  MODULE_DEVICE_TABLE(of, rockchip_dp_dt_ids);
 diff --git a/drivers/gpu/drm/rockchip/cdn-dp-core.c b/drivers/gpu/drm/rockchip/cdn-dp-core.c
-index 857c47c69..e8ade3ffa 100644
+index adeaa0140..d7cc434fa 100644
 --- a/drivers/gpu/drm/rockchip/cdn-dp-core.c
 +++ b/drivers/gpu/drm/rockchip/cdn-dp-core.c
 @@ -6,7 +6,6 @@
@@ -19930,7 +19930,7 @@ index 23de359a1..430a35995 100644
  		.name = "dwhdmi-rockchip",
  		.pm = &dw_hdmi_rockchip_pm,
 diff --git a/drivers/gpu/drm/rockchip/inno_hdmi.c b/drivers/gpu/drm/rockchip/inno_hdmi.c
-index 7afdc54eb..67ffb23fa 100644
+index 78120da5e..898a99fe1 100644
 --- a/drivers/gpu/drm/rockchip/inno_hdmi.c
 +++ b/drivers/gpu/drm/rockchip/inno_hdmi.c
 @@ -602,7 +602,7 @@ static int inno_hdmi_register(struct drm_device *drm, struct inno_hdmi *hdmi)
@@ -55571,7 +55571,7 @@ index e0772c9f7..2fe0089c4 100644
  
  	syscon_rbm->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
 diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 280c54c23..2fe31ea5a 100644
+index 2b644590f..8cdd19de0 100644
 --- a/drivers/power/supply/power_supply_core.c
 +++ b/drivers/power/supply/power_supply_core.c
 @@ -32,6 +32,13 @@ EXPORT_SYMBOL_GPL(power_supply_notifier);
@@ -61777,17 +61777,21 @@ index 8851db646..f658e3cdc 100644
  		ret = dwc2_hsotg_resume(dwc2);
  
 diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
-index 4a0eec176..7078a4912 100644
+index d73f624ed..7078a4912 100644
 --- a/drivers/usb/dwc3/core.c
 +++ b/drivers/usb/dwc3/core.c
-@@ -119,12 +119,25 @@ static void __dwc3_set_mode(struct work_struct *work)
+@@ -119,26 +119,35 @@ static void __dwc3_set_mode(struct work_struct *work)
  	struct dwc3 *dwc = work_to_dwc(work);
  	unsigned long flags;
  	int ret;
 +	int retries = 1000;
  	u32 reg;
+-	u32 desired_dr_role;
  
  	mutex_lock(&dwc->mutex);
+-	spin_lock_irqsave(&dwc->lock, flags);
+-	desired_dr_role = dwc->desired_dr_role;
+-	spin_unlock_irqrestore(&dwc->lock, flags);
  
  	pm_runtime_get_sync(dwc->dev);
  
@@ -61806,7 +61810,20 @@ index 4a0eec176..7078a4912 100644
  	if (dwc->current_dr_role == DWC3_GCTL_PRTCAP_OTG)
  		dwc3_otg_update(dwc, 0);
  
-@@ -156,13 +169,8 @@ static void __dwc3_set_mode(struct work_struct *work)
+-	if (!desired_dr_role)
++	if (!dwc->desired_dr_role)
+ 		goto out;
+ 
+-	if (desired_dr_role == dwc->current_dr_role)
++	if (dwc->desired_dr_role == dwc->current_dr_role)
+ 		goto out;
+ 
+-	if (desired_dr_role == DWC3_GCTL_PRTCAP_OTG && dwc->edev)
++	if (dwc->desired_dr_role == DWC3_GCTL_PRTCAP_OTG && dwc->edev)
+ 		goto out;
+ 
+ 	switch (dwc->current_dr_role) {
+@@ -160,13 +169,8 @@ static void __dwc3_set_mode(struct work_struct *work)
  		break;
  	}
  
@@ -61816,13 +61833,27 @@ index 4a0eec176..7078a4912 100644
 -	 */
 -	if (dwc->current_dr_role && ((DWC3_IP_IS(DWC3) ||
 -			DWC3_VER_IS_PRIOR(DWC31, 190A)) &&
--			dwc->desired_dr_role != DWC3_GCTL_PRTCAP_OTG)) {
+-			desired_dr_role != DWC3_GCTL_PRTCAP_OTG)) {
 +	/* For DRD host or device mode only */
 +	if (dwc->desired_dr_role != DWC3_GCTL_PRTCAP_OTG) {
  		reg = dwc3_readl(dwc->regs, DWC3_GCTL);
  		reg |= DWC3_GCTL_CORESOFTRESET;
  		dwc3_writel(dwc->regs, DWC3_GCTL, reg);
-@@ -204,7 +212,26 @@ static void __dwc3_set_mode(struct work_struct *work)
+@@ -186,11 +190,11 @@ static void __dwc3_set_mode(struct work_struct *work)
+ 
+ 	spin_lock_irqsave(&dwc->lock, flags);
+ 
+-	dwc3_set_prtcap(dwc, desired_dr_role);
++	dwc3_set_prtcap(dwc, dwc->desired_dr_role);
+ 
+ 	spin_unlock_irqrestore(&dwc->lock, flags);
+ 
+-	switch (desired_dr_role) {
++	switch (dwc->desired_dr_role) {
+ 	case DWC3_GCTL_PRTCAP_HOST:
+ 		ret = dwc3_host_init(dwc);
+ 		if (ret) {
+@@ -208,7 +212,26 @@ static void __dwc3_set_mode(struct work_struct *work)
  		}
  		break;
  	case DWC3_GCTL_PRTCAP_DEVICE:
@@ -61850,7 +61881,7 @@ index 4a0eec176..7078a4912 100644
  
  		dwc3_event_buffers_setup(dwc);
  
-@@ -263,10 +290,23 @@ u32 dwc3_core_fifo_space(struct dwc3_ep *dep, u8 type)
+@@ -267,10 +290,23 @@ u32 dwc3_core_fifo_space(struct dwc3_ep *dep, u8 type)
   * dwc3_core_soft_reset - Issues core soft reset and PHY reset
   * @dwc: pointer to our context structure
   */
@@ -61875,7 +61906,7 @@ index 4a0eec176..7078a4912 100644
  
  	/*
  	 * We're resetting only the device side because, if we're in host mode,
-@@ -278,8 +318,7 @@ int dwc3_core_soft_reset(struct dwc3 *dwc)
+@@ -282,8 +318,7 @@ int dwc3_core_soft_reset(struct dwc3 *dwc)
  
  	reg = dwc3_readl(dwc->regs, DWC3_DCTL);
  	reg |= DWC3_DCTL_CSFTRST;
@@ -61885,7 +61916,7 @@ index 4a0eec176..7078a4912 100644
  
  	/*
  	 * For DWC_usb31 controller 1.90a and later, the DCTL.CSFRST bit
-@@ -301,6 +340,9 @@ int dwc3_core_soft_reset(struct dwc3 *dwc)
+@@ -305,6 +340,9 @@ int dwc3_core_soft_reset(struct dwc3 *dwc)
  			udelay(1);
  	} while (--retries);
  
@@ -61895,7 +61926,7 @@ index 4a0eec176..7078a4912 100644
  	return -ETIMEDOUT;
  
  done:
-@@ -558,6 +600,9 @@ static void dwc3_cache_hwparams(struct dwc3 *dwc)
+@@ -562,6 +600,9 @@ static void dwc3_cache_hwparams(struct dwc3 *dwc)
  	parms->hwparams6 = dwc3_readl(dwc->regs, DWC3_GHWPARAMS6);
  	parms->hwparams7 = dwc3_readl(dwc->regs, DWC3_GHWPARAMS7);
  	parms->hwparams8 = dwc3_readl(dwc->regs, DWC3_GHWPARAMS8);
@@ -61905,7 +61936,7 @@ index 4a0eec176..7078a4912 100644
  }
  
  static int dwc3_core_ulpi_init(struct dwc3 *dwc)
-@@ -726,16 +771,15 @@ static void dwc3_core_exit(struct dwc3 *dwc)
+@@ -730,16 +771,15 @@ static void dwc3_core_exit(struct dwc3 *dwc)
  {
  	dwc3_event_buffers_cleanup(dwc);
  
@@ -61926,7 +61957,22 @@ index 4a0eec176..7078a4912 100644
  	clk_bulk_disable_unprepare(dwc->num_clks, dwc->clks);
  	reset_control_assert(dwc->reset);
  }
-@@ -968,21 +1012,9 @@ static int dwc3_core_init(struct dwc3 *dwc)
+@@ -960,13 +1000,8 @@ static int dwc3_core_init(struct dwc3 *dwc)
+ 
+ 	if (!dwc->ulpi_ready) {
+ 		ret = dwc3_core_ulpi_init(dwc);
+-		if (ret) {
+-			if (ret == -ETIMEDOUT) {
+-				dwc3_core_soft_reset(dwc);
+-				ret = -EPROBE_DEFER;
+-			}
++		if (ret)
+ 			goto err0;
+-		}
+ 		dwc->ulpi_ready = true;
+ 	}
+ 
+@@ -977,21 +1012,9 @@ static int dwc3_core_init(struct dwc3 *dwc)
  		dwc->phys_ready = true;
  	}
  
@@ -61949,7 +61995,7 @@ index 4a0eec176..7078a4912 100644
  
  	if (hw_mode == DWC3_GHWPARAMS0_MODE_DRD &&
  	    !DWC3_VER_IS_WITHIN(DWC3, ANY, 194A)) {
-@@ -1048,12 +1080,25 @@ static int dwc3_core_init(struct dwc3 *dwc)
+@@ -1057,12 +1080,25 @@ static int dwc3_core_init(struct dwc3 *dwc)
  		if (!DWC3_VER_IS_PRIOR(DWC3, 290A))
  			reg |= DWC3_GUCTL1_DEV_L1_EXIT_BY_HW;
  
@@ -61975,7 +62021,7 @@ index 4a0eec176..7078a4912 100644
  		dwc3_writel(dwc->regs, DWC3_GUCTL1, reg);
  	}
  
-@@ -1153,11 +1198,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
+@@ -1162,11 +1198,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
  		ret = PTR_ERR(dwc->usb2_phy);
  		if (ret == -ENXIO || ret == -ENODEV) {
  			dwc->usb2_phy = NULL;
@@ -61988,7 +62034,7 @@ index 4a0eec176..7078a4912 100644
  		}
  	}
  
-@@ -1165,11 +1207,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
+@@ -1174,11 +1207,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
  		ret = PTR_ERR(dwc->usb3_phy);
  		if (ret == -ENXIO || ret == -ENODEV) {
  			dwc->usb3_phy = NULL;
@@ -62001,7 +62047,7 @@ index 4a0eec176..7078a4912 100644
  		}
  	}
  
-@@ -1178,11 +1217,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
+@@ -1187,11 +1217,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
  		ret = PTR_ERR(dwc->usb2_generic_phy);
  		if (ret == -ENOSYS || ret == -ENODEV) {
  			dwc->usb2_generic_phy = NULL;
@@ -62014,7 +62060,7 @@ index 4a0eec176..7078a4912 100644
  		}
  	}
  
-@@ -1191,11 +1227,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
+@@ -1200,11 +1227,8 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
  		ret = PTR_ERR(dwc->usb3_generic_phy);
  		if (ret == -ENOSYS || ret == -ENODEV) {
  			dwc->usb3_generic_phy = NULL;
@@ -62027,7 +62073,7 @@ index 4a0eec176..7078a4912 100644
  		}
  	}
  
-@@ -1217,11 +1250,8 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
+@@ -1226,11 +1250,8 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
  		phy_set_mode(dwc->usb3_generic_phy, PHY_MODE_USB_DEVICE);
  
  		ret = dwc3_gadget_init(dwc);
@@ -62041,7 +62087,7 @@ index 4a0eec176..7078a4912 100644
  		break;
  	case USB_DR_MODE_HOST:
  		dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_HOST);
-@@ -1232,20 +1262,14 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
+@@ -1241,20 +1262,14 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
  		phy_set_mode(dwc->usb3_generic_phy, PHY_MODE_USB_HOST);
  
  		ret = dwc3_host_init(dwc);
@@ -62066,7 +62112,7 @@ index 4a0eec176..7078a4912 100644
  		break;
  	default:
  		dev_err(dev, "Unsupported mode of operation %d\n", dwc->dr_mode);
-@@ -1282,10 +1306,13 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+@@ -1291,10 +1306,13 @@ static void dwc3_get_properties(struct dwc3 *dwc)
  	u8			lpm_nyet_threshold;
  	u8			tx_de_emphasis;
  	u8			hird_threshold;
@@ -62084,7 +62130,7 @@ index 4a0eec176..7078a4912 100644
  
  	/* default to highest possible threshold */
  	lpm_nyet_threshold = 0xf;
-@@ -1299,7 +1326,15 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+@@ -1308,7 +1326,15 @@ static void dwc3_get_properties(struct dwc3 *dwc)
  	 */
  	hird_threshold = 12;
  
@@ -62100,7 +62146,7 @@ index 4a0eec176..7078a4912 100644
  	dwc->dr_mode = usb_get_dr_mode(dev);
  	dwc->hsphy_mode = of_usb_get_phy_mode(dev->of_node);
  
-@@ -1310,6 +1345,13 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+@@ -1319,6 +1345,13 @@ static void dwc3_get_properties(struct dwc3 *dwc)
  	else
  		dwc->sysdev = dwc->dev;
  
@@ -62114,7 +62160,7 @@ index 4a0eec176..7078a4912 100644
  	dwc->has_lpm_erratum = device_property_read_bool(dev,
  				"snps,has-lpm-erratum");
  	device_property_read_u8(dev, "snps,lpm-nyet-threshold",
-@@ -1334,6 +1376,11 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+@@ -1343,6 +1376,11 @@ static void dwc3_get_properties(struct dwc3 *dwc)
  				&tx_thr_num_pkt_prd);
  	device_property_read_u8(dev, "snps,tx-max-burst-prd",
  				&tx_max_burst_prd);
@@ -62126,7 +62172,7 @@ index 4a0eec176..7078a4912 100644
  
  	dwc->disable_scramble_quirk = device_property_read_bool(dev,
  				"snps,disable_scramble_quirk");
-@@ -1399,6 +1446,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+@@ -1408,6 +1446,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
  	dwc->tx_max_burst_prd = tx_max_burst_prd;
  
  	dwc->imod_interval = 0;
@@ -62135,7 +62181,7 @@ index 4a0eec176..7078a4912 100644
  }
  
  /* check whether the core supports IMOD */
-@@ -1473,21 +1522,59 @@ static void dwc3_check_params(struct dwc3 *dwc)
+@@ -1482,21 +1522,59 @@ static void dwc3_check_params(struct dwc3 *dwc)
  		}
  		break;
  	}
@@ -62197,7 +62243,7 @@ index 4a0eec176..7078a4912 100644
  
  	dwc->dev = dev;
  
-@@ -1519,7 +1606,7 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1528,7 +1606,7 @@ static int dwc3_probe(struct platform_device *pdev)
  
  	dwc3_get_properties(dwc);
  
@@ -62206,7 +62252,7 @@ index 4a0eec176..7078a4912 100644
  	if (IS_ERR(dwc->reset))
  		return PTR_ERR(dwc->reset);
  
-@@ -1585,8 +1672,7 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1594,8 +1672,7 @@ static int dwc3_probe(struct platform_device *pdev)
  
  	ret = dwc3_core_init(dwc);
  	if (ret) {
@@ -62216,7 +62262,7 @@ index 4a0eec176..7078a4912 100644
  		goto err4;
  	}
  
-@@ -1597,24 +1683,36 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1606,24 +1683,36 @@ static int dwc3_probe(struct platform_device *pdev)
  	if (ret)
  		goto err5;
  
@@ -62260,7 +62306,7 @@ index 4a0eec176..7078a4912 100644
  	dwc3_ulpi_exit(dwc);
  
  err4:
-@@ -1635,6 +1733,9 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1644,6 +1733,9 @@ static int dwc3_probe(struct platform_device *pdev)
  assert_reset:
  	reset_control_assert(dwc->reset);
  
@@ -62270,7 +62316,7 @@ index 4a0eec176..7078a4912 100644
  	return ret;
  }
  
-@@ -1657,6 +1758,9 @@ static int dwc3_remove(struct platform_device *pdev)
+@@ -1666,6 +1758,9 @@ static int dwc3_remove(struct platform_device *pdev)
  	dwc3_free_event_buffers(dwc);
  	dwc3_free_scratch_buffers(dwc);
  
@@ -62280,7 +62326,7 @@ index 4a0eec176..7078a4912 100644
  	return 0;
  }
  
-@@ -1841,7 +1945,7 @@ static int dwc3_runtime_suspend(struct device *dev)
+@@ -1850,7 +1945,7 @@ static int dwc3_runtime_suspend(struct device *dev)
  	if (ret)
  		return ret;
  
@@ -62289,7 +62335,7 @@ index 4a0eec176..7078a4912 100644
  
  	return 0;
  }
-@@ -1851,7 +1955,7 @@ static int dwc3_runtime_resume(struct device *dev)
+@@ -1860,7 +1955,7 @@ static int dwc3_runtime_resume(struct device *dev)
  	struct dwc3     *dwc = dev_get_drvdata(dev);
  	int		ret;
  
@@ -62298,7 +62344,7 @@ index 4a0eec176..7078a4912 100644
  
  	ret = dwc3_resume_common(dwc, PMSG_AUTO_RESUME);
  	if (ret)
-@@ -1900,6 +2004,9 @@ static int dwc3_suspend(struct device *dev)
+@@ -1909,6 +2004,9 @@ static int dwc3_suspend(struct device *dev)
  	struct dwc3	*dwc = dev_get_drvdata(dev);
  	int		ret;
  
@@ -62308,7 +62354,7 @@ index 4a0eec176..7078a4912 100644
  	ret = dwc3_suspend_common(dwc, PMSG_SUSPEND);
  	if (ret)
  		return ret;
-@@ -1914,6 +2021,9 @@ static int dwc3_resume(struct device *dev)
+@@ -1923,6 +2021,9 @@ static int dwc3_resume(struct device *dev)
  	struct dwc3	*dwc = dev_get_drvdata(dev);
  	int		ret;
  

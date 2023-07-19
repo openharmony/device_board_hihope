@@ -38,7 +38,7 @@ extern "C" {
 namespace OHOS::Camera {
 class RKCodecNode : public NodeBase {
 public:
-    RKCodecNode(const std::string& name, const std::string& type);
+    RKCodecNode(const std::string& name, const std::string& type, const std::string &cameraId);
     ~RKCodecNode() override;
     RetCode Start(const int32_t streamId) override;
     RetCode Stop(const int32_t streamId) override;
@@ -46,9 +46,12 @@ public:
     virtual RetCode Capture(const int32_t streamId, const int32_t captureId) override;
     RetCode CancelCapture(const int32_t streamId) override;
     RetCode Flush(const int32_t streamId);
+    RetCode ConfigJpegOrientation(common_metadata_header_t* data);
+    RetCode ConfigJpegQuality(common_metadata_header_t* data);
+    RetCode Config(const int32_t streamId, const CaptureMeta& meta) override;
 private:
     void encodeJpegToMemory(unsigned char* image, int width, int height,
-            const char* comment, size_t* jpegSize, unsigned char** jpegBuf);
+            const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf);
     int findStartCode(unsigned char *data, size_t dataSz);
     void SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<IBuffer>& buffer);
     void Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer);
@@ -57,10 +60,11 @@ private:
 
     static uint32_t                       previewWidth_;
     static uint32_t                       previewHeight_;
-    std::vector<std::shared_ptr<IPort>>   outPutPorts_;
     void* halCtx_ = nullptr;
     MpiEncMultiCtxInfo* args_ = nullptr;
     int mppStatus_ = 0;
+    uint32_t jpegRotation_;
+    uint32_t jpegQuality_;
 };
 } // namespace OHOS::Camera
 #endif
