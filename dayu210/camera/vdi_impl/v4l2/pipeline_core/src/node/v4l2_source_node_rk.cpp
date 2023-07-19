@@ -16,8 +16,8 @@
 #include <unistd.h>
 
 namespace OHOS::Camera {
-V4L2SourceNodeRK::V4L2SourceNodeRK(const std::string& name, const std::string& type)
-    : SourceNode(name, type), NodeBase(name, type)
+V4L2SourceNodeRK::V4L2SourceNodeRK(const std::string& name, const std::string& type, const std::string &cameraId)
+    : SourceNode(name, type, cameraId), NodeBase(name, type, cameraId)
 {
     CAMERA_LOGI("%s enter, type(%s)\n", name_.c_str(), type_.c_str());
     RetCode rc = RC_OK;
