@@ -17,7 +17,7 @@ if (product_name == "rk3568_mini_system") {
   }
 } else {
   import("//build/ohos.gni")
-import("//device/board/${product_company}/${product_name}/device.gni")
+  import("//device/board/${product_company}/${product_name}/device.gni")
   import("//drivers/hdf_core/adapter/uhdf2/uhdf.gni")
   import("//drivers/peripheral/camera/camera.gni")
   import("$hdf_framework_path/tools/hc-gen/hc_gen.gni")
