@@ -16,7 +16,8 @@
 #include <securec.h>
 
 namespace OHOS::Camera {
-RKExifNode::RKExifNode(const std::string &name, const std::string &type) : NodeBase(name, type)
+RKExifNode::RKExifNode(const std::string &name, const std::string &type, const std::string &cameraId)
+    : NodeBase(name, type, cameraId)
 {
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
 }
@@ -54,6 +55,7 @@ void RKExifNode::DeliverBuffer(std::shared_ptr<IBuffer> &buffer)
     int32_t id = buffer->GetStreamId();
     CAMERA_LOGE("RKExifNode::DeliverBuffer StreamId %{public}d", id);
     if (buffer->GetEncodeType() == ENCODE_TYPE_JPEG && gpsInfo_.size() > 0) {
+        int outPutBufferSize = 0;
         exif_data exifInfo;
         exifInfo.latitude = gpsInfo_.at(LATITUDE_INDEX);
         exifInfo.longitude = gpsInfo_.at(LONGITUDE_INDEX);
@@ -62,7 +64,6 @@ void RKExifNode::DeliverBuffer(std::shared_ptr<IBuffer> &buffer)
         CAMERA_LOGI("%{public}s info.size = (%{public}d)\n", __FUNCTION__, info.size);
         if (info.size != -1) {
             exifInfo.frame_size = info.size;
-            int outPutBufferSize = 0;
             ExifUtils::AddCustomExifInfo(exifInfo, buffer->GetVirAddress(), outPutBufferSize);
             CAMERA_LOGI("%{public}s virAddress(%{public}p) and outPutBufferSize = (%{public}d)\n",
                 __FUNCTION__, buffer->GetVirAddress(), outPutBufferSize);

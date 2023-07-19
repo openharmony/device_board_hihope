@@ -70,6 +70,7 @@ ohos_shared_library("camera_pipeline_core") {
     "$camera_path/pipeline_core/nodes/src/sensor_node/sensor_node.cpp",
     "$camera_path/pipeline_core/nodes/src/sink_node/sink_node.cpp",
     "$camera_path/pipeline_core/nodes/src/source_node/source_node.cpp",
+    "$camera_path/pipeline_core/nodes/src/stability_node/stability_node.cpp",
     "$camera_path/pipeline_core/pipeline_impl/src/builder/stream_pipeline_builder.cpp",
     "$camera_path/pipeline_core/pipeline_impl/src/dispatcher/stream_pipeline_dispatcher.cpp",
     "$camera_path/pipeline_core/pipeline_impl/src/parser/config_parser.cpp",
@@ -83,9 +84,9 @@ ohos_shared_library("camera_pipeline_core") {
   include_dirs = [
     "//commonlibrary/c_utils/base/include",
     "//base/hiviewdfx/interfaces/innerkits/libhilog/include",
-    "$camera_path/utils/exif",
-    "$camera_path/../interfaces/include",
-    "$camera_path/../interfaces/hdi_ipc",
+    "//drivers/peripheral/camera/vdi_base/common/utils/exif",
+    "$camera_path/../../interfaces/include",
+    "$camera_path/../../interfaces/hdi_ipc",
     "$camera_path/include",
     "$camera_path/../interfaces",
     "$camera_path/../v4l2",
@@ -121,7 +122,7 @@ ohos_shared_library("camera_pipeline_core") {
     "../device_manager/include",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/v4l2_source_node",
     "$camera_path/adapter/platform/v4l2/src/pipeline_core/nodes/uvc_node",
-    "$camera_path/adapter/platform/v4l2/src/driver_adapter/include/",
+    "//drivers/peripheral/camera/vdi_base/common/adapter/platform/v4l2/src/driver_adapter/include/",
     "//foundation/communication/ipc/ipc/native/src/core/include",
     "//commonlibrary/c_utils/base/include",
     "src/node",
@@ -144,7 +145,6 @@ ohos_shared_library("camera_pipeline_core") {
     "$hdf_uhdf_path/utils:libhdf_utils",
     "//device/soc/rockchip/rk3588/hardware/mpp:libmpp",
     "//device/soc/rockchip/rk3588/hardware/rga:librga",
-    "//drivers/interface/camera/v1_0:libcamera_stub_1.0",
     "//third_party/libjpeg-turbo:turbojpeg_static",
   ]
 
@@ -157,6 +157,7 @@ ohos_shared_library("camera_pipeline_core") {
     external_deps = [ "hilog:libhilog" ]
   }
   external_deps += [
+    "drivers_interface_camera:libbuffer_producer_sequenceable_1.0",
     "drivers_interface_camera:metadata",
     "graphic_chipsetsdk:surface",
     "ipc:ipc_single",
