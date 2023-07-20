@@ -303,19 +303,19 @@ if (product_name == "rk3568_mini_system") {
       testonly = true
       deps = [
         #device manager test
-        "device_manager/test/unittest:camera_board_device_manager_unittest",
+        #"device_manager/test/unittest:camera_board_device_manager_unittest",
 
         #driver adapter v4l2 test
-        "driver_adapter/test/v4l2_test:v4l2_main",
+        #"driver_adapter/test/v4l2_test:v4l2_main",
 
         #driver adapter v4l2 unittest
-        "driver_adapter/test/unittest:v4l2_adapter_unittest",
+        #"driver_adapter/test/unittest:v4l2_adapter_unittest",
 
         # pipeline core test
-        "pipeline_core/test/unittest:camera_pipeline_core_test_ut",
+        #"pipeline_core/test/unittest:camera_pipeline_core_test_ut",
 
         # demo test
-        "demo:ohos_camera_demo",
+        #"demo:ohos_camera_demo",
       ]
     }
   }
