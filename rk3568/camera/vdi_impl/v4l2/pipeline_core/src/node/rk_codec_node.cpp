@@ -231,14 +231,17 @@ int RKCodecNode::findStartCode(unsigned char *data, size_t dataSz)
     constexpr uint32_t dataSize = 4;
     constexpr uint32_t dataBit2 = 2;
     constexpr uint32_t dataBit3 = 3;
+
     if (data == nullptr) {
         CAMERA_LOGI("RKCodecNode::findStartCode paramater == nullptr");
         return -1;
     }
+
     if ((dataSz > dataSize) && (data[0] == 0) && (data[1] == 0) && \
         (data[dataBit2] == 0) && (data[dataBit3] == 1)) {
         return 4; // 4:start node
     }
+
     return -1;
 }
 
@@ -250,12 +253,12 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
     size_t idx = 0;
     size_t size = bufSize;
     constexpr uint32_t nalTypeValue = 0x05;
-    CAMERA_LOGE("RKCodecNode::SerchIFps enter");
+
     if (buffer == nullptr || buf == nullptr) {
         CAMERA_LOGI("RKCodecNode::SerchIFps paramater == nullptr");
         return;
     }
-    CAMERA_LOGE("RKCodecNode::SerchIFps bufSize = %{public}zu", bufSize);
+
     for (int i = 0; i < bufSize; i++) {
         int ret = findStartCode(buf + idx, size);
         if (ret == -1) {
@@ -275,17 +278,15 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
         }
 
         if (idx >= bufSize) {
-            CAMERA_LOGE("RKCodecNode::SerchIFps break");
             break;
         }
     }
-    CAMERA_LOGE("RKCodecNode::SerchIFps i = %{public}d, idx = %{public}d", i, idx);
+
     if (idx >= bufSize) {
         buffer->SetEsKeyFrame(0);
         CAMERA_LOGI("ForkNode::ForkBuffers SetEsKeyFrame == 0 nalu == 0x%{public}x idx = %{public}d\n",
             nalType, idx);
     }
-    CAMERA_LOGE("RKCodecNode::SerchIFps end");
 }
 
 void RKCodecNode::Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer)
@@ -397,7 +398,7 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
         CAMERA_LOGI("RKCodecNode::Yuv420ToH264 buffer == nullptr");
         return;
     }
-    CAMERA_LOGE("RKCodecNode::Yuv420ToH264 enter");
+
     int ret = 0;
     size_t buf_size = 0;
     struct timespec ts = {};
@@ -415,12 +416,13 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
             CAMERA_LOGI("RKCodecNode::Yuv420ToH264 halCtx_ = %{public}p\n", halCtx_);
             return;
         }
-        CAMERA_LOGE("RKCodecNode::Yuv420ToH264 0000000000000000000000");
         mppStatus_ = 1;
         buf_size = ((MpiEncTestData *)halCtx_)->frame_size;
 
-        ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
-        CAMERA_LOGE("RKCodecNode::Yuv420ToH264 11111111111111111111");
+        {
+            std::unique_lock<std::mutex> l(hal_mpp);
+            ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+        }
         SerchIFps((unsigned char *)buffer->GetVirAddress(), buf_size, buffer);
 
         buffer->SetEsFrameSize(buf_size);
@@ -434,9 +436,12 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
             return;
         }
         buf_size = ((MpiEncTestData *)halCtx_)->frame_size;
-        CAMERA_LOGE("RKCodecNode::Yuv420ToH264 22222222222222222222222");
-        ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
-        CAMERA_LOGE("RKCodecNode::Yuv420ToH264 33333333333333333333333333");
+
+        {
+            std::unique_lock<std::mutex> l(hal_mpp);
+            ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+        }
+
         SerchIFps((unsigned char *)buffer->GetVirAddress(), buf_size, buffer);
         buffer->SetEsFrameSize(buf_size);
         clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -460,7 +465,6 @@ void RKCodecNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
     if (buffer->GetEncodeType() == ENCODE_TYPE_JPEG) {
         Yuv420ToJpeg(buffer);
     } else if (buffer->GetEncodeType() == ENCODE_TYPE_H264) {
-        CAMERA_LOGE("RKCodecNode::DeliverBuffer Yuv420ToH264 StreamId %{public}d", id);
         Yuv420ToH264(buffer);
     } else {
         Yuv420ToRGBA8888(buffer);

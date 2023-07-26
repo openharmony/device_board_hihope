@@ -17,6 +17,7 @@
 #include <vector>
 #include <condition_variable>
 #include <ctime>
+#include <mutex>
 #include "device_manager_adapter.h"
 #include "utils.h"
 #include "camera.h"
@@ -63,6 +64,7 @@ private:
     int mppStatus_ = 0;
     uint32_t jpegRotation_;
     uint32_t jpegQuality_;
+    std::mutex hal_mpp;
 };
 } // namespace OHOS::Camera
 #endif
