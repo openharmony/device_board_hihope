@@ -279,7 +279,7 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
             break;
         }
     }
-    CAMERA_LOGE("RKCodecNode::SerchIFps 3333333333333333333333");
+    CAMERA_LOGE("RKCodecNode::SerchIFps i = %{public}d, idx = %{public}d", i, idx);
     if (idx >= bufSize) {
         buffer->SetEsKeyFrame(0);
         CAMERA_LOGI("ForkNode::ForkBuffers SetEsKeyFrame == 0 nalu == 0x%{public}x idx = %{public}d\n",
