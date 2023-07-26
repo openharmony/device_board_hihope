@@ -231,18 +231,14 @@ int RKCodecNode::findStartCode(unsigned char *data, size_t dataSz)
     constexpr uint32_t dataSize = 4;
     constexpr uint32_t dataBit2 = 2;
     constexpr uint32_t dataBit3 = 3;
-    CAMERA_LOGI("RKCodecNode::findStartCode enter");
     if (data == nullptr) {
         CAMERA_LOGI("RKCodecNode::findStartCode paramater == nullptr");
         return -1;
     }
-    CAMERA_LOGI("RKCodecNode::findStartCode 111111111111111111111");
     if ((dataSz > dataSize) && (data[0] == 0) && (data[1] == 0) && \
         (data[dataBit2] == 0) && (data[dataBit3] == 1)) {
-            CAMERA_LOGI("RKCodecNode::findStartCode 222222222222222222");
         return 4; // 4:start node
     }
-    CAMERA_LOGI("RKCodecNode::findStartCode 33333333333333333333333");
     return -1;
 }
 
@@ -259,16 +255,13 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
         CAMERA_LOGI("RKCodecNode::SerchIFps paramater == nullptr");
         return;
     }
-
+    CAMERA_LOGE("RKCodecNode::SerchIFps bufSize = %{public}zu", bufSize);
     for (int i = 0; i < bufSize; i++) {
-        CAMERA_LOGE("RKCodecNode::SerchIFps 00000000000000000");
         int ret = findStartCode(buf + idx, size);
         if (ret == -1) {
-            CAMERA_LOGE("RKCodecNode::SerchIFps 111111111111111");
             idx += 1;
             size -= 1;
         } else {
-            CAMERA_LOGE("RKCodecNode::SerchIFps 22222222222222222222");
             nalType = ((buf[idx + ret]) & nalBit);
             CAMERA_LOGI("ForkNode::ForkBuffers nalu == 0x%{public}x buf == 0x%{public}x \n", nalType, buf[idx + ret]);
             if (nalType == nalTypeValue) {
@@ -282,6 +275,7 @@ void RKCodecNode::SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<
         }
 
         if (idx >= bufSize) {
+            CAMERA_LOGE("RKCodecNode::SerchIFps break");
             break;
         }
     }
