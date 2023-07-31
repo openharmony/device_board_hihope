@@ -419,7 +419,10 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
         mppStatus_ = 1;
         buf_size = ((MpiEncTestData *)halCtx_)->frame_size;
 
-        ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+        {
+            std::unique_lock<std::mutex> l(hal_mpp);
+            ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+        }
         SerchIFps((unsigned char *)buffer->GetVirAddress(), buf_size, buffer);
 
         buffer->SetEsFrameSize(buf_size);
@@ -433,7 +436,12 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
             return;
         }
         buf_size = ((MpiEncTestData *)halCtx_)->frame_size;
-        ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+
+        {
+            std::unique_lock<std::mutex> l(hal_mpp);
+            ret = hal_mpp_encode(halCtx_, dma_fd, (unsigned char *)buffer->GetVirAddress(), &buf_size);
+        }
+
         SerchIFps((unsigned char *)buffer->GetVirAddress(), buf_size, buffer);
         buffer->SetEsFrameSize(buf_size);
         clock_gettime(CLOCK_MONOTONIC, &ts);
