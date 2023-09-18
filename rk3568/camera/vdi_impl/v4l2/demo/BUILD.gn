@@ -67,12 +67,8 @@ ohos_executable("ohos_camera_demo") {
     "$camera_path/pipeline_core/ipp/include",
   ]
 
-  deps = [
-    "$board_camera_path/device_manager:camera_device_manager",
-    "$board_camera_path/pipeline_core:camera_pipeline_core",
-    "$camera_path/../../hdi_service/v1_0:camera_host_service_1.0_static",
-    "$camera_path/buffer_manager:camera_buffer_manager",
-  ]
+  deps =
+      [ "$camera_path/../../hdi_service/v1_0:camera_host_service_1.0_static" ]
 
   if (is_standard_system) {
     external_deps = [

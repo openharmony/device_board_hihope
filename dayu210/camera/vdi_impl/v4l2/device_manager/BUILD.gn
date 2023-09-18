@@ -45,37 +45,24 @@ config("device_manager_config") {
 
 ohos_shared_library("camera_device_manager") {
   sources = [
-    "$camera_path/adapter/platform/v4l2/src/device_manager/enumerator_manager.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/flash_controller.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/flash_manager.cpp",
     "$camera_path/adapter/platform/v4l2/src/device_manager/idevice_manager.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/isp_controller.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/isp_manager.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/sensor_controller.cpp",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/sensor_manager.cpp",
     "$camera_path/adapter/platform/v4l2/src/device_manager/v4l2_device_manager.cpp",
-    "$camera_path/device_manager/src/icontroller.cpp",
-    "$camera_path/device_manager/src/imanager.cpp",
-    "$camera_path/device_manager/src/isensor.cpp",
     "src/rkispv6.cpp",
   ]
 
   include_dirs = [
     "//base/hiviewdfx/interfaces/innerkits/libhilog/include",
-    "$camera_path/include",
-    "$camera_path/utils/event",
-    "$camera_path/device_manager/include",
     "include",
-    "$camera_path/adapter/platform/v4l2/src/device_manager/include",
-    "$camera_path/adapter/platform/v4l2/src/driver_adapter/include/",
     "//commonlibrary/c_utils/base/include",
   ]
 
-  deps = [ "$board_camera_path/driver_adapter:camera_v4l2_adapter" ]
+  deps = []
 
   if (is_standard_system) {
     external_deps = [
       "c_utils:utils",
+      "drivers_peripheral_camera:peripheral_camera_device_manager",
+      "drivers_peripheral_camera:peripheral_camera_v4l2_adapter",
       "hdf_core:libhdf_utils",
       "hilog:libhilog",
     ]

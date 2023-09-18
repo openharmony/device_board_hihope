@@ -291,9 +291,22 @@ if (product_name == "rk3568_mini_system") {
     part_name = "rockchip_products"
   }
 
+  ohos_shared_library("camera_pipeline_config") {
+    sources = [
+      "$camera_path/pipeline_core/pipeline_impl/src/strategy/config/config.c",
+      "$camera_path/pipeline_core/pipeline_impl/src/strategy/config/params.c",
+    ]
+    include_dirs =
+        [ "$camera_path/pipeline_core/pipeline_impl/src/strategy/config" ]
+    install_images = [ chipset_base_dir ]
+    subsystem_name = "rockchip_products"
+    part_name = "rockchip_products"
+  }
+
   group("camera_board_vdi_impl") {
     deps = [
       ":camera_host_vdi_impl_1.0",
+      ":camera_pipeline_config",
       ":chipset_build",
     ]
   }
@@ -304,20 +317,20 @@ if (product_name == "rk3568_mini_system") {
     } else {
       testonly = true
       deps = [
-        #device manager test
-        "device_manager/test/unittest:camera_board_device_manager_unittest",
+        # device manager test
+        # "device_manager/test/unittest:camera_board_device_manager_unittest",
 
-        #driver adapter v4l2 test
-        "driver_adapter/test/v4l2_test:v4l2_main",
+        # driver adapter v4l2 test
+        # "driver_adapter/test/v4l2_test:v4l2_main",
 
-        #driver adapter v4l2 unittest
-        "driver_adapter/test/unittest:v4l2_adapter_unittest",
+        # driver adapter v4l2 unittest
+        # "driver_adapter/test/unittest:v4l2_adapter_unittest",
 
         # pipeline core test
         "pipeline_core/test/unittest:camera_pipeline_core_test_ut",
 
         # demo test
-        "demo:ohos_camera_demo",
+        # "demo:ohos_camera_demo",
       ]
     }
   }
