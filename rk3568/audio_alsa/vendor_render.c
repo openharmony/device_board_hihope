@@ -49,8 +49,8 @@ static int32_t RenderInitImpl(struct AlsaRender *renderIns)
 }
 
 static int32_t RenderSelectSceneImpl(struct AlsaRender *renderIns, enum AudioPortPin descPins,
-        const struct PathDeviceInfo *deviceInfo)
-{   
+    const struct PathDeviceInfo *deviceInfo)
+{
     renderIns->descPins = descPins;
     return HDF_SUCCESS;
 }
