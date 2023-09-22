@@ -49,7 +49,7 @@ static int32_t CaptureInitImpl(struct AlsaCapture* captureIns)
 }
 
 static int32_t CaptureSelectSceneImpl(struct AlsaCapture *captureIns, enum AudioPortPin descPins,
-        const struct PathDeviceInfo *deviceInfo)
+    const struct PathDeviceInfo *deviceInfo)
 {
     captureIns->descPins = descPins;
     return HDF_SUCCESS;

@@ -165,9 +165,9 @@ static int32_t RenderStartImpl(struct AlsaRender *renderIns)
     struct AlsaMixerCtlElement elem;
     struct AlsaSoundCard *cardIns = (struct AlsaSoundCard *)renderIns;
 
-	SndElementItemInit(&elem);
-	elem.numid = SND_NUMID_PLAYBACK_PATH;
-	elem.name = SND_ELEM_PLAYBACK_PATH;
+    SndElementItemInit(&elem);
+    elem.numid = SND_NUMID_PLAYBACK_PATH;
+    elem.name = SND_ELEM_PLAYBACK_PATH;
     switch (renderIns->descPins) {
         case PIN_OUT_SPEAKER:
             elem.value = SND_OUT_CARD_SPK_HP;
@@ -179,7 +179,7 @@ static int32_t RenderStartImpl(struct AlsaRender *renderIns)
             elem.value = SND_OUT_CARD_SPK_HP;
     }
 
-	ret = SndElementWrite(cardIns, &elem);
+    ret = SndElementWrite(cardIns, &elem);
     if (ret != HDF_SUCCESS) {
         AUDIO_FUNC_LOGE("write render fail!");
         return HDF_FAILURE;
@@ -194,11 +194,11 @@ static int32_t RenderStopImpl(struct AlsaRender *renderIns)
     struct AlsaMixerCtlElement elem;
     struct AlsaSoundCard *cardIns = (struct AlsaSoundCard *)renderIns;
 
-	SndElementItemInit(&elem);
-	elem.numid = SND_NUMID_PLAYBACK_PATH;
-	elem.name = SND_ELEM_PLAYBACK_PATH;
-	elem.value = SND_OUT_CARD_OFF;
-	ret = SndElementWrite(cardIns, &elem);
+    SndElementItemInit(&elem);
+    elem.numid = SND_NUMID_PLAYBACK_PATH;
+    elem.name = SND_ELEM_PLAYBACK_PATH;
+    elem.value = SND_OUT_CARD_OFF;
+    ret = SndElementWrite(cardIns, &elem);
     if (ret != HDF_SUCCESS) {
         AUDIO_FUNC_LOGE("write render fail!");
         return HDF_FAILURE;
