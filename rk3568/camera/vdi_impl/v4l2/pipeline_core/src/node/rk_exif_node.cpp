@@ -73,6 +73,10 @@ void RKExifNode::DeliverBuffer(std::shared_ptr<IBuffer> &buffer)
 
     outPutPorts_ = GetOutPorts();
     for (auto& it : outPutPorts_) {
+        if (it == nullptr) {
+            CAMERA_LOGE("RKExifNode deliver buffer port is null");
+            continue;
+        }
         if (it->format_.streamId_ == id) {
             it->DeliverBuffer(buffer);
             CAMERA_LOGI("RKExifNode deliver buffer streamid = %{public}d", it->format_.streamId_);
