@@ -44,7 +44,6 @@ private:
     RetCode SendMetadata(std::shared_ptr<CameraMetadata> meta);
     RetCode SetGpsInfoMetadata(common_metadata_header_t *data);
 
-    std::vector<std::shared_ptr<IPort>> outPutPorts_;
     std::mutex gpsMetaDatalock_;
     std::vector<double> gpsInfo_;
 };
