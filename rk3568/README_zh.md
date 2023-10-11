@@ -221,6 +221,11 @@ bash build/prebuilts_download.sh
 ```
 
 下载的prebuilts二进制默认存放在与OpenHarmony同目录下的OpenHarmony_2.0_canary_prebuilts下。
+**安装hb**
+
+对于4.0 Beta1以上版本、master分支，在代码根目录下执行 pip install build/hb
+
+低版本的，在代码根目录下执行 pip install build/lite
 
 **七、编译调试**
 
@@ -230,9 +235,13 @@ bash build/prebuilts_download.sh
 
 1） 进入源码根目录，执行如下命令进行版本编译。
 
-```
-./build.sh --product-name rk3568 –ccache
-```
+输入 hb
+
+选择 standard 
+
+接着继续选择 hihope 下面的rk3568
+
+之后执行 hb build -f 开始编码
 
 2） 检查编译结果。编译完成后，log中显示如下：
 
