@@ -97,5 +97,5 @@ ohos_executable("ohos_camera_demo") {
   install_enable = false
   install_images = [ chipset_base_dir ]
   subsystem_name = "rockchip_products"
-  part_name = "rockchip_products"
+  part_name = "device_rk3588"
 }
