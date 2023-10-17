@@ -1,7 +1,7 @@
 {
     "subsystem": "rockchip_products",
     "parts": {
-        "rockchip_products": {
+        "device_rk3588": {
             "module_list": [
                 "//device/board/hihope/${product_name}:dayu210_group",
                 "//vendor/hihope/${product_name}/bluetooth:libbt_vendor",
