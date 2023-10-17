@@ -34,7 +34,7 @@ if (product_name == "rk3568_mini_system") {
     relative_install_dir = "hdfconfig"
     install_images = [ chipset_base_dir ]
     subsystem_name = "rockchip_products"
-    part_name = "rockchip_products"
+    part_name = "device_rk3588"
   }
 
   hc_gen_c("generate_source") {
@@ -95,7 +95,7 @@ if (product_name == "rk3568_mini_system") {
     relative_install_dir = "hdfconfig"
     install_images = [ chipset_base_dir ]
     subsystem_name = "rockchip_products"
-    part_name = "rockchip_products"
+    part_name = "device_rk3588"
   }
 
   config("example_config") {
@@ -240,7 +240,7 @@ if (product_name == "rk3568_mini_system") {
     public_configs = [ ":camhdi_impl_config" ]
     install_images = [ chipset_base_dir ]
     subsystem_name = "rockchip_products"
-    part_name = "rockchip_products"
+    part_name = "device_rk3588"
   }
 
   ohos_static_library("camera_host_vdi_impl_1.0_static") {
@@ -293,7 +293,7 @@ if (product_name == "rk3568_mini_system") {
 
     public_configs = [ ":camhdi_impl_config" ]
     subsystem_name = "rockchip_products"
-    part_name = "rockchip_products"
+    part_name = "device_rk3588"
   }
 
   ohos_shared_library("camera_pipeline_config") {
@@ -305,7 +305,7 @@ if (product_name == "rk3568_mini_system") {
         [ "$camera_path/pipeline_core/pipeline_impl/src/strategy/config" ]
     install_images = [ chipset_base_dir ]
     subsystem_name = "rockchip_products"
-    part_name = "rockchip_products"
+    part_name = "device_rk3588"
   }
 
   group("camera_board_vdi_impl") {

@@ -15,21 +15,21 @@ import("//build/ohos.gni")
 
 ohos_prebuilt_etc("init.dayu210.cfg") {
   source = "init.dayu210.cfg"
-  part_name = "rockchip_products"
+  part_name = "device_rk3588"
   install_images = [ chipset_base_dir ]
   install_enable = true
 }
 
 ohos_prebuilt_etc("init.dayu210.usb.cfg") {
   source = "init.dayu210.usb.cfg"
-  part_name = "rockchip_products"
+  part_name = "device_rk3588"
   install_images = [ chipset_base_dir ]
   install_enable = true
 }
 
 ohos_prebuilt_etc("fstab.dayu210") {
   source = "fstab.dayu210"
-  part_name = "rockchip_products"
+  part_name = "device_rk3588"
   install_images = [ vendor_base_dir ]
   install_enable = true
 }
