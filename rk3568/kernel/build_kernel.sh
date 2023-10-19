@@ -35,6 +35,7 @@ NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/newip/apply_newip.sh
 XPM_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/xpm/apply_xpm.sh
 QOS_AUTH_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/qos_auth/apply_qos_auth.sh
 UNIFIED_COLLECTION_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/ucollection/apply_ucollection.sh
+CODE_SIGN_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/code_sign/apply_code_sign.sh
 
 HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10
 DEVICE_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10/${DEVICE_NAME}
@@ -98,6 +99,11 @@ function copy_and_patch_kernel_source()
     #ucollection
     if [ -f $UNIFIED_COLLECTION_PATCH_FILE ]; then
         bash $UNIFIED_COLLECTION_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+    fi
+
+    #code_sign
+    if [ -f $CODE_SIGN_PATCH_FILE ]; then
+	bash $CODE_SIGN_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
     fi
 
     cp -rf ${BUILD_SCRIPT_PATH}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
