@@ -1,5 +1,5 @@
 {
-    "subsystem": "rockchip_products",
+    "subsystem": "device_rk3588",
     "parts": {
         "device_rk3588": {
             "module_list": [
