@@ -114,8 +114,8 @@ RetCode RKCodecNode::ConfigJpegOrientation(common_metadata_header_t* data)
     camera_metadata_item_t entry;
     int ret = FindCameraMetadataItem(data, OHOS_JPEG_ORIENTATION, &entry);
     if (ret != 0 || entry.data.i32 == nullptr) {
-        CAMERA_LOGI("tag not found");
-        return RC_ERROR;
+        CAMERA_LOGI("tag OHOS_JPEG_ORIENTATION not found");
+        return RC_OK;
     }
 
     JXFORM_CODE jxRotation = JXFORM_ROT_270;
@@ -139,7 +139,7 @@ RetCode RKCodecNode::ConfigJpegQuality(common_metadata_header_t* data)
     int ret = FindCameraMetadataItem(data, OHOS_JPEG_QUALITY, &entry);
     if (ret != 0) {
         CAMERA_LOGI("tag OHOS_JPEG_QUALITY not found");
-        return RC_ERROR;
+        return RC_OK;
     }
 
     const int HIGH_QUALITY_JPEG = 100;
