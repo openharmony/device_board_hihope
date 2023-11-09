@@ -18,6 +18,7 @@ DEPS=(
     "kernel/linux/linux-5.10"
     "kernel/linux/patches"
     "kernel/linux/config"
+    "kernel/linux/common_modules"
     "third_party/bounds_checking_function"
     "device/soc/hisilicon/common/platform/wifi"
     "third_party/FreeBSD/sys/dev/evdev"
