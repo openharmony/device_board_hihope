@@ -10,7 +10,13 @@
             "comp_source_sa_id": 4803,
             "comp_sink_loc": "libdistributed_camera_sink_sdk.z.so",
             "comp_sink_version": "1.0",
-            "comp_sink_sa_id": 4804
+            "comp_sink_sa_id": 4804,
+            "comp_resource_desc": [
+                {
+                    "subtype": "camera",
+                    "sensitive": false
+                }
+            ]
         },
         {
             "name": "distributed_audio",
@@ -22,7 +28,17 @@
             "comp_source_sa_id": 4805,
             "comp_sink_loc": "libdistributed_audio_sink_sdk.z.so",
             "comp_sink_version": "1.0",
-            "comp_sink_sa_id": 4806
+            "comp_sink_sa_id": 4806,
+            "comp_resource_desc": [
+                {
+                    "subtype": "mic",
+                    "sensitive": false
+                },
+                {
+                    "subtype": "speaker",
+                    "sensitive": false
+                }
+            ]
         },
         {
             "name": "distributed_screen",
@@ -34,7 +50,13 @@
             "comp_source_sa_id": 4807,
             "comp_sink_loc": "libdistributed_screen_sink_sdk.z.so",
             "comp_sink_version": "2.0",
-            "comp_sink_sa_id": 4808
+            "comp_sink_sa_id": 4808,
+            "comp_resource_desc": [
+                {
+                    "subtype": "screen",
+                    "sensitive": false
+                }
+            ]
         },
         {
             "name": "distributed_input",
@@ -46,7 +68,13 @@
             "comp_source_sa_id": 4809,
             "comp_sink_loc": "libdinput_sink_handler.z.so",
             "comp_sink_version": "1.0",
-            "comp_sink_sa_id": 4810
+            "comp_sink_sa_id": 4810,
+            "comp_resource_desc": [
+                {
+                    "subtype": "input",
+                    "sensitive": false
+                }
+            ]
         }
     ]
 }
