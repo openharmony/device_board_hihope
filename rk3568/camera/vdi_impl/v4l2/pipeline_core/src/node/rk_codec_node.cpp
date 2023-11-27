@@ -13,6 +13,7 @@
 
 #include "rk_codec_node.h"
 #include <securec.h>
+#include "camera_dump.h"
 
 extern "C" {
 #include <jpeglib.h>
@@ -469,6 +470,9 @@ void RKCodecNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
     } else {
         Yuv420ToRGBA8888(buffer);
     }
+
+    CameraDumper& dumper = CameraDumper::GetInstance();
+    dumper.DumpBuffer("board_RKCodecNode", ENABLE_RKCODEC_NODE_CONVERTED, buffer);
 
     std::vector<std::shared_ptr<IPort>> outPutPorts_;
     outPutPorts_ = GetOutPorts();
