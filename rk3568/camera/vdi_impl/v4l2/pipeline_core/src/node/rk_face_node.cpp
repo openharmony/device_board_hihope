@@ -13,6 +13,7 @@
 
 #include "rk_face_node.h"
 #include <securec.h>
+#include "camera_dump.h"
 
 namespace OHOS::Camera {
 RKFaceNode::RKFaceNode(const std::string &name, const std::string &type, const std::string &cameraId)
@@ -53,6 +54,9 @@ void RKFaceNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
         CAMERA_LOGE("RKFaceNode::DeliverBuffer frameSpec is null");
         return;
     }
+
+    CameraDumper& dumper = CameraDumper::GetInstance();
+    dumper.DumpBuffer("board_RKFaceNode", ENABLE_RKFACE_NODE_CONVERTED, buffer);
 
     int32_t id = buffer->GetStreamId();
 
