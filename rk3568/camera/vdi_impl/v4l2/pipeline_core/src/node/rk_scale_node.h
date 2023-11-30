@@ -11,8 +11,8 @@
  * limitations under the License.
  */
 
-#ifndef HOS_CAMERA_RKCODEC_NODE_H
-#define HOS_CAMERA_RKCODEC_NODE_H
+#ifndef HOS_CAMERA_RKSCALE_NODE_H
+#define HOS_CAMERA_RKSCALE_NODE_H
 
 #include <vector>
 #include <condition_variable>
@@ -30,39 +30,23 @@
 #include "mpp_mem.h"
 #include "mpp_log.h"
 #include "mpp_common.h"
-extern "C" {
-#include "mpi_enc_utils.h"
-}
-
 
 namespace OHOS::Camera {
-class RKCodecNode : public NodeBase {
+class RKScaleNode : public NodeBase {
 public:
-    RKCodecNode(const std::string& name, const std::string& type, const std::string &cameraId);
-    ~RKCodecNode() override;
+    RKScaleNode(const std::string& name, const std::string& type, const std::string &cameraId);
+    ~RKScaleNode() override;
     RetCode Start(const int32_t streamId) override;
     RetCode Stop(const int32_t streamId) override;
     void DeliverBuffer(std::shared_ptr<IBuffer>& buffer) override;
     virtual RetCode Capture(const int32_t streamId, const int32_t captureId) override;
     RetCode CancelCapture(const int32_t streamId) override;
     RetCode Flush(const int32_t streamId);
-    RetCode ConfigJpegOrientation(common_metadata_header_t* data);
-    RetCode ConfigJpegQuality(common_metadata_header_t* data);
-    RetCode Config(const int32_t streamId, const CaptureMeta& meta) override;
 private:
-    void encodeJpegToMemory(unsigned char* image, int width, int height,
-            const char* comment, unsigned long* jpegSize, unsigned char** jpegBuf);
-    int findStartCode(unsigned char *data, size_t dataSz);
-    void SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<IBuffer>& buffer);
-    void Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer);
-    void Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer);
-    void Yuv420ToH264(std::shared_ptr<IBuffer>& buffer);
-
-    void* halCtx_ = nullptr;
-    int mppStatus_ = 0;
-    uint32_t jpegRotation_;
-    uint32_t jpegQuality_;
-    std::mutex hal_mpp;
+    void PreviewScaleConver(std::shared_ptr<IBuffer>& buffer);
+    void ScaleConver(std::shared_ptr<IBuffer>& buffer);
+    std::vector<std::shared_ptr<IPort>>   outPutPorts_;
+    std::shared_ptr<IBufferPool>          bufferPool_ = nullptr;    // buffer pool of branch stream
 };
 } // namespace OHOS::Camera
 #endif
