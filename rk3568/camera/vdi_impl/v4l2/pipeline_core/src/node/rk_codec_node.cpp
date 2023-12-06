@@ -21,8 +21,6 @@ extern "C" {
 }
 
 namespace OHOS::Camera {
-uint32_t RKCodecNode::previewWidth_ = 640;
-uint32_t RKCodecNode::previewHeight_ = 480;
 const unsigned long long TIME_CONVERSION_NS_S = 1000000000ULL; /* ns to s */
 
 RKCodecNode::RKCodecNode(const std::string& name, const std::string& type, const std::string &cameraId)
@@ -304,8 +302,6 @@ void RKCodecNode::Yuv420ToRGBA8888(std::shared_ptr<IBuffer>& buffer)
         return;
     }
 
-    previewWidth_ = buffer->GetWidth();
-    previewHeight_ = buffer->GetHeight();
     int ret = memcpy_s(temp, buffer->GetSize(), (const void *)buffer->GetVirAddress(), buffer->GetSize());
     if (ret == 0) {
         buffer->SetEsFrameSize(buffer->GetSize());
@@ -349,7 +345,7 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
     int dma_fd = buffer->GetFileDescriptor();
     unsigned char* jBuf = nullptr;
     unsigned long jpegSize = 0;
-    uint32_t tempSize = (previewWidth_ * previewHeight_ * RGB24Width);
+    uint32_t tempSize = (buffer->GetWidth() * buffer->GetHeight() * RGB24Width);
 
     void* temp = malloc(tempSize);
     if (temp == nullptr) {
@@ -370,14 +366,14 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
     dst.mmuFlag = 1;
     dst.virAddr = temp;
 
-    rga_set_rect(&src.rect, 0, 0, previewWidth_, previewHeight_,
-        previewWidth_, previewHeight_, RK_FORMAT_YCbCr_420_P);
-    rga_set_rect(&dst.rect, 0, 0, previewWidth_, previewHeight_,
-        previewWidth_, previewHeight_, RK_FORMAT_RGB_888);
+    rga_set_rect(&src.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
+        buffer->GetWidth(), buffer->GetHeight(), RK_FORMAT_YCbCr_420_P);
+    rga_set_rect(&dst.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
+        buffer->GetWidth(), buffer->GetHeight(), RK_FORMAT_RGB_888);
 
     rkRga.RkRgaBlit(&src, &dst, NULL);
     rkRga.RkRgaFlush();
-    encodeJpegToMemory((unsigned char *)temp, previewWidth_, previewHeight_, nullptr, &jpegSize, &jBuf);
+    encodeJpegToMemory((unsigned char *)temp, buffer->GetWidth(), buffer->GetHeight(), nullptr, &jpegSize, &jBuf);
 
     int ret = memcpy_s((unsigned char*)buffer->GetVirAddress(), buffer->GetSize(), jBuf, jpegSize);
     if (ret == 0) {
@@ -408,8 +404,8 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
 
     if (mppStatus_ == 0) {
         MpiEncTestArgs args = {};
-        args.width       = previewWidth_;
-        args.height      = previewHeight_;
+        args.width       = buffer->GetWidth();
+        args.height      = buffer->GetHeight();
         args.format      = MPP_FMT_YUV420P;
         args.type        = MPP_VIDEO_CodingAVC;
         halCtx_ = hal_mpp_ctx_create(&args);
