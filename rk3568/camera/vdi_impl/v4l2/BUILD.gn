@@ -10,11 +10,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-if (((product_name == "rk3568_mini_system" || product_name == "tablet_mini_system") || product_name == "pc_mini_system") || product_name == "phone_mini_system") {
+if (product_name == "rk3568_mini_system" || product_name == "tablet_mini_system") {
   group("camera_board_vdi_impl") {
   }
   group("camera_board_test") {
   }
+} else if (product_name == "pc_mini_system" || product_name == "phone_mini_system") {
+  group("camera_board_vdi_impl") {
+  }
+  group("camera_board_test") {
+  }   
 } else {
   import("//build/ohos.gni")
   import("//device/board/${product_company}/${device_name}/device.gni")
