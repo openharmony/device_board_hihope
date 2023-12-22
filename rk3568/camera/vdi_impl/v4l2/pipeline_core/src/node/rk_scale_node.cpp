@@ -65,7 +65,7 @@ RetCode RKScaleNode::Flush(const int32_t streamId)
 void RKScaleNode::PreviewScaleConver(std::shared_ptr<IBuffer>& buffer)
 {
     if (buffer == nullptr) {
-        CAMERA_LOGI("RKScaleNode::Yuv420ToRGBA8888 buffer == nullptr");
+        CAMERA_LOGE("RKScaleNode::PreviewScaleConver buffer == nullptr");
         return;
     }
 
@@ -74,7 +74,6 @@ void RKScaleNode::PreviewScaleConver(std::shared_ptr<IBuffer>& buffer)
 
     std::map<int32_t, uint8_t*> sizeVirMap = bufferPool_->getSFBuffer(buffer->GetIndex());
     if (sizeVirMap.empty()) {
-        CAMERA_LOGI("RKScaleNode::Yuv420ToRGBA8888 sizeVirMap buffer == nullptr");
         return;
     }
     uint8_t* virBUffer = sizeVirMap.begin()->second;
@@ -107,7 +106,7 @@ void RKScaleNode::PreviewScaleConver(std::shared_ptr<IBuffer>& buffer)
 void RKScaleNode::ScaleConver(std::shared_ptr<IBuffer>& buffer)
 {
     if (buffer == nullptr) {
-        CAMERA_LOGI("RKScaleNode::Yuv420ToRGBA8888 buffer == nullptr");
+        CAMERA_LOGE("RKScaleNode::ScaleConver buffer == nullptr");
         return;
     }
 
@@ -115,7 +114,7 @@ void RKScaleNode::ScaleConver(std::shared_ptr<IBuffer>& buffer)
 
     std::map<int32_t, uint8_t*> sizeVirMap = bufferPool_->getSFBuffer(bufferPool_->GetForkBufferId());
     if (sizeVirMap.empty()) {
-        CAMERA_LOGI("RKScaleNode::Yuv420ToRGBA8888 sizeVirMap buffer == nullptr");
+        CAMERA_LOGE("RKScaleNode::ScaleConver sizeVirMap buffer == nullptr");
         return;
     }
     uint8_t* temp = sizeVirMap.begin()->second;
@@ -150,10 +149,10 @@ void RKScaleNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
     }
 
     int32_t id = buffer->GetStreamId();
-    CAMERA_LOGE("RKScaleNode::DeliverBuffer StreamId %{public}d", id);
+    CAMERA_LOGI("RKScaleNode::DeliverBuffer StreamId %{public}d", id);
 
     if (bufferPool_->GetForkBufferId() != -1) {
-        if (buffer->GetEncodeType() == ENCODE_TYPE_JPEG || buffer->GetEncodeType() == ENCODE_TYPE_H264) {
+        if (bufferPool_->GetIsFork() == true) {
             ScaleConver(buffer);
         } else {
             PreviewScaleConver(buffer);
