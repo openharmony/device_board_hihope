@@ -32,6 +32,7 @@ KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
 KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
 BUILD_SCRIPT_PATH=${3}
 NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/newip/apply_newip.sh
+TZDRIVER_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/tzdriver/apply_tzdriver.sh
 XPM_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/xpm/apply_xpm.sh
 CED_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/container_escape_detection/apply_ced.sh
 HIDEADDR_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/memory_security/apply_hideaddr.sh
@@ -86,6 +87,11 @@ function copy_and_patch_kernel_source()
     #newip
     if [ -f $NEWIP_PATCH_FILE ]; then
         bash $NEWIP_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+    fi
+
+    #tzdriver
+    if [ -f $TZDRIVER_PATCH_FILE ]; then
+        bash $TZDRIVER_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
     fi
 
     #xpm
