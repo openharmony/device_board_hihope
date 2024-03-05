@@ -156,7 +156,6 @@ if (product_name == "rk3568_mini_system" ||
     "$camera_path/../v4l2/src/stream_operator/stream_still_capture.cpp",
     "$camera_path/../v4l2/src/stream_operator/stream_tunnel/standard/stream_tunnel.cpp",
     "$camera_path/../v4l2/src/stream_operator/stream_video.cpp",
-    "$camera_path/dump/src/camera_dump.cpp",
   ]
 
   host_includes = [
