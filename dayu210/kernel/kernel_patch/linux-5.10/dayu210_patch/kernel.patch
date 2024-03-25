@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 64db4e99e..937095621 100644
+index 9122b463c..ac5220f09 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -493,14 +493,16 @@ LINUXINCLUDE    := \
+@@ -500,14 +500,16 @@ LINUXINCLUDE    := \
  		-I$(objtree)/arch/$(SRCARCH)/include/generated \
  		$(if $(building_out_of_srctree),-I$(srctree)/include) \
  		-I$(objtree)/include \
@@ -21,7 +21,7 @@ index 64db4e99e..937095621 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -956,9 +958,6 @@ endif
+@@ -952,9 +954,6 @@ endif
  # arch Makefile may override CC so keep this after arch Makefile is included
  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  
@@ -31,7 +31,7 @@ index 64db4e99e..937095621 100644
  # Variable Length Arrays (VLAs) should not be used anywhere in the kernel
  KBUILD_CFLAGS += -Wvla
  
-@@ -1396,7 +1395,7 @@ kselftest-merge:
+@@ -1392,7 +1391,7 @@ kselftest-merge:
  # Devicetree files
  
  ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
@@ -113,6 +113,19 @@ index 4c0e72781..2094dce73 100644
  	return 0;
  }
  
+diff --git a/drivers/accesstokenid/access_tokenid.c b/drivers/accesstokenid/access_tokenid.c
+index a9340d471..33a61ef16 100644
+--- a/drivers/accesstokenid/access_tokenid.c
++++ b/drivers/accesstokenid/access_tokenid.c
+@@ -119,7 +119,7 @@ int access_tokenid_set_ftokenid(struct file *file, void __user *uarg)
+ 	return 0;
+ }
+ 
+-static bool check_permission_for_set_token_permission()
++static bool check_permission_for_set_token_permission(void)
+ {
+ 	kuid_t uid = current_uid();
+ 	return uid_eq(uid, ACCESS_TOKEN_UID);
 diff --git a/drivers/clk/rockchip/Kconfig b/drivers/clk/rockchip/Kconfig
 index 47cd6c5de..99e66263a 100644
 --- a/drivers/clk/rockchip/Kconfig
@@ -13125,10 +13138,10 @@ index 9ad740451..c29183d2a 100644
  EXPORT_SYMBOL(__drm_atomic_helper_crtc_destroy_state);
  
 diff --git a/drivers/gpu/drm/drm_atomic_uapi.c b/drivers/gpu/drm/drm_atomic_uapi.c
-index 25c269bc4..975ece7e0 100644
+index b60628333..1184ba39d 100644
 --- a/drivers/gpu/drm/drm_atomic_uapi.c
 +++ b/drivers/gpu/drm/drm_atomic_uapi.c
-@@ -459,6 +459,16 @@ static int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
+@@ -461,6 +461,16 @@ static int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
  					&replaced);
  		state->color_mgmt_changed |= replaced;
  		return ret;
@@ -13145,7 +13158,7 @@ index 25c269bc4..975ece7e0 100644
  	} else if (property == config->prop_out_fence_ptr) {
  		s32 __user *fence_ptr = u64_to_user_ptr(val);
  
-@@ -501,6 +511,10 @@ drm_atomic_crtc_get_property(struct drm_crtc *crtc,
+@@ -503,6 +513,10 @@ drm_atomic_crtc_get_property(struct drm_crtc *crtc,
  		*val = (state->ctm) ? state->ctm->base.id : 0;
  	else if (property == config->gamma_lut_property)
  		*val = (state->gamma_lut) ? state->gamma_lut->base.id : 0;
@@ -13321,7 +13334,7 @@ index b0a826489..3d7182001 100644
  			   from_kuid_munged(seq_user_ns(m), uid),
  			   priv->magic);
 diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 4334e466b..ab52f7fed 100644
+index 39eb39e78..efc2372d3 100644
 --- a/drivers/gpu/drm/drm_edid.c
 +++ b/drivers/gpu/drm/drm_edid.c
 @@ -1835,20 +1835,11 @@ static void connector_bad_edid(struct drm_connector *connector,
@@ -13873,7 +13886,7 @@ index aef226340..da4f085fc 100644
  	return ret;
  }
 diff --git a/drivers/gpu/drm/drm_mipi_dsi.c b/drivers/gpu/drm/drm_mipi_dsi.c
-index 19fb1d93a..3caf9ff34 100644
+index 0c806e99e..fddc041aa 100644
 --- a/drivers/gpu/drm/drm_mipi_dsi.c
 +++ b/drivers/gpu/drm/drm_mipi_dsi.c
 @@ -356,6 +356,7 @@ static ssize_t mipi_dsi_device_transfer(struct mipi_dsi_device *dsi,
@@ -22277,7 +22290,7 @@ index 2fdc455c4..065fa7fde 100644
  	drm_fb_helper_unregister_fbi(helper);
  
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
-index 62e5d0970..51dead7f3 100644
+index 22ff4a592..c8aedd08a 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
 @@ -4,7 +4,7 @@
@@ -22816,9 +22829,9 @@ index 62e5d0970..51dead7f3 100644
  		ret = rockchip_drm_gem_object_mmap_dma(obj, vma);
 +	}
  
- 	if (ret)
- 		drm_gem_vm_close(vma);
-@@ -298,9 +607,13 @@ static void rockchip_gem_release_object(struct rockchip_gem_object *rk_obj)
+ 	return ret;
+ }
+@@ -295,9 +604,13 @@ static void rockchip_gem_release_object(struct rockchip_gem_object *rk_obj)
  static struct rockchip_gem_object *
  	rockchip_gem_alloc_object(struct drm_device *drm, unsigned int size)
  {
@@ -22832,7 +22845,7 @@ index 62e5d0970..51dead7f3 100644
  	size = round_up(size, PAGE_SIZE);
  
  	rk_obj = kzalloc(sizeof(*rk_obj), GFP_KERNEL);
-@@ -311,12 +624,15 @@ static struct rockchip_gem_object *
+@@ -308,12 +621,15 @@ static struct rockchip_gem_object *
  
  	drm_gem_object_init(drm, obj, size);
  
@@ -22849,7 +22862,7 @@ index 62e5d0970..51dead7f3 100644
  {
  	struct rockchip_gem_object *rk_obj;
  	int ret;
-@@ -324,6 +640,7 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
+@@ -321,6 +637,7 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
  	rk_obj = rockchip_gem_alloc_object(drm, size);
  	if (IS_ERR(rk_obj))
  		return rk_obj;
@@ -22857,7 +22870,7 @@ index 62e5d0970..51dead7f3 100644
  
  	ret = rockchip_gem_alloc_buf(rk_obj, alloc_kmap);
  	if (ret)
-@@ -336,6 +653,28 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
+@@ -333,6 +650,28 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
  	return ERR_PTR(ret);
  }
  
@@ -22886,7 +22899,7 @@ index 62e5d0970..51dead7f3 100644
  /*
   * rockchip_gem_free_object - (struct drm_driver)->gem_free_object_unlocked
   * callback function
-@@ -353,7 +692,11 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
+@@ -350,7 +689,11 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
  			dma_unmap_sgtable(drm->dev, rk_obj->sgt,
  					  DMA_BIDIRECTIONAL, 0);
  		}
@@ -22899,7 +22912,7 @@ index 62e5d0970..51dead7f3 100644
  	} else {
  		rockchip_gem_free_buf(rk_obj);
  	}
-@@ -371,13 +714,14 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
+@@ -368,13 +711,14 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
  static struct rockchip_gem_object *
  rockchip_gem_create_with_handle(struct drm_file *file_priv,
  				struct drm_device *drm, unsigned int size,
@@ -22916,7 +22929,7 @@ index 62e5d0970..51dead7f3 100644
  	if (IS_ERR(rk_obj))
  		return ERR_CAST(rk_obj);
  
-@@ -414,7 +758,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
+@@ -411,7 +755,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
  			     struct drm_mode_create_dumb *args)
  {
  	struct rockchip_gem_object *rk_obj;
@@ -22925,7 +22938,7 @@ index 62e5d0970..51dead7f3 100644
  
  	/*
  	 * align to 64 bytes since Mali requires it.
-@@ -423,7 +767,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
+@@ -420,7 +764,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
  	args->size = args->pitch * args->height;
  
  	rk_obj = rockchip_gem_create_with_handle(file_priv, dev, args->size,
@@ -22934,7 +22947,7 @@ index 62e5d0970..51dead7f3 100644
  
  	return PTR_ERR_OR_ZERO(rk_obj);
  }
-@@ -514,6 +858,21 @@ rockchip_gem_prime_import_sg_table(struct drm_device *drm,
+@@ -511,6 +855,21 @@ rockchip_gem_prime_import_sg_table(struct drm_device *drm,
  		goto err_free_rk_obj;
  	}
  
@@ -22956,7 +22969,7 @@ index 62e5d0970..51dead7f3 100644
  	return &rk_obj->base;
  
  err_free_rk_obj:
-@@ -546,3 +905,155 @@ void rockchip_gem_prime_vunmap(struct drm_gem_object *obj, void *vaddr)
+@@ -543,3 +902,155 @@ void rockchip_gem_prime_vunmap(struct drm_gem_object *obj, void *vaddr)
  
  	/* Nothing to do if allocated by DMA mapping API. */
  }
@@ -37356,7 +37369,7 @@ index 4600e97ac..cf32b592a 100644
  MODULE_AUTHOR("Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>");
  MODULE_LICENSE("GPL");
 diff --git a/drivers/iommu/rockchip-iommu.c b/drivers/iommu/rockchip-iommu.c
-index e5d86b717..b359fcf2c 100644
+index 12551dc11..a6321a784 100644
 --- a/drivers/iommu/rockchip-iommu.c
 +++ b/drivers/iommu/rockchip-iommu.c
 @@ -19,6 +19,7 @@
@@ -38466,14 +38479,14 @@ index e5d86b717..b359fcf2c 100644
  		int irq = platform_get_irq(pdev, i);
  
 @@ -1229,6 +1818,7 @@ static int rk_iommu_probe(struct platform_device *pdev)
- 		}
+ 			goto err_pm_disable;
  	}
  
 +skip_request_irq:
  	return 0;
- err_remove_sysfs:
- 	iommu_device_sysfs_remove(&iommu->iommu);
-@@ -1260,6 +1850,9 @@ static int __maybe_unused rk_iommu_suspend(struct device *dev)
+ err_pm_disable:
+ 	pm_runtime_disable(dev);
+@@ -1262,6 +1852,9 @@ static int __maybe_unused rk_iommu_suspend(struct device *dev)
  	if (!iommu->domain)
  		return 0;
  
@@ -38483,7 +38496,7 @@ index e5d86b717..b359fcf2c 100644
  	rk_iommu_disable(iommu);
  	return 0;
  }
-@@ -1271,6 +1864,9 @@ static int __maybe_unused rk_iommu_resume(struct device *dev)
+@@ -1273,6 +1866,9 @@ static int __maybe_unused rk_iommu_resume(struct device *dev)
  	if (!iommu->domain)
  		return 0;
  
@@ -38493,7 +38506,7 @@ index e5d86b717..b359fcf2c 100644
  	return rk_iommu_enable(iommu);
  }
  
-@@ -1280,11 +1876,6 @@ static const struct dev_pm_ops rk_iommu_pm_ops = {
+@@ -1282,11 +1878,6 @@ static const struct dev_pm_ops rk_iommu_pm_ops = {
  				pm_runtime_force_resume)
  };
  
@@ -38505,7 +38518,7 @@ index e5d86b717..b359fcf2c 100644
  static struct platform_driver rk_iommu_driver = {
  	.probe = rk_iommu_probe,
  	.shutdown = rk_iommu_shutdown,
-@@ -1301,3 +1892,8 @@ static int __init rk_iommu_init(void)
+@@ -1303,3 +1894,8 @@ static int __init rk_iommu_init(void)
  	return platform_driver_register(&rk_iommu_driver);
  }
  subsys_initcall(rk_iommu_init);
@@ -38515,7 +38528,7 @@ index e5d86b717..b359fcf2c 100644
 +MODULE_ALIAS("platform:rockchip-iommu");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index d8cb5bcd6..ed18e141e 100644
+index 5ec091c64..c02de4a5b 100644
 --- a/drivers/irqchip/irq-gic-v3-its.c
 +++ b/drivers/irqchip/irq-gic-v3-its.c
 @@ -2167,6 +2167,8 @@ static struct page *its_allocate_prop_table(gfp_t gfp_flags)
@@ -38715,7 +38728,7 @@ index d8cb5bcd6..ed18e141e 100644
  		if (!(tmp & GITS_CBASER_SHAREABILITY_MASK)) {
  			/*
 diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
-index 4c8f18f0c..bafdbb18e 100644
+index c1f8c1be8..e3a9b27e0 100644
 --- a/drivers/irqchip/irq-gic-v3.c
 +++ b/drivers/irqchip/irq-gic-v3.c
 @@ -18,6 +18,8 @@
@@ -38727,7 +38740,7 @@ index 4c8f18f0c..bafdbb18e 100644
  
  #include <linux/irqchip.h>
  #include <linux/irqchip/arm-gic-common.h>
-@@ -42,20 +44,7 @@ struct redist_region {
+@@ -43,20 +45,7 @@ struct redist_region {
  	void __iomem		*redist_base;
  	phys_addr_t		phys_base;
  	bool			single_redist;
@@ -38748,7 +38761,7 @@ index 4c8f18f0c..bafdbb18e 100644
  };
  
  static struct gic_chip_data gic_data __read_mostly;
-@@ -725,6 +714,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
+@@ -726,6 +715,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
  
  	if (handle_domain_irq(gic_data.domain, irqnr, regs)) {
  		WARN_ONCE(true, "Unexpected interrupt received!\n");
@@ -38756,7 +38769,7 @@ index 4c8f18f0c..bafdbb18e 100644
  		gic_deactivate_unhandled(irqnr);
  	}
  }
-@@ -915,22 +905,6 @@ static int __gic_update_rdist_properties(struct redist_region *region,
+@@ -916,22 +906,6 @@ static int __gic_update_rdist_properties(struct redist_region *region,
  {
  	u64 typer = gic_read_typer(ptr + GICR_TYPER);
  
@@ -38779,7 +38792,7 @@ index 4c8f18f0c..bafdbb18e 100644
  	gic_data.rdists.has_vlpis &= !!(typer & GICR_TYPER_VLPIS);
  
  	/* RVPEID implies some form of DirectLPI, no matter what the doc says... :-/ */
-@@ -1324,6 +1298,22 @@ static void gic_cpu_pm_init(void)
+@@ -1325,6 +1299,22 @@ static void gic_cpu_pm_init(void)
  #else
  static inline void gic_cpu_pm_init(void) { }
  #endif /* CONFIG_CPU_PM */
@@ -38802,7 +38815,7 @@ index 4c8f18f0c..bafdbb18e 100644
  
  static struct irq_chip gic_chip = {
  	.name			= "GICv3",
-@@ -1787,6 +1777,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
+@@ -1807,6 +1797,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
  	gic_cpu_init();
  	gic_smp_init();
  	gic_cpu_pm_init();
@@ -38888,7 +38901,7 @@ index 62b6cdc8c..df76a5ca5 100644
  
  obj-$(CONFIG_VIDEO_AM437X_VPFE)		+= am437x/
 diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-index 282f3d238..5f3f90123 100644
+index 6334f99f1..e4603e283 100644
 --- a/drivers/media/usb/uvc/uvc_driver.c
 +++ b/drivers/media/usb/uvc/uvc_driver.c
 @@ -12,6 +12,7 @@
@@ -38899,7 +38912,7 @@ index 282f3d238..5f3f90123 100644
  #include <linux/videodev2.h>
  #include <linux/vmalloc.h>
  #include <linux/wait.h>
-@@ -2341,7 +2342,11 @@ static int uvc_probe(struct usb_interface *intf,
+@@ -2331,7 +2332,11 @@ static int uvc_probe(struct usb_interface *intf,
  	}
  
  	uvc_trace(UVC_TRACE_PROBE, "UVC device initialized.\n");
@@ -40214,7 +40227,7 @@ index d109b9f14..fd755d98a 100644
  MODULE_LICENSE("GPL");
  MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
 diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
-index 6622e3262..99cf93f58 100644
+index 599b7317b..1bfa429c6 100644
 --- a/drivers/mmc/core/block.c
 +++ b/drivers/mmc/core/block.c
 @@ -47,10 +47,13 @@
@@ -40231,7 +40244,7 @@ index 6622e3262..99cf93f58 100644
  #include "host.h"
  #include "bus.h"
  #include "mmc_ops.h"
-@@ -541,7 +544,6 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
+@@ -542,7 +545,6 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
  		return mmc_sanitize(card);
  
  	mmc_wait_for_req(card->host, &mrq);
@@ -40239,7 +40252,7 @@ index 6622e3262..99cf93f58 100644
  
  	if (cmd.error) {
  		dev_err(mmc_dev(card->host), "%s: cmd error %d\n",
-@@ -591,6 +593,8 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
+@@ -592,6 +594,8 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
  	if (idata->ic.postsleep_min_us)
  		usleep_range(idata->ic.postsleep_min_us, idata->ic.postsleep_max_us);
  
@@ -40248,7 +40261,7 @@ index 6622e3262..99cf93f58 100644
  	if (idata->rpmb || (cmd.flags & MMC_RSP_R1B) == MMC_RSP_R1B) {
  		/*
  		 * Ensure RPMB/R1B command has completed by polling CMD13
-@@ -961,6 +965,11 @@ static int mmc_blk_reset(struct mmc_blk_data *md, struct mmc_host *host,
+@@ -964,6 +968,11 @@ static int mmc_blk_reset(struct mmc_blk_data *md, struct mmc_host *host,
  		struct mmc_blk_data *main_md =
  			dev_get_drvdata(&host->card->dev);
  		int part_err;
@@ -40260,7 +40273,7 @@ index 6622e3262..99cf93f58 100644
  
  		main_md->part_curr = main_md->part_type;
  		part_err = mmc_blk_part_switch(host->card, md->part_type);
-@@ -1271,6 +1280,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
+@@ -1274,6 +1283,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
  
  	memset(brq, 0, sizeof(struct mmc_blk_request));
  
@@ -40269,7 +40282,7 @@ index 6622e3262..99cf93f58 100644
  	brq->mrq.data = &brq->data;
  	brq->mrq.tag = req->tag;
  
-@@ -1804,6 +1815,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
+@@ -1807,6 +1818,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
  	    err && mmc_blk_reset(md, card->host, type)) {
  		pr_err("%s: recovery failed!\n", req->rq_disk->disk_name);
  		mqrq->retries = MMC_NO_RETRIES;
@@ -40277,7 +40290,7 @@ index 6622e3262..99cf93f58 100644
  		return;
  	}
  
-@@ -2897,6 +2909,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
+@@ -2902,6 +2914,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
  
  #endif /* CONFIG_DEBUG_FS */
  
@@ -40287,7 +40300,7 @@ index 6622e3262..99cf93f58 100644
  static int mmc_blk_probe(struct mmc_card *card)
  {
  	struct mmc_blk_data *md, *part_md;
-@@ -2932,6 +2947,11 @@ static int mmc_blk_probe(struct mmc_card *card)
+@@ -2937,6 +2952,11 @@ static int mmc_blk_probe(struct mmc_card *card)
  
  	dev_set_drvdata(&card->dev, md);
  
@@ -40299,7 +40312,7 @@ index 6622e3262..99cf93f58 100644
  	if (mmc_add_disk(md))
  		goto out;
  
-@@ -2968,6 +2988,12 @@ static void mmc_blk_remove(struct mmc_card *card)
+@@ -2973,6 +2993,12 @@ static void mmc_blk_remove(struct mmc_card *card)
  	struct mmc_blk_data *md = dev_get_drvdata(&card->dev);
  
  	mmc_blk_remove_debugfs(card, md);
@@ -42265,7 +42278,7 @@ index b3365b34c..fad503820 100644
  	{ .compatible = "snps,dwmac-3.610"},
  	{ .compatible = "snps,dwmac-3.70a"},
 diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
-index e7fbc9b30..4a6f95200 100644
+index d0d47d91b..e6351d772 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
 @@ -11,6 +11,7 @@
@@ -43223,15 +43236,15 @@ index e7fbc9b30..4a6f95200 100644
  {
  	struct regulator *ldo = bsp_priv->regulator;
  	int ret;
-@@ -1226,6 +1955,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1223,6 +1952,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	of_get_phy_mode(dev->of_node, &bsp_priv->phy_iface);
  	bsp_priv->ops = ops;
 +	bsp_priv->bus_id = plat->bus_id;
  
- 	bsp_priv->regulator = devm_regulator_get_optional(dev, "phy");
+ 	bsp_priv->regulator = devm_regulator_get(dev, "phy");
  	if (IS_ERR(bsp_priv->regulator)) {
-@@ -1252,7 +1982,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1246,7 +1976,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	ret = of_property_read_u32(dev->of_node, "tx_delay", &value);
  	if (ret) {
@@ -43240,7 +43253,7 @@ index e7fbc9b30..4a6f95200 100644
  		dev_err(dev, "Can not read property: tx_delay.");
  		dev_err(dev, "set tx_delay to 0x%x\n",
  			bsp_priv->tx_delay);
-@@ -1263,7 +1993,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1257,7 +1987,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	ret = of_property_read_u32(dev->of_node, "rx_delay", &value);
  	if (ret) {
@@ -43249,7 +43262,7 @@ index e7fbc9b30..4a6f95200 100644
  		dev_err(dev, "Can not read property: rx_delay.");
  		dev_err(dev, "set rx_delay to 0x%x\n",
  			bsp_priv->rx_delay);
-@@ -1274,6 +2004,20 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1268,6 +1998,20 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	bsp_priv->grf = syscon_regmap_lookup_by_phandle(dev->of_node,
  							"rockchip,grf");
@@ -43270,7 +43283,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	if (plat->phy_node) {
  		bsp_priv->integrated_phy = of_property_read_bool(plat->phy_node,
-@@ -1307,30 +2051,45 @@ static int rk_gmac_powerup(struct rk_priv_data *bsp_priv)
+@@ -1301,30 +2045,45 @@ static int rk_gmac_powerup(struct rk_priv_data *bsp_priv)
  	switch (bsp_priv->phy_iface) {
  	case PHY_INTERFACE_MODE_RGMII:
  		dev_info(dev, "init for RGMII\n");
@@ -43323,7 +43336,7 @@ index e7fbc9b30..4a6f95200 100644
  	if (ret) {
  		gmac_clk_enable(bsp_priv, false);
  		return ret;
-@@ -1351,7 +2110,7 @@ static void rk_gmac_powerdown(struct rk_priv_data *gmac)
+@@ -1345,7 +2104,7 @@ static void rk_gmac_powerdown(struct rk_priv_data *gmac)
  
  	pm_runtime_put_sync(&gmac->pdev->dev);
  
@@ -43332,7 +43345,7 @@ index e7fbc9b30..4a6f95200 100644
  	gmac_clk_enable(gmac, false);
  }
  
-@@ -1365,16 +2124,96 @@ static void rk_fix_speed(void *priv, unsigned int speed)
+@@ -1359,16 +2118,96 @@ static void rk_fix_speed(void *priv, unsigned int speed)
  	case PHY_INTERFACE_MODE_RGMII_ID:
  	case PHY_INTERFACE_MODE_RGMII_RXID:
  	case PHY_INTERFACE_MODE_RGMII_TXID:
@@ -43431,7 +43444,7 @@ index e7fbc9b30..4a6f95200 100644
  static int rk_gmac_probe(struct platform_device *pdev)
  {
  	struct plat_stmmacenet_data *plat_dat;
-@@ -1396,8 +2235,11 @@ static int rk_gmac_probe(struct platform_device *pdev)
+@@ -1390,8 +2229,11 @@ static int rk_gmac_probe(struct platform_device *pdev)
  	if (IS_ERR(plat_dat))
  		return PTR_ERR(plat_dat);
  
@@ -43444,7 +43457,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	plat_dat->bsp_priv = rk_gmac_setup(pdev, plat_dat, data);
  	if (IS_ERR(plat_dat->bsp_priv)) {
-@@ -1417,6 +2259,10 @@ static int rk_gmac_probe(struct platform_device *pdev)
+@@ -1411,6 +2253,10 @@ static int rk_gmac_probe(struct platform_device *pdev)
  	if (ret)
  		goto err_gmac_powerdown;
  
@@ -43455,7 +43468,7 @@ index e7fbc9b30..4a6f95200 100644
  	return 0;
  
  err_gmac_powerdown:
-@@ -1433,6 +2279,7 @@ static int rk_gmac_remove(struct platform_device *pdev)
+@@ -1427,6 +2273,7 @@ static int rk_gmac_remove(struct platform_device *pdev)
  	int ret = stmmac_dvr_remove(&pdev->dev);
  
  	rk_gmac_powerdown(bsp_priv);
@@ -43463,7 +43476,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	return ret;
  }
-@@ -1470,14 +2317,19 @@ static SIMPLE_DEV_PM_OPS(rk_gmac_pm_ops, rk_gmac_suspend, rk_gmac_resume);
+@@ -1464,14 +2311,19 @@ static SIMPLE_DEV_PM_OPS(rk_gmac_pm_ops, rk_gmac_suspend, rk_gmac_resume);
  
  static const struct of_device_id rk_gmac_dwmac_match[] = {
  	{ .compatible = "rockchip,px30-gmac",	.data = &px30_ops   },
@@ -43603,7 +43616,7 @@ index 8b7ec2457..b0b84244e 100644
  	stmmac_do_void_callback(__priv, dma, rx_watchdog, __args)
  #define stmmac_set_tx_ring_len(__priv, __args...) \
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 1ec000d4c..376a88abb 100644
+index 83e9a4d01..e469f8c5e 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 @@ -236,7 +236,7 @@ static void stmmac_clk_csr_set(struct stmmac_priv *priv)
@@ -43662,7 +43675,7 @@ index 1ec000d4c..376a88abb 100644
  	return 0;
  }
  
-@@ -1345,13 +1356,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
+@@ -1346,13 +1357,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
  {
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	struct stmmac_rx_buffer *buf = &rx_q->buf_pool[i];
@@ -43682,7 +43695,7 @@ index 1ec000d4c..376a88abb 100644
  		if (!buf->sec_page)
  			return -ENOMEM;
  
-@@ -2343,6 +2358,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
+@@ -2344,6 +2359,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
  {
  	if (!is_valid_ether_addr(priv->dev->dev_addr)) {
  		stmmac_get_umac_addr(priv, priv->hw, priv->dev->dev_addr, 0);
@@ -43692,7 +43705,7 @@ index 1ec000d4c..376a88abb 100644
  		if (!is_valid_ether_addr(priv->dev->dev_addr))
  			eth_hw_addr_random(priv->dev);
  		dev_info(priv->device, "device MAC address %pM\n",
-@@ -2694,7 +2712,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2695,7 +2713,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
  /**
   * stmmac_hw_setup - setup mac in a usable state.
   *  @dev : pointer to the device structure.
@@ -43701,7 +43714,7 @@ index 1ec000d4c..376a88abb 100644
   *  Description:
   *  this is the main function to setup the HW in a usable state because the
   *  dma engine is reset, the core registers are configured (e.g. AXI,
-@@ -2704,7 +2722,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2705,7 +2723,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
   *  0 on success and an appropriate (-)ve integer as defined in errno.h
   *  file on failure.
   */
@@ -43710,7 +43723,7 @@ index 1ec000d4c..376a88abb 100644
  {
  	struct stmmac_priv *priv = netdev_priv(dev);
  	u32 rx_cnt = priv->plat->rx_queues_to_use;
-@@ -2760,22 +2778,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
+@@ -2761,22 +2779,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
  
  	stmmac_mmc_setup(priv);
  
@@ -43739,7 +43752,7 @@ index 1ec000d4c..376a88abb 100644
  	priv->eee_tw_timer = STMMAC_DEFAULT_TWT_LS;
  
  	/* Convert the timer from msec to usec */
-@@ -3690,6 +3700,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3691,6 +3701,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	int len, dirty = stmmac_rx_dirty(priv, queue);
  	unsigned int entry = rx_q->dirty_rx;
@@ -43750,7 +43763,7 @@ index 1ec000d4c..376a88abb 100644
  
  	len = DIV_ROUND_UP(priv->dma_buf_sz, PAGE_SIZE) * PAGE_SIZE;
  
-@@ -3704,13 +3718,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3705,13 +3719,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  			p = rx_q->dma_rx + entry;
  
  		if (!buf->page) {
@@ -43766,7 +43779,7 @@ index 1ec000d4c..376a88abb 100644
  			if (!buf->sec_page)
  				break;
  
-@@ -5072,7 +5086,7 @@ int stmmac_dvr_probe(struct device *device,
+@@ -5077,7 +5091,7 @@ int stmmac_dvr_probe(struct device *device,
  		dev_info(priv->device, "TSO feature enabled\n");
  	}
  
@@ -43775,7 +43788,7 @@ index 1ec000d4c..376a88abb 100644
  		ndev->hw_features |= NETIF_F_GRO;
  		priv->sph = true;
  		dev_info(priv->device, "SPH feature enabled\n");
-@@ -5444,7 +5458,7 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5443,7 +5457,7 @@ static int __init stmmac_cmdline_opt(char *str)
  	char *opt;
  
  	if (!str || !*str)
@@ -43784,7 +43797,7 @@ index 1ec000d4c..376a88abb 100644
  	while ((opt = strsep(&str, ",")) != NULL) {
  		if (!strncmp(opt, "debug:", 6)) {
  			if (kstrtoint(opt + 6, 0, &debug))
-@@ -5475,11 +5489,11 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5474,11 +5488,11 @@ static int __init stmmac_cmdline_opt(char *str)
  				goto err;
  		}
  	}
@@ -49920,7 +49933,7 @@ index 75216091d..2f47a3e7f 100644
  	 * No documented timeout value for phy operation below,
  	 * so we make it large enough here. And we use loop-break
 diff --git a/drivers/phy/rockchip/phy-rockchip-typec.c b/drivers/phy/rockchip/phy-rockchip-typec.c
-index 70a31251b..676c213ce 100644
+index 20f787d5e..b029d0288 100644
 --- a/drivers/phy/rockchip/phy-rockchip-typec.c
 +++ b/drivers/phy/rockchip/phy-rockchip-typec.c
 @@ -54,6 +54,7 @@
@@ -50403,7 +50416,7 @@ index 70a31251b..676c213ce 100644
  
  	writel(0xbefc, tcphy->base + XCVR_PSM_RCTRL(lane));
  	writel(0x6799, tcphy->base + TX_PSC_A0(lane));
-@@ -536,27 +845,234 @@ static void tcphy_dp_cfg_lane(struct rockchip_typec_phy *tcphy, u32 lane)
+@@ -536,26 +845,233 @@ static void tcphy_dp_cfg_lane(struct rockchip_typec_phy *tcphy, u32 lane)
  	writel(0x98, tcphy->base + TX_PSC_A2(lane));
  	writel(0x98, tcphy->base + TX_PSC_A3(lane));
  
@@ -50452,8 +50465,8 @@ index 70a31251b..676c213ce 100644
 +		break;
 +	}
 +	writel(val, tcphy->base + XCVR_DIAG_PLLDRC_CTRL(lane));
- }
- 
++}
++
 +int tcphy_dp_set_phy_config(struct phy *phy, int link_rate,
 +			    int lane_count, u8 swing, u8 pre_emp)
 +{
@@ -50651,12 +50664,11 @@ index 70a31251b..676c213ce 100644
 +	}
 +
 +	return 0;
-+}
+ }
 +EXPORT_SYMBOL(tcphy_dp_set_link_rate);
-+
+ 
  static inline int property_enable(struct rockchip_typec_phy *tcphy,
  				  const struct usb3phy_reg *reg, bool en)
- {
 @@ -719,6 +1235,18 @@ static void tcphy_dp_aux_calibration(struct rockchip_typec_phy *tcphy)
  	writel(val, tcphy->base + TX_DIG_CTRL_REG_2);
  }
@@ -50722,7 +50734,7 @@ index 70a31251b..676c213ce 100644
  
  	reset_control_deassert(tcphy->uphy_rst);
  
-@@ -851,22 +1380,9 @@ static int tcphy_get_mode(struct rockchip_typec_phy *tcphy)
+@@ -850,22 +1379,9 @@ static int tcphy_get_mode(struct rockchip_typec_phy *tcphy)
  	return mode;
  }
  
@@ -50746,7 +50758,7 @@ index 70a31251b..676c213ce 100644
  	const struct usb3phy_reg *reg = &cfg->pipe_status;
  	int timeout, new_mode, ret = 0;
  	u32 val;
-@@ -917,6 +1433,24 @@ static int rockchip_usb3_phy_power_on(struct phy *phy)
+@@ -916,6 +1432,24 @@ static int rockchip_usb3_phy_power_on(struct phy *phy)
  	return ret;
  }
  
@@ -50771,7 +50783,7 @@ index 70a31251b..676c213ce 100644
  static int rockchip_usb3_phy_power_off(struct phy *phy)
  {
  	struct rockchip_typec_phy *tcphy = phy_get_drvdata(phy);
-@@ -980,8 +1514,8 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -979,8 +1513,8 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  
  	property_enable(tcphy, &cfg->uphy_dp_sel, 1);
  
@@ -50782,7 +50794,7 @@ index 70a31251b..676c213ce 100644
  				 PHY_MODE_SET_TIMEOUT);
  	if (ret < 0) {
  		dev_err(tcphy->dev, "failed to wait TCPHY enter A2\n");
-@@ -990,14 +1524,10 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -989,14 +1523,10 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  
  	tcphy_dp_aux_calibration(tcphy);
  
@@ -50801,7 +50813,7 @@ index 70a31251b..676c213ce 100644
  		goto power_on_finish;
  	}
  
-@@ -1014,6 +1544,7 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -1013,6 +1543,7 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  static int rockchip_dp_phy_power_off(struct phy *phy)
  {
  	struct rockchip_typec_phy *tcphy = phy_get_drvdata(phy);
@@ -50809,7 +50821,7 @@ index 70a31251b..676c213ce 100644
  
  	mutex_lock(&tcphy->lock);
  
-@@ -1022,7 +1553,11 @@ static int rockchip_dp_phy_power_off(struct phy *phy)
+@@ -1021,7 +1552,11 @@ static int rockchip_dp_phy_power_off(struct phy *phy)
  
  	tcphy->mode &= ~MODE_DFP_DP;
  
@@ -50822,7 +50834,7 @@ index 70a31251b..676c213ce 100644
  
  	if (tcphy->mode == MODE_DISCONNECT)
  		tcphy_phy_deinit(tcphy);
-@@ -1041,6 +1576,8 @@ static const struct phy_ops rockchip_dp_phy_ops = {
+@@ -1040,6 +1575,8 @@ static const struct phy_ops rockchip_dp_phy_ops = {
  static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
  			  struct device *dev)
  {
@@ -50831,7 +50843,7 @@ index 70a31251b..676c213ce 100644
  	tcphy->grf_regs = syscon_regmap_lookup_by_phandle(dev->of_node,
  							  "rockchip,grf");
  	if (IS_ERR(tcphy->grf_regs)) {
-@@ -1078,6 +1615,16 @@ static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
+@@ -1077,6 +1614,16 @@ static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
  		return PTR_ERR(tcphy->tcphy_rst);
  	}
  
@@ -52095,7 +52107,7 @@ index c6f4229eb..46e426cf4 100644
  MODULE_DESCRIPTION("RK805 pin control and GPIO driver");
  MODULE_AUTHOR("Joseph Chen <chenjh@rock-chips.com>");
 diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl-rockchip.c
-index 764c96ddf..1e78070ab 100644
+index 2a454098e..4b1b91968 100644
 --- a/drivers/pinctrl/pinctrl-rockchip.c
 +++ b/drivers/pinctrl/pinctrl-rockchip.c
 @@ -16,11 +16,13 @@
@@ -52640,68 +52652,14 @@ index 764c96ddf..1e78070ab 100644
  static struct rockchip_mux_route_data px30_mux_route_data[] = {
  	RK_MUXROUTE_SAME(2, RK_PA0, 1, 0x184, BIT(16 + 7)), /* cif-d2m0 */
  	RK_MUXROUTE_SAME(3, RK_PA3, 3, 0x184, BIT(16 + 7) | BIT(7)), /* cif-d2m1 */
-@@ -954,19 +936,20 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_PMU(0, RK_PB5, 4, 0x0110, WRITE_MASK_VAL(3, 2, 1)), /* PWM1 IO mux M1 */
- 	RK_MUXROUTE_PMU(0, RK_PC1, 1, 0x0110, WRITE_MASK_VAL(5, 4, 0)), /* PWM2 IO mux M0 */
- 	RK_MUXROUTE_PMU(0, RK_PB6, 4, 0x0110, WRITE_MASK_VAL(5, 4, 1)), /* PWM2 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB3, 2, 0x0300, WRITE_MASK_VAL(0, 0, 0)), /* CAN0 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PB3, 2, 0x0300, WRITE_MASK_VAL(0, 0, 0)), /* CAN0 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PA1, 4, 0x0300, WRITE_MASK_VAL(0, 0, 1)), /* CAN0 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA1, 3, 0x0300, WRITE_MASK_VAL(2, 2, 0)), /* CAN1 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PC3, 3, 0x0300, WRITE_MASK_VAL(2, 2, 1)), /* CAN1 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PB5, 3, 0x0300, WRITE_MASK_VAL(4, 4, 0)), /* CAN2 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PB2, 4, 0x0300, WRITE_MASK_VAL(4, 4, 1)), /* CAN2 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PC4, 1, 0x0300, WRITE_MASK_VAL(6, 6, 0)), /* HPDIN IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
+@@ -964,6 +946,7 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
+ 	RK_MUXROUTE_GRF(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
  	RK_MUXROUTE_GRF(3, RK_PB1, 3, 0x0300, WRITE_MASK_VAL(8, 8, 0)), /* GMAC1 IO mux M0 */
  	RK_MUXROUTE_GRF(4, RK_PA7, 3, 0x0300, WRITE_MASK_VAL(8, 8, 1)), /* GMAC1 IO mux M1 */
 +	RK_MUXROUTE_GRF(4, RK_PB7, 3, 0x0300, WRITE_MASK_VAL(8, 8, 1)), /* GMAC1 IO mux M1 */
  	RK_MUXROUTE_GRF(4, RK_PD1, 1, 0x0300, WRITE_MASK_VAL(10, 10, 0)), /* HDMITX IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PB4, 1, 0x0300, WRITE_MASK_VAL(14, 14, 1)), /* I2C2 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA0, 1, 0x0304, WRITE_MASK_VAL(0, 0, 0)), /* I2C3 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PB6, 4, 0x0304, WRITE_MASK_VAL(0, 0, 1)), /* I2C3 IO mux M1 */
-@@ -992,7 +975,7 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(4, RK_PC3, 1, 0x0308, WRITE_MASK_VAL(12, 12, 1)), /* PWM15 IO mux M1 */
- 	RK_MUXROUTE_GRF(3, RK_PD2, 3, 0x0308, WRITE_MASK_VAL(14, 14, 0)), /* SDMMC2 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PA5, 5, 0x0308, WRITE_MASK_VAL(14, 14, 1)), /* SDMMC2 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB5, 2, 0x030c, WRITE_MASK_VAL(0, 0, 0)), /* SPI0 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PB5, 2, 0x030c, WRITE_MASK_VAL(0, 0, 0)), /* SPI0 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD3, 3, 0x030c, WRITE_MASK_VAL(0, 0, 1)), /* SPI0 IO mux M1 */
- 	RK_MUXROUTE_GRF(2, RK_PB5, 3, 0x030c, WRITE_MASK_VAL(2, 2, 0)), /* SPI1 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PC3, 3, 0x030c, WRITE_MASK_VAL(2, 2, 1)), /* SPI1 IO mux M1 */
-@@ -1001,8 +984,8 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(4, RK_PB3, 4, 0x030c, WRITE_MASK_VAL(6, 6, 0)), /* SPI3 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PC2, 2, 0x030c, WRITE_MASK_VAL(6, 6, 1)), /* SPI3 IO mux M1 */
- 	RK_MUXROUTE_GRF(2, RK_PB4, 2, 0x030c, WRITE_MASK_VAL(8, 8, 0)), /* UART1 IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(8, 8, 1)), /* UART1 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(10, 10, 0)), /* UART2 IO mux M0 */
-+	RK_MUXROUTE_GRF(3, RK_PD6, 4, 0x030c, WRITE_MASK_VAL(8, 8, 1)), /* UART1 IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(10, 10, 0)), /* UART2 IO mux M0 */
- 	RK_MUXROUTE_GRF(1, RK_PD5, 2, 0x030c, WRITE_MASK_VAL(10, 10, 1)), /* UART2 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA1, 2, 0x030c, WRITE_MASK_VAL(12, 12, 0)), /* UART3 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PB7, 4, 0x030c, WRITE_MASK_VAL(12, 12, 1)), /* UART3 IO mux M1 */
-@@ -1032,13 +1015,13 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(3, RK_PD6, 5, 0x0314, WRITE_MASK_VAL(1, 0, 1)), /* PDM IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PA0, 4, 0x0314, WRITE_MASK_VAL(1, 0, 1)), /* PDM IO mux M1 */
- 	RK_MUXROUTE_GRF(3, RK_PC4, 5, 0x0314, WRITE_MASK_VAL(1, 0, 2)), /* PDM IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA5, 3, 0x0314, WRITE_MASK_VAL(3, 2, 0)), /* PCIE20 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA5, 3, 0x0314, WRITE_MASK_VAL(3, 2, 0)), /* PCIE20 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD0, 4, 0x0314, WRITE_MASK_VAL(3, 2, 1)), /* PCIE20 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PB0, 4, 0x0314, WRITE_MASK_VAL(3, 2, 2)), /* PCIE20 IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA4, 3, 0x0314, WRITE_MASK_VAL(5, 4, 0)), /* PCIE30X1 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA4, 3, 0x0314, WRITE_MASK_VAL(5, 4, 0)), /* PCIE30X1 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD2, 4, 0x0314, WRITE_MASK_VAL(5, 4, 1)), /* PCIE30X1 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA5, 4, 0x0314, WRITE_MASK_VAL(5, 4, 2)), /* PCIE30X1 IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA6, 2, 0x0314, WRITE_MASK_VAL(7, 6, 0)), /* PCIE30X2 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA6, 2, 0x0314, WRITE_MASK_VAL(7, 6, 0)), /* PCIE30X2 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD4, 4, 0x0314, WRITE_MASK_VAL(7, 6, 1)), /* PCIE30X2 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PC2, 4, 0x0314, WRITE_MASK_VAL(7, 6, 2)), /* PCIE30X2 IO mux M2 */
- };
+ 	RK_MUXROUTE_GRF(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
+ 	RK_MUXROUTE_GRF(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
 @@ -1071,6 +1054,7 @@ static bool rockchip_get_mux_route(struct rockchip_pin_bank *bank, int pin,
  static int rockchip_get_mux(struct rockchip_pin_bank *bank, int pin)
  {
@@ -53382,7 +53340,7 @@ index 764c96ddf..1e78070ab 100644
  }
  
  static int rockchip_pull_list[PULL_TYPE_MAX][4] = {
-@@ -2040,11 +2559,15 @@ static int rockchip_get_pull(struct rockchip_pin_bank *bank, int pin_num)
+@@ -2040,12 +2559,15 @@ static int rockchip_get_pull(struct rockchip_pin_bank *bank, int pin_num)
  				: PIN_CONFIG_BIAS_DISABLE;
  	case PX30:
  	case RV1108:
@@ -53393,12 +53351,12 @@ index 764c96ddf..1e78070ab 100644
  	case RK3308:
  	case RK3368:
  	case RK3399:
-+	case RK3568:
+ 	case RK3568:
 +	case RK3588:
  		pull_type = bank->pull_type[pin_num / 8];
  		data >>= bit;
  		data &= (1 << RK3188_PULL_BITS_PER_PIN) - 1;
-@@ -2085,12 +2608,15 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
+@@ -2094,12 +2616,15 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
  		break;
  	case PX30:
  	case RV1108:
@@ -53414,7 +53372,7 @@ index 764c96ddf..1e78070ab 100644
  		pull_type = bank->pull_type[pin_num / 8];
  		ret = -EINVAL;
  		for (i = 0; i < ARRAY_SIZE(rockchip_pull_list[pull_type]);
-@@ -2242,6 +2768,81 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
+@@ -2251,6 +2776,81 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
  	return regmap_update_bits(regmap, reg, rmask, data);
  }
  
@@ -53496,7 +53454,7 @@ index 764c96ddf..1e78070ab 100644
  /*
   * Pinmux_ops handling
   */
-@@ -2297,9 +2898,9 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
+@@ -2306,9 +2906,9 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
  			break;
  	}
  
@@ -53508,7 +53466,7 @@ index 764c96ddf..1e78070ab 100644
  			rockchip_set_mux(bank, pins[cnt] - bank->pin_base, 0);
  
  		return ret;
-@@ -2308,86 +2909,11 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
+@@ -2317,86 +2917,11 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
  	return 0;
  }
  
@@ -53595,7 +53553,7 @@ index 764c96ddf..1e78070ab 100644
  };
  
  /*
-@@ -2406,20 +2932,37 @@ static bool rockchip_pinconf_pull_valid(struct rockchip_pin_ctrl *ctrl,
+@@ -2415,20 +2940,37 @@ static bool rockchip_pinconf_pull_valid(struct rockchip_pin_ctrl *ctrl,
  		return pull ? false : true;
  	case PX30:
  	case RV1108:
@@ -53635,7 +53593,7 @@ index 764c96ddf..1e78070ab 100644
  
  /* set the pin config settings for a specified pin */
  static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
-@@ -2427,6 +2970,7 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2436,6 +2978,7 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  {
  	struct rockchip_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
  	struct rockchip_pin_bank *bank = pin_to_bank(info, pin);
@@ -53643,7 +53601,7 @@ index 764c96ddf..1e78070ab 100644
  	enum pin_config_param param;
  	u32 arg;
  	int i;
-@@ -2459,16 +3003,35 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2468,17 +3011,36 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  				return rc;
  			break;
  		case PIN_CONFIG_OUTPUT:
@@ -53657,6 +53615,7 @@ index 764c96ddf..1e78070ab 100644
 -		case PIN_CONFIG_DRIVE_STRENGTH:
 -			/* rk3288 is the first with per-pin drive-strength */
 -			if (!info->ctrl->drv_calc_reg)
+-				return -ENOTSUPP;
 +			rc = rockchip_set_mux(bank, pin - bank->pin_base,
 +					      RK_FUNC_GPIO);
 +			if (rc != RK_FUNC_GPIO)
@@ -53686,10 +53645,11 @@ index 764c96ddf..1e78070ab 100644
 +		case PIN_CONFIG_DRIVE_STRENGTH:
 +			/* rk3288 is the first with per-pin drive-strength */
 +			if (!info->ctrl->drv_calc_reg)
- 				return -ENOTSUPP;
++				return -ENOTSUPP;
  
  			rc = rockchip_set_drive_perpin(bank,
-@@ -2485,9 +3048,17 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+ 						pin - bank->pin_base, arg);
+@@ -2494,9 +3056,17 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  			if (rc < 0)
  				return rc;
  			break;
@@ -53708,7 +53668,7 @@ index 764c96ddf..1e78070ab 100644
  		}
  	} /* for each config */
  
-@@ -2500,6 +3071,7 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2509,6 +3079,7 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  {
  	struct rockchip_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
  	struct rockchip_pin_bank *bank = pin_to_bank(info, pin);
@@ -53716,7 +53676,7 @@ index 764c96ddf..1e78070ab 100644
  	enum pin_config_param param = pinconf_to_config_param(*config);
  	u16 arg;
  	int rc;
-@@ -2528,7 +3100,12 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2537,7 +3108,12 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  		if (rc != RK_FUNC_GPIO)
  			return -EINVAL;
  
@@ -53730,7 +53690,7 @@ index 764c96ddf..1e78070ab 100644
  		if (rc < 0)
  			return rc;
  
-@@ -2553,11 +3130,20 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2562,11 +3138,20 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  		if (rc < 0)
  			return rc;
  
@@ -53752,7 +53712,7 @@ index 764c96ddf..1e78070ab 100644
  	}
  
  	*config = pinconf_to_config_packed(param, arg);
-@@ -2650,7 +3236,6 @@ static int rockchip_pinctrl_parse_groups(struct device_node *np,
+@@ -2659,7 +3244,6 @@ static int rockchip_pinctrl_parse_groups(struct device_node *np,
  		np_config = of_find_node_by_phandle(be32_to_cpup(phandle));
  		ret = pinconf_generic_parse_dt_config(np_config, NULL,
  				&grp->data[j].configs, &grp->data[j].nconfigs);
@@ -53760,7 +53720,7 @@ index 764c96ddf..1e78070ab 100644
  		if (ret)
  			return ret;
  	}
-@@ -2767,7 +3352,7 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2776,7 +3360,7 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  	ctrldesc->npins = info->ctrl->nr_pins;
  
  	pdesc = pindesc;
@@ -53769,7 +53729,7 @@ index 764c96ddf..1e78070ab 100644
  		pin_bank = &info->ctrl->pin_banks[bank];
  		for (pin = 0; pin < pin_bank->nr_pins; pin++, k++) {
  			pdesc->number = k;
-@@ -2775,6 +3360,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2784,6 +3368,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  						pin_bank->name, pin);
  			pdesc++;
  		}
@@ -53779,7 +53739,7 @@ index 764c96ddf..1e78070ab 100644
  	}
  
  	ret = rockchip_pinctrl_parse_dt(pdev, info);
-@@ -2787,552 +3375,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2796,552 +3383,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  		return PTR_ERR(info->pctl_dev);
  	}
  
@@ -54094,9 +54054,9 @@ index 764c96ddf..1e78070ab 100644
 -	raw_spin_unlock_irqrestore(&bank->slock, flags);
 -	clk_disable(bank->clk);
 -
- 	return 0;
- }
- 
+-	return 0;
+-}
+-
 -static void rockchip_irq_suspend(struct irq_data *d)
 -{
 -	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(d);
@@ -54272,9 +54232,9 @@ index 764c96ddf..1e78070ab 100644
 -		gpiochip_remove(&bank->gpio_chip);
 -	}
 -
--	return 0;
--}
--
+ 	return 0;
+ }
+ 
 -static int rockchip_get_bank_data(struct rockchip_pin_bank *bank,
 -				  struct rockchip_pinctrl *info)
 -{
@@ -54332,7 +54292,7 @@ index 764c96ddf..1e78070ab 100644
  static const struct of_device_id rockchip_pinctrl_dt_match[];
  
  /* retrieve the soc specific data */
-@@ -3342,7 +3387,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3351,7 +3395,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  {
  	const struct of_device_id *match;
  	struct device_node *node = pdev->dev.of_node;
@@ -54340,7 +54300,7 @@ index 764c96ddf..1e78070ab 100644
  	struct rockchip_pin_ctrl *ctrl;
  	struct rockchip_pin_bank *bank;
  	int grf_offs, pmu_offs, drv_grf_offs, drv_pmu_offs, i, j;
-@@ -3350,23 +3394,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3359,23 +3402,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  	match = of_match_node(rockchip_pinctrl_dt_match, node);
  	ctrl = (struct rockchip_pin_ctrl *)match->data;
  
@@ -54364,7 +54324,7 @@ index 764c96ddf..1e78070ab 100644
  	grf_offs = ctrl->grf_mux_offset;
  	pmu_offs = ctrl->pmu_mux_offset;
  	drv_pmu_offs = ctrl->pmu_drv_offset;
-@@ -3391,12 +3418,13 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3400,12 +3426,13 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  
  			/* preset iomux offset value, set new start value */
  			if (iom->offset >= 0) {
@@ -54380,7 +54340,7 @@ index 764c96ddf..1e78070ab 100644
  							pmu_offs : grf_offs;
  			}
  
-@@ -3421,7 +3449,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3430,7 +3457,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  			inc = (iom->type & (IOMUX_WIDTH_4BIT |
  					    IOMUX_WIDTH_3BIT |
  					    IOMUX_WIDTH_2BIT)) ? 8 : 4;
@@ -54389,7 +54349,7 @@ index 764c96ddf..1e78070ab 100644
  				pmu_offs += inc;
  			else
  				grf_offs += inc;
-@@ -3516,6 +3544,46 @@ static int __maybe_unused rockchip_pinctrl_resume(struct device *dev)
+@@ -3525,6 +3552,46 @@ static int __maybe_unused rockchip_pinctrl_resume(struct device *dev)
  static SIMPLE_DEV_PM_OPS(rockchip_pinctrl_dev_pm_ops, rockchip_pinctrl_suspend,
  			 rockchip_pinctrl_resume);
  
@@ -54436,7 +54396,7 @@ index 764c96ddf..1e78070ab 100644
  static int rockchip_pinctrl_probe(struct platform_device *pdev)
  {
  	struct rockchip_pinctrl *info;
-@@ -3589,17 +3657,50 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
+@@ -3598,17 +3665,50 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
  			return PTR_ERR(info->regmap_pmu);
  	}
  
@@ -54491,7 +54451,7 @@ index 764c96ddf..1e78070ab 100644
  
  	return 0;
  }
-@@ -3639,6 +3740,7 @@ static struct rockchip_pin_ctrl px30_pin_ctrl = {
+@@ -3648,6 +3748,7 @@ static struct rockchip_pin_ctrl px30_pin_ctrl = {
  		.pull_calc_reg		= px30_calc_pull_reg_and_bit,
  		.drv_calc_reg		= px30_calc_drv_reg_and_bit,
  		.schmitt_calc_reg	= px30_calc_schmitt_reg_and_bit,
@@ -54499,7 +54459,7 @@ index 764c96ddf..1e78070ab 100644
  };
  
  static struct rockchip_pin_bank rv1108_pin_banks[] = {
-@@ -3665,6 +3767,86 @@ static struct rockchip_pin_ctrl rv1108_pin_ctrl = {
+@@ -3674,6 +3775,86 @@ static struct rockchip_pin_ctrl rv1108_pin_ctrl = {
  	.schmitt_calc_reg	= rv1108_calc_schmitt_reg_and_bit,
  };
  
@@ -54586,7 +54546,7 @@ index 764c96ddf..1e78070ab 100644
  static struct rockchip_pin_bank rk2928_pin_banks[] = {
  	PIN_BANK(0, 32, "gpio0"),
  	PIN_BANK(1, 32, "gpio1"),
-@@ -3787,9 +3969,9 @@ static struct rockchip_pin_ctrl rk3228_pin_ctrl = {
+@@ -3796,9 +3977,9 @@ static struct rockchip_pin_ctrl rk3228_pin_ctrl = {
  };
  
  static struct rockchip_pin_bank rk3288_pin_banks[] = {
@@ -54599,7 +54559,7 @@ index 764c96ddf..1e78070ab 100644
  					     IOMUX_UNROUTED
  			    ),
  	PIN_BANK_IOMUX_FLAGS(1, 32, "gpio1", IOMUX_UNROUTED,
-@@ -3864,6 +4046,7 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl = {
+@@ -3873,6 +4054,7 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl = {
  		.niomux_recalced	= ARRAY_SIZE(rk3308_mux_recalced_data),
  		.iomux_routes		= rk3308_mux_route_data,
  		.niomux_routes		= ARRAY_SIZE(rk3308_mux_route_data),
@@ -54607,7 +54567,7 @@ index 764c96ddf..1e78070ab 100644
  		.pull_calc_reg		= rk3308_calc_pull_reg_and_bit,
  		.drv_calc_reg		= rk3308_calc_drv_reg_and_bit,
  		.schmitt_calc_reg	= rk3308_calc_schmitt_reg_and_bit,
-@@ -4024,14 +4207,42 @@ static struct rockchip_pin_ctrl rk3568_pin_ctrl = {
+@@ -4033,14 +4215,42 @@ static struct rockchip_pin_ctrl rk3568_pin_ctrl = {
  	.niomux_routes		= ARRAY_SIZE(rk3568_mux_route_data),
  	.pull_calc_reg		= rk3568_calc_pull_reg_and_bit,
  	.drv_calc_reg		= rk3568_calc_drv_reg_and_bit,
@@ -54650,7 +54610,7 @@ index 764c96ddf..1e78070ab 100644
  	{ .compatible = "rockchip,rk2928-pinctrl",
  		.data = &rk2928_pin_ctrl },
  	{ .compatible = "rockchip,rk3036-pinctrl",
-@@ -4058,11 +4269,14 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
+@@ -4067,11 +4277,14 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
  		.data = &rk3399_pin_ctrl },
  	{ .compatible = "rockchip,rk3568-pinctrl",
  		.data = &rk3568_pin_ctrl },
@@ -54665,7 +54625,7 @@ index 764c96ddf..1e78070ab 100644
  	.driver = {
  		.name	= "rockchip-pinctrl",
  		.pm = &rockchip_pinctrl_dev_pm_ops,
-@@ -4075,3 +4289,14 @@ static int __init rockchip_pinctrl_drv_register(void)
+@@ -4084,3 +4297,14 @@ static int __init rockchip_pinctrl_drv_register(void)
  	return platform_driver_register(&rockchip_pinctrl_driver);
  }
  postcore_initcall(rockchip_pinctrl_drv_register);
@@ -54835,7 +54795,7 @@ index e0772c9f7..2fe0089c4 100644
  
  	syscon_rbm->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
 diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 2b644590f..8cdd19de0 100644
+index 5c8c117b3..631fcaa68 100644
 --- a/drivers/power/supply/power_supply_core.c
 +++ b/drivers/power/supply/power_supply_core.c
 @@ -32,6 +32,13 @@ EXPORT_SYMBOL_GPL(power_supply_notifier);
@@ -54852,7 +54812,7 @@ index 2b644590f..8cdd19de0 100644
  #define POWER_SUPPLY_DEFERRED_REGISTER_TIME	msecs_to_jiffies(10)
  
  static bool __power_supply_is_supplied_by(struct power_supply *supplier,
-@@ -522,6 +529,77 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
+@@ -529,6 +536,77 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
  }
  EXPORT_SYMBOL_GPL(power_supply_get_by_phandle);
  
@@ -54931,7 +54891,7 @@ index 2b644590f..8cdd19de0 100644
  {
  	struct power_supply **psy = res;
 diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index a616b9d8f..a5e656360 100644
+index 2b1df9c33..932b890a8 100644
 --- a/drivers/power/supply/power_supply_sysfs.c
 +++ b/drivers/power/supply/power_supply_sysfs.c
 @@ -89,6 +89,7 @@ static const char * const POWER_SUPPLY_CHARGE_TYPE_TEXT[] = {
@@ -58709,7 +58669,7 @@ index aa9e0e31e..a328dec78 100644
  
  module_platform_driver(rockchip_thermal_driver);
 diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index b6dc9003b..b7b690972 100644
+index 0771cd226..8ceb8f619 100644
 --- a/drivers/tty/serial/8250/8250.h
 +++ b/drivers/tty/serial/8250/8250.h
 @@ -48,6 +48,9 @@ struct uart_8250_dma {
@@ -58752,7 +58712,7 @@ index b6dc9003b..b7b690972 100644
  extern void serial8250_rx_dma_flush(struct uart_8250_port *);
  extern int serial8250_request_dma(struct uart_8250_port *);
  extern void serial8250_release_dma(struct uart_8250_port *);
-@@ -335,10 +347,12 @@ static inline int serial8250_tx_dma(struct uart_8250_port *p)
+@@ -342,10 +354,12 @@ static inline int serial8250_tx_dma(struct uart_8250_port *p)
  {
  	return -1;
  }
@@ -58766,7 +58726,7 @@ index b6dc9003b..b7b690972 100644
  static inline int serial8250_request_dma(struct uart_8250_port *p)
  {
 diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
-index 0a7e9491b..760886a2c 100644
+index 43f2eed6d..ba014cd89 100644
 --- a/drivers/tty/serial/8250/8250_core.c
 +++ b/drivers/tty/serial/8250/8250_core.c
 @@ -565,6 +565,7 @@ static void __init serial8250_isa_init_ports(void)
@@ -58795,7 +58755,7 @@ index 0a7e9491b..760886a2c 100644
  		/* Take tx_loadsz from fifosize if it wasn't set separately */
  		if (uart->port.fifosize && !uart->tx_loadsz)
  			uart->tx_loadsz = uart->port.fifosize;
-@@ -1254,7 +1259,11 @@ static void __exit serial8250_exit(void)
+@@ -1255,7 +1260,11 @@ static void __exit serial8250_exit(void)
  #endif
  }
  
@@ -59320,10 +59280,10 @@ index 6d6a78eea..fee4f2933 100644
  	}
  
 diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index 1f231fcda..1cb78f8ea 100644
+index b19908779..4bb144c12 100644
 --- a/drivers/tty/serial/8250/8250_port.c
 +++ b/drivers/tty/serial/8250/8250_port.c
-@@ -122,8 +122,7 @@ static const struct serial8250_config uart_config[] = {
+@@ -123,8 +123,7 @@ static const struct serial8250_config uart_config[] = {
  		.name		= "16C950/954",
  		.fifo_size	= 128,
  		.tx_loadsz	= 128,
@@ -59333,7 +59293,7 @@ index 1f231fcda..1cb78f8ea 100644
  		/* UART_CAP_EFR breaks billionon CF bluetooth card. */
  		.flags		= UART_CAP_FIFO | UART_CAP_SLEEP,
  	},
-@@ -1537,8 +1536,13 @@ static inline void __start_tx(struct uart_port *port)
+@@ -1538,8 +1537,13 @@ static inline void __start_tx(struct uart_port *port)
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -59347,7 +59307,7 @@ index 1f231fcda..1cb78f8ea 100644
  
  	if (serial8250_set_THRI(up)) {
  		if (up->bugs & UART_BUG_TXEN) {
-@@ -1868,6 +1872,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
+@@ -1869,6 +1873,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
  
  static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  {
@@ -59360,7 +59320,7 @@ index 1f231fcda..1cb78f8ea 100644
  	switch (iir & 0x3f) {
  	case UART_IIR_RDI:
  		if (!up->dma->rx_running)
-@@ -1879,6 +1889,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
+@@ -1880,6 +1890,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  		return true;
  	}
  	return up->dma->rx_dma(up);
@@ -59368,17 +59328,17 @@ index 1f231fcda..1cb78f8ea 100644
  }
  
  /*
-@@ -1889,7 +1900,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1890,6 +1901,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  	unsigned char status;
  	unsigned long flags;
  	struct uart_8250_port *up = up_to_u8250p(port);
 +#ifndef CONFIG_ARCH_ROCKCHIP
- 	bool skip_rx = false;
++ 	bool skip_rx = false;
 +#endif
+ 	struct tty_port *tport = &port->state->port;
+ 	bool skip_rx = false;
  
- 	if (iir & UART_IIR_NO_INT)
- 		return 0;
-@@ -1898,6 +1911,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1900,6 +1914,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  
  	status = serial_port_in(port, UART_LSR);
  
@@ -59396,7 +59356,7 @@ index 1f231fcda..1cb78f8ea 100644
  	/*
  	 * If port is stopped and there are no error conditions in the
  	 * FIFO, then don't drain the FIFO, as this may lead to TTY buffer
-@@ -1915,11 +1939,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1919,11 +1944,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  		if (!up->dma || handle_rx_dma(up, iir))
  			status = serial8250_rx_chars(up, status);
  	}
@@ -59434,7 +59394,7 @@ index 1f231fcda..1cb78f8ea 100644
  	uart_unlock_and_check_sysrq(port, flags);
  	return 1;
  }
-@@ -2393,7 +2440,11 @@ int serial8250_do_startup(struct uart_port *port)
+@@ -2403,7 +2451,11 @@ int serial8250_do_startup(struct uart_port *port)
  		if (uart_console(port))
  			msg = "forbid DMA for kernel console";
  		else if (serial8250_request_dma(up))
@@ -59446,7 +59406,7 @@ index 1f231fcda..1cb78f8ea 100644
  		if (msg) {
  			dev_warn_ratelimited(port->dev, "%s\n", msg);
  			up->dma = NULL;
-@@ -2587,6 +2638,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2597,6 +2649,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -59457,7 +59417,7 @@ index 1f231fcda..1cb78f8ea 100644
  	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
  	if (is_omap1510_8250(up)) {
  		if (baud == 115200) {
-@@ -2606,6 +2661,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2616,6 +2672,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  		serial_port_out(port, UART_LCR, up->lcr | UART_LCR_DLAB);
  
  	serial_dl_write(up, quot);
@@ -59475,7 +59435,7 @@ index 1f231fcda..1cb78f8ea 100644
  }
  EXPORT_SYMBOL_GPL(serial8250_do_set_divisor);
  
-@@ -2785,6 +2851,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2795,6 +2862,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  	if ((termios->c_cflag & CREAD) == 0)
  		port->ignore_status_mask |= UART_LSR_DR;
  
@@ -59483,7 +59443,7 @@ index 1f231fcda..1cb78f8ea 100644
  	/*
  	 * CTS flow control flag and modem status interrupts
  	 */
-@@ -2798,6 +2865,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2808,6 +2876,7 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		up->ier |= UART_IER_RTOIE;
  
  	serial_port_out(port, UART_IER, up->ier);
@@ -59491,7 +59451,7 @@ index 1f231fcda..1cb78f8ea 100644
  
  	if (up->capabilities & UART_CAP_EFR) {
  		unsigned char efr = 0;
-@@ -2816,16 +2884,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2826,16 +2895,25 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  			serial_port_out(port, UART_EFR, efr);
  	}
  
@@ -59519,7 +59479,7 @@ index 1f231fcda..1cb78f8ea 100644
  	if (port->type != PORT_16750) {
  		/* emulated UARTs (Lucent Venus 167x) need two steps */
  		if (up->fcr & UART_FCR_ENABLE_FIFO)
-@@ -2833,6 +2910,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
+@@ -2843,6 +2921,23 @@ serial8250_do_set_termios(struct uart_port *port, struct ktermios *termios,
  		serial_port_out(port, UART_FCR, up->fcr);	/* set fcr */
  	}
  	serial8250_set_mctrl(port, port->mctrl);
@@ -59810,10 +59770,10 @@ index 4dfa44d6c..6253dce08 100644
  
  	/* Resume the device */
 diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index ac347f9d5..ddd1d3eef 100644
+index 63bb04d26..ed654fd0d 100644
 --- a/drivers/usb/core/hcd.c
 +++ b/drivers/usb/core/hcd.c
-@@ -1692,6 +1692,7 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
+@@ -1696,6 +1696,7 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
  
  	spin_lock_irq(&bh->lock);
  	bh->running = true;
@@ -59821,7 +59781,7 @@ index ac347f9d5..ddd1d3eef 100644
  	list_replace_init(&bh->head, &local_list);
  	spin_unlock_irq(&bh->lock);
  
-@@ -1705,17 +1706,10 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
+@@ -1709,17 +1710,10 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
  		bh->completing_ep = NULL;
  	}
  
@@ -59842,7 +59802,7 @@ index ac347f9d5..ddd1d3eef 100644
  	bh->running = false;
  	spin_unlock_irq(&bh->lock);
  }
-@@ -1740,7 +1734,7 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
+@@ -1744,7 +1738,7 @@ static void usb_giveback_urb_bh(struct tasklet_struct *t)
  void usb_hcd_giveback_urb(struct usb_hcd *hcd, struct urb *urb, int status)
  {
  	struct giveback_urb_bh *bh;
@@ -59851,7 +59811,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	/* pass status to tasklet via unlinked */
  	if (likely(!urb->unlinked))
-@@ -1751,10 +1745,13 @@ void usb_hcd_giveback_urb(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1755,10 +1749,13 @@ void usb_hcd_giveback_urb(struct usb_hcd *hcd, struct urb *urb, int status)
  		return;
  	}
  
@@ -59867,7 +59827,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	spin_lock(&bh->lock);
  	list_add_tail(&urb->urb_list, &bh->head);
-@@ -1763,7 +1760,7 @@ void usb_hcd_giveback_urb(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1767,7 +1764,7 @@ void usb_hcd_giveback_urb(struct usb_hcd *hcd, struct urb *urb, int status)
  
  	if (running)
  		;
@@ -59876,7 +59836,7 @@ index ac347f9d5..ddd1d3eef 100644
  		tasklet_hi_schedule(&bh->bh);
  	else
  		tasklet_schedule(&bh->bh);
-@@ -2664,7 +2661,6 @@ int usb_add_hcd(struct usb_hcd *hcd,
+@@ -2668,7 +2665,6 @@ int usb_add_hcd(struct usb_hcd *hcd,
  {
  	int retval;
  	struct usb_device *rhdev;
@@ -59884,7 +59844,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	if (!hcd->skip_phy_initialization && usb_hcd_is_primary_hcd(hcd)) {
  		hcd->phy_roothub = usb_phy_roothub_alloc(hcd->self.sysdev);
-@@ -2803,7 +2799,6 @@ int usb_add_hcd(struct usb_hcd *hcd,
+@@ -2807,7 +2803,6 @@ int usb_add_hcd(struct usb_hcd *hcd,
  
  	/* initialize tasklets */
  	init_giveback_urb_bh(&hcd->high_prio_bh);
@@ -59892,7 +59852,7 @@ index ac347f9d5..ddd1d3eef 100644
  	init_giveback_urb_bh(&hcd->low_prio_bh);
  
  	/* enable irqs just before we start the controller,
-@@ -2822,26 +2817,13 @@ int usb_add_hcd(struct usb_hcd *hcd,
+@@ -2826,26 +2821,13 @@ int usb_add_hcd(struct usb_hcd *hcd,
  		goto err_hcd_driver_start;
  	}
  
@@ -59924,7 +59884,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	return retval;
  
-@@ -2884,7 +2866,6 @@ EXPORT_SYMBOL_GPL(usb_add_hcd);
+@@ -2888,7 +2870,6 @@ EXPORT_SYMBOL_GPL(usb_add_hcd);
  void usb_remove_hcd(struct usb_hcd *hcd)
  {
  	struct usb_device *rhdev = hcd->self.root_hub;
@@ -59932,7 +59892,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	dev_info(hcd->self.controller, "remove, state %x\n", hcd->state);
  
-@@ -2895,7 +2876,6 @@ void usb_remove_hcd(struct usb_hcd *hcd)
+@@ -2899,7 +2880,6 @@ void usb_remove_hcd(struct usb_hcd *hcd)
  
  	dev_dbg(hcd->self.controller, "roothub graceful disconnect\n");
  	spin_lock_irq (&hcd_root_hub_lock);
@@ -59940,7 +59900,7 @@ index ac347f9d5..ddd1d3eef 100644
  	hcd->rh_registered = 0;
  	spin_unlock_irq (&hcd_root_hub_lock);
  
-@@ -2905,8 +2885,7 @@ void usb_remove_hcd(struct usb_hcd *hcd)
+@@ -2909,8 +2889,7 @@ void usb_remove_hcd(struct usb_hcd *hcd)
  	cancel_work_sync(&hcd->died_work);
  
  	mutex_lock(&usb_bus_idr_lock);
@@ -59951,7 +59911,7 @@ index ac347f9d5..ddd1d3eef 100644
  
  	/*
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 7af2def63..28d472da8 100644
+index 580604596..6cb1aef97 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
 @@ -1112,10 +1112,7 @@ static void hub_activate(struct usb_hub *hub, enum hub_activation_type type)
@@ -59985,7 +59945,7 @@ index 7af2def63..28d472da8 100644
  	} else {			/* root hub */
  		const struct hc_driver *drv = bus_to_hcd(hdev->bus)->driver;
  
-@@ -4633,6 +4631,8 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
+@@ -4713,6 +4711,8 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
  	if (oldspeed == USB_SPEED_LOW)
  		delay = HUB_LONG_RESET_TIME;
  
@@ -59994,15 +59954,15 @@ index 7af2def63..28d472da8 100644
  	/* Reset the device; full speed may morph to high speed */
  	/* FIXME a USB 2.0 device may morph into SuperSpeed on reset. */
  	retval = hub_port_reset(hub, port1, udev, delay, false);
-@@ -4943,6 +4943,7 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
- 		hub_port_disable(hub, port1, 0);
+@@ -5003,6 +5003,7 @@ hub_port_init(struct usb_hub *hub, struct usb_device *udev, int port1,
  		update_devnum(udev, devnum);	/* for disconnect processing */
  	}
+ 	kfree(buf);
 +	mutex_unlock(hcd->address0_mutex);
  	return retval;
  }
  
-@@ -5117,7 +5118,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5177,7 +5178,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  	struct usb_port *port_dev = hub->ports[port1 - 1];
  	struct usb_device *udev = port_dev->child;
  	static int unreliable_port = -1;
@@ -60010,7 +59970,7 @@ index 7af2def63..28d472da8 100644
  
  	/* Disconnect any existing devices under this port */
  	if (udev) {
-@@ -5173,11 +5173,8 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5233,11 +5233,8 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  		unit_load = 100;
  
  	status = 0;
@@ -60023,7 +59983,7 @@ index 7af2def63..28d472da8 100644
  		/* reallocate for each attempt, since references
  		 * to the previous one can escape in various ways
  		 */
-@@ -5185,8 +5182,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5245,8 +5242,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  		if (!udev) {
  			dev_err(&port_dev->dev,
  					"couldn't allocate usb_device\n");
@@ -60032,12 +59992,12 @@ index 7af2def63..28d472da8 100644
  			goto done;
  		}
  
-@@ -5208,14 +5203,12 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5268,13 +5263,12 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  		}
  
  		/* reset (non-USB 3.0 devices) and get descriptor */
 +		usb_lock_port(port_dev);
- 		status = hub_port_init(hub, udev, port1, i);
+ 		status = hub_port_init(hub, udev, port1, i, NULL);
 +		usb_unlock_port(port_dev);
  		if (status < 0)
  			goto loop;
@@ -60045,11 +60005,10 @@ index 7af2def63..28d472da8 100644
 -		mutex_unlock(hcd->address0_mutex);
 -		usb_unlock_port(port_dev);
 -		retry_locked = false;
--
+ 
  		if (udev->quirks & USB_QUIRK_DELAY_INIT)
  			msleep(2000);
- 
-@@ -5308,10 +5301,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5368,10 +5362,6 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  		usb_ep0_reinit(udev);
  		release_devnum(udev);
  		hub_free_dev(udev);
@@ -60060,7 +60019,7 @@ index 7af2def63..28d472da8 100644
  		usb_put_dev(udev);
  		if ((status == -ENOTCONN) || (status == -ENOTSUPP))
  			break;
-@@ -5336,7 +5325,8 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
+@@ -5396,7 +5386,8 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
  done:
  	hub_port_disable(hub, port1, 1);
  	if (hcd->driver->relinquish_port && !hub->hdev->parent) {
@@ -60070,7 +60029,7 @@ index 7af2def63..28d472da8 100644
  			hcd->driver->relinquish_port(hcd, port1);
  	}
  }
-@@ -5863,8 +5853,6 @@ static int usb_reset_and_verify_device(struct usb_device *udev)
+@@ -5919,8 +5910,6 @@ static int usb_reset_and_verify_device(struct usb_device *udev)
  	bos = udev->bos;
  	udev->bos = NULL;
  
@@ -60079,7 +60038,7 @@ index 7af2def63..28d472da8 100644
  	for (i = 0; i < PORT_INIT_TRIES; ++i) {
  
  		/* ep0 maxpacket size may change; let the HCD know about it.
-@@ -5874,7 +5862,6 @@ static int usb_reset_and_verify_device(struct usb_device *udev)
+@@ -5930,7 +5919,6 @@ static int usb_reset_and_verify_device(struct usb_device *udev)
  		if (ret >= 0 || ret == -ENOTCONN || ret == -ENODEV)
  			break;
  	}
@@ -60878,39 +60837,40 @@ index 267543c3d..195cca1fe 100644
  
  const struct of_device_id dwc2_of_match_table[] = {
 diff --git a/drivers/usb/dwc2/platform.c b/drivers/usb/dwc2/platform.c
-index 8851db646..f658e3cdc 100644
+index 9d0dd09a2..2076796f2 100644
 --- a/drivers/usb/dwc2/platform.c
 +++ b/drivers/usb/dwc2/platform.c
-@@ -128,27 +128,11 @@ static void __dwc2_disable_regulators(void *data)
- 	regulator_bulk_disable(ARRAY_SIZE(hsotg->supplies), hsotg->supplies);
+@@ -121,21 +121,17 @@ static int dwc2_get_dr_mode(struct dwc2_hsotg *hsotg)
+ 	return 0;
  }
  
 -static int __dwc2_lowlevel_hw_enable(struct dwc2_hsotg *hsotg)
-+static int __dwc2_lowlevel_phy_enable(struct dwc2_hsotg *hsotg)
++static void __dwc2_disable_regulators(void *data)
  {
- 	struct platform_device *pdev = to_platform_device(hsotg->dev);
- 	int ret;
+-	struct platform_device *pdev = to_platform_device(hsotg->dev);
+-	int ret;
++	struct dwc2_hsotg *hsotg = data;
  
 -	ret = regulator_bulk_enable(ARRAY_SIZE(hsotg->supplies),
 -				    hsotg->supplies);
 -	if (ret)
 -		return ret;
--
--	ret = devm_add_action_or_reset(&pdev->dev,
--				       __dwc2_disable_regulators, hsotg);
--	if (ret)
--		return ret;
--
++	regulator_bulk_disable(ARRAY_SIZE(hsotg->supplies), hsotg->supplies);
++}
+ 
 -	if (hsotg->clk) {
 -		ret = clk_prepare_enable(hsotg->clk);
 -		if (ret)
 -			return ret;
 -	}
--
++static int __dwc2_lowlevel_phy_enable(struct dwc2_hsotg *hsotg)
++{
++	struct platform_device *pdev = to_platform_device(hsotg->dev);
++	int ret;
+ 
  	if (hsotg->uphy) {
  		ret = usb_phy_init(hsotg->uphy);
- 	} else if (hsotg->plat && hsotg->plat->phy_init) {
-@@ -163,22 +147,22 @@ static int __dwc2_lowlevel_hw_enable(struct dwc2_hsotg *hsotg)
+@@ -151,22 +147,22 @@ static int __dwc2_lowlevel_hw_enable(struct dwc2_hsotg *hsotg)
  }
  
  /**
@@ -60939,7 +60899,7 @@ index 8851db646..f658e3cdc 100644
  {
  	struct platform_device *pdev = to_platform_device(hsotg->dev);
  	int ret = 0;
-@@ -192,11 +176,78 @@ static int __dwc2_lowlevel_hw_disable(struct dwc2_hsotg *hsotg)
+@@ -180,11 +176,78 @@ static int __dwc2_lowlevel_hw_disable(struct dwc2_hsotg *hsotg)
  		if (ret == 0)
  			ret = phy_exit(hsotg->phy);
  	}
@@ -60970,20 +60930,20 @@ index 8851db646..f658e3cdc 100644
 +
 +	ret = regulator_bulk_enable(ARRAY_SIZE(hsotg->supplies),
 +				    hsotg->supplies);
-+	if (ret)
-+		return ret;
-+
+ 	if (ret)
+ 		return ret;
+ 
+-	if (hsotg->clk)
+-		clk_disable_unprepare(hsotg->clk);
 +	ret = devm_add_action_or_reset(&pdev->dev,
 +				       __dwc2_disable_regulators, hsotg);
 +	if (ret)
 +		return ret;
 +
 +	ret = clk_bulk_prepare_enable(hsotg->num_clks, hsotg->clks);
- 	if (ret)
- 		return ret;
- 
--	if (hsotg->clk)
--		clk_disable_unprepare(hsotg->clk);
++	if (ret)
++		return ret;
++
 +	if (!hsotg->ll_phy_enabled)
 +		ret = dwc2_lowlevel_phy_enable(hsotg);
 +
@@ -61018,9 +60978,9 @@ index 8851db646..f658e3cdc 100644
 +
 +	clk_bulk_disable_unprepare(hsotg->num_clks, hsotg->clks);
  
- 	return 0;
+ 	return regulator_bulk_disable(ARRAY_SIZE(hsotg->supplies), hsotg->supplies);
  }
-@@ -281,10 +332,18 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
+@@ -269,10 +332,18 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
  	hsotg->plat = dev_get_platdata(hsotg->dev);
  
  	/* Clock */
@@ -61043,7 +61003,7 @@ index 8851db646..f658e3cdc 100644
  	}
  
  	/* Regulators */
-@@ -328,6 +387,9 @@ static int dwc2_driver_remove(struct platform_device *dev)
+@@ -316,6 +387,9 @@ static int dwc2_driver_remove(struct platform_device *dev)
  	if (hsotg->params.activate_stm_id_vb_detection)
  		regulator_disable(hsotg->usb33d);
  
@@ -61053,7 +61013,7 @@ index 8851db646..f658e3cdc 100644
  	if (hsotg->ll_hw_enabled)
  		dwc2_lowlevel_hw_disable(hsotg);
  
-@@ -479,6 +541,11 @@ static int dwc2_driver_probe(struct platform_device *dev)
+@@ -467,6 +541,11 @@ static int dwc2_driver_probe(struct platform_device *dev)
  
  	hsotg->needs_byte_swap = dwc2_check_core_endianness(hsotg);
  
@@ -61065,7 +61025,7 @@ index 8851db646..f658e3cdc 100644
  	retval = dwc2_get_dr_mode(hsotg);
  	if (retval)
  		goto error;
-@@ -542,9 +609,6 @@ static int dwc2_driver_probe(struct platform_device *dev)
+@@ -530,9 +609,6 @@ static int dwc2_driver_probe(struct platform_device *dev)
  		ggpio |= GGPIO_STM32_OTG_GCCFG_IDEN;
  		ggpio |= GGPIO_STM32_OTG_GCCFG_VBDEN;
  		dwc2_writel(hsotg, ggpio, GGPIO);
@@ -61075,7 +61035,7 @@ index 8851db646..f658e3cdc 100644
  	}
  
  	retval = dwc2_drd_init(hsotg);
-@@ -597,6 +661,11 @@ static int dwc2_driver_probe(struct platform_device *dev)
+@@ -585,6 +661,11 @@ static int dwc2_driver_probe(struct platform_device *dev)
  	if (hsotg->dr_mode == USB_DR_MODE_PERIPHERAL)
  		dwc2_lowlevel_hw_disable(hsotg);
  
@@ -61087,16 +61047,16 @@ index 8851db646..f658e3cdc 100644
  #if IS_ENABLED(CONFIG_USB_DWC2_PERIPHERAL) || \
  	IS_ENABLED(CONFIG_USB_DWC2_DUAL_ROLE)
  	/* Postponed adding a new gadget to the udc class driver list */
-@@ -625,6 +694,8 @@ static int dwc2_driver_probe(struct platform_device *dev)
+@@ -613,6 +694,8 @@ static int dwc2_driver_probe(struct platform_device *dev)
  	if (hsotg->params.activate_stm_id_vb_detection)
  		regulator_disable(hsotg->usb33d);
  error:
 +	pm_runtime_put_sync(hsotg->dev);
 +	pm_runtime_disable(hsotg->dev);
- 	if (hsotg->dr_mode != USB_DR_MODE_PERIPHERAL)
+ 	if (hsotg->ll_hw_enabled)
  		dwc2_lowlevel_hw_disable(hsotg);
  	return retval;
-@@ -684,6 +755,7 @@ static int __maybe_unused dwc2_suspend(struct device *dev)
+@@ -672,6 +755,7 @@ static int __maybe_unused dwc2_suspend(struct device *dev)
  static int __maybe_unused dwc2_resume(struct device *dev)
  {
  	struct dwc2_hsotg *dwc2 = dev_get_drvdata(dev);
@@ -61104,7 +61064,7 @@ index 8851db646..f658e3cdc 100644
  	int ret = 0;
  
  	if (dwc2->phy_off_for_suspend && dwc2->ll_hw_enabled) {
-@@ -723,6 +795,17 @@ static int __maybe_unused dwc2_resume(struct device *dev)
+@@ -711,6 +795,17 @@ static int __maybe_unused dwc2_resume(struct device *dev)
  
  	dwc2_drd_resume(dwc2);
  
@@ -61123,7 +61083,7 @@ index 8851db646..f658e3cdc 100644
  		ret = dwc2_hsotg_resume(dwc2);
  
 diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
-index d73f624ed..7078a4912 100644
+index 5709b959b..6eda093f2 100644
 --- a/drivers/usb/dwc3/core.c
 +++ b/drivers/usb/dwc3/core.c
 @@ -119,26 +119,35 @@ static void __dwc3_set_mode(struct work_struct *work)
@@ -61598,7 +61558,7 @@ index d73f624ed..7078a4912 100644
  	if (IS_ERR(dwc->reset))
  		return PTR_ERR(dwc->reset);
  
-@@ -1594,8 +1672,7 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1592,8 +1670,7 @@ static int dwc3_probe(struct platform_device *pdev)
  
  	ret = dwc3_core_init(dwc);
  	if (ret) {
@@ -61608,7 +61568,7 @@ index d73f624ed..7078a4912 100644
  		goto err4;
  	}
  
-@@ -1606,24 +1683,36 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1604,24 +1681,36 @@ static int dwc3_probe(struct platform_device *pdev)
  	if (ret)
  		goto err5;
  
@@ -61652,7 +61612,7 @@ index d73f624ed..7078a4912 100644
  	dwc3_ulpi_exit(dwc);
  
  err4:
-@@ -1644,6 +1733,9 @@ static int dwc3_probe(struct platform_device *pdev)
+@@ -1640,6 +1729,9 @@ static int dwc3_probe(struct platform_device *pdev)
  assert_reset:
  	reset_control_assert(dwc->reset);
  
@@ -61662,7 +61622,7 @@ index d73f624ed..7078a4912 100644
  	return ret;
  }
  
-@@ -1666,6 +1758,9 @@ static int dwc3_remove(struct platform_device *pdev)
+@@ -1663,6 +1755,9 @@ static int dwc3_remove(struct platform_device *pdev)
  	dwc3_free_event_buffers(dwc);
  	dwc3_free_scratch_buffers(dwc);
  
@@ -61672,7 +61632,7 @@ index d73f624ed..7078a4912 100644
  	return 0;
  }
  
-@@ -1850,7 +1945,7 @@ static int dwc3_runtime_suspend(struct device *dev)
+@@ -1847,7 +1942,7 @@ static int dwc3_runtime_suspend(struct device *dev)
  	if (ret)
  		return ret;
  
@@ -61681,7 +61641,7 @@ index d73f624ed..7078a4912 100644
  
  	return 0;
  }
-@@ -1860,7 +1955,7 @@ static int dwc3_runtime_resume(struct device *dev)
+@@ -1857,7 +1952,7 @@ static int dwc3_runtime_resume(struct device *dev)
  	struct dwc3     *dwc = dev_get_drvdata(dev);
  	int		ret;
  
@@ -61690,7 +61650,7 @@ index d73f624ed..7078a4912 100644
  
  	ret = dwc3_resume_common(dwc, PMSG_AUTO_RESUME);
  	if (ret)
-@@ -1909,6 +2004,9 @@ static int dwc3_suspend(struct device *dev)
+@@ -1906,6 +2001,9 @@ static int dwc3_suspend(struct device *dev)
  	struct dwc3	*dwc = dev_get_drvdata(dev);
  	int		ret;
  
@@ -61700,7 +61660,7 @@ index d73f624ed..7078a4912 100644
  	ret = dwc3_suspend_common(dwc, PMSG_SUSPEND);
  	if (ret)
  		return ret;
-@@ -1923,6 +2021,9 @@ static int dwc3_resume(struct device *dev)
+@@ -1920,6 +2018,9 @@ static int dwc3_resume(struct device *dev)
  	struct dwc3	*dwc = dev_get_drvdata(dev);
  	int		ret;
  
@@ -62102,10 +62062,10 @@ index 74d9c2c38..b2aa7272f 100644
  		return "Start of Frame";
  	case DWC3_DEVICE_EVENT_ERRATIC_ERROR:
 diff --git a/drivers/usb/dwc3/debugfs.c b/drivers/usb/dwc3/debugfs.c
-index 3ebe3e6c2..dc81e8349 100644
+index da8b62db4..0f2c58c28 100644
 --- a/drivers/usb/dwc3/debugfs.c
 +++ b/drivers/usb/dwc3/debugfs.c
-@@ -440,6 +440,10 @@ static ssize_t dwc3_mode_write(struct file *file,
+@@ -454,6 +454,10 @@ static ssize_t dwc3_mode_write(struct file *file,
  	if (!strncmp(buf, "otg", 3))
  		mode = DWC3_GCTL_PRTCAP_OTG;
  
@@ -62116,34 +62076,36 @@ index 3ebe3e6c2..dc81e8349 100644
  	dwc3_set_mode(dwc, mode);
  
  	return count;
-@@ -638,16 +642,14 @@ static int dwc3_tx_fifo_size_show(struct seq_file *s, void *unused)
+@@ -683,7 +687,7 @@ static int dwc3_tx_fifo_size_show(struct seq_file *s, void *unused)
  	struct dwc3_ep		*dep = s->private;
  	struct dwc3		*dwc = dep->dwc;
  	unsigned long		flags;
 -	int			mdwidth;
 +	u32			mdwidth;
  	u32			val;
+ 	int			ret;
  
- 	spin_lock_irqsave(&dwc->lock, flags);
+@@ -695,9 +699,7 @@ static int dwc3_tx_fifo_size_show(struct seq_file *s, void *unused)
  	val = dwc3_core_fifo_space(dep, DWC3_TXFIFO);
  
  	/* Convert to bytes */
 -	mdwidth = DWC3_MDWIDTH(dwc->hwparams.hwparams0);
 -	if (DWC3_IP_IS(DWC32))
 -		mdwidth += DWC3_GHWPARAMS6_MDWIDTH(dwc->hwparams.hwparams6);
-+	mdwidth = dwc3_mdwidth(dwc);
++	mdwidth = dwc3_mdwidth(dwc);	
  
  	val *= mdwidth;
  	val >>= 3;
-@@ -662,16 +664,14 @@ static int dwc3_rx_fifo_size_show(struct seq_file *s, void *unused)
+@@ -714,7 +716,7 @@ static int dwc3_rx_fifo_size_show(struct seq_file *s, void *unused)
  	struct dwc3_ep		*dep = s->private;
  	struct dwc3		*dwc = dep->dwc;
  	unsigned long		flags;
 -	int			mdwidth;
 +	u32			mdwidth;
  	u32			val;
+ 	int			ret;
  
- 	spin_lock_irqsave(&dwc->lock, flags);
+@@ -726,9 +728,8 @@ static int dwc3_rx_fifo_size_show(struct seq_file *s, void *unused)
  	val = dwc3_core_fifo_space(dep, DWC3_RXFIFO);
  
  	/* Convert to bytes */
@@ -62151,6 +62113,7 @@ index 3ebe3e6c2..dc81e8349 100644
 -	if (DWC3_IP_IS(DWC32))
 -		mdwidth += DWC3_GHWPARAMS6_MDWIDTH(dwc->hwparams.hwparams6);
 +	mdwidth = dwc3_mdwidth(dwc);
++
  
  	val *= mdwidth;
  	val >>= 3;
@@ -62271,10 +62234,10 @@ index 3cd294264..658739410 100644
  		/* if the cfg matches and the cfg is non zero */
  		if (cfg && (!ret || (ret == USB_GADGET_DELAYED_STATUS))) {
 diff --git a/drivers/usb/dwc3/gadget.c b/drivers/usb/dwc3/gadget.c
-index 28a1194f8..8e9a2622d 100644
+index 076032128..d45cb1a57 100644
 --- a/drivers/usb/dwc3/gadget.c
 +++ b/drivers/usb/dwc3/gadget.c
-@@ -311,24 +311,13 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
+@@ -312,24 +312,13 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
  	if (DWC3_DEPCMD_CMD(cmd) == DWC3_DEPCMD_STARTTRANSFER) {
  		int link_state;
  
@@ -62302,7 +62265,7 @@ index 28a1194f8..8e9a2622d 100644
  		}
  	}
  
-@@ -417,6 +406,7 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
+@@ -418,6 +407,7 @@ int dwc3_send_gadget_ep_cmd(struct dwc3_ep *dep, unsigned int cmd,
  
  	return ret;
  }
@@ -62310,7 +62273,7 @@ index 28a1194f8..8e9a2622d 100644
  
  static int dwc3_send_clear_stall_ep_cmd(struct dwc3_ep *dep)
  {
-@@ -640,8 +630,192 @@ static int dwc3_gadget_set_ep_config(struct dwc3_ep *dep, unsigned int action)
+@@ -641,8 +631,192 @@ static int dwc3_gadget_set_ep_config(struct dwc3_ep *dep, unsigned int action)
  	return dwc3_send_gadget_ep_cmd(dep, DWC3_DEPCMD_SETEPCONFIG, &params);
  }
  
@@ -62505,7 +62468,7 @@ index 28a1194f8..8e9a2622d 100644
  
  /**
   * __dwc3_gadget_ep_enable - initializes a hw endpoint
-@@ -660,6 +834,10 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
+@@ -661,6 +835,10 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
  	int			ret;
  
  	if (!(dep->flags & DWC3_EP_ENABLED)) {
@@ -62516,7 +62479,7 @@ index 28a1194f8..8e9a2622d 100644
  		ret = dwc3_gadget_start_config(dep);
  		if (ret)
  			return ret;
-@@ -742,8 +920,16 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
+@@ -743,8 +921,16 @@ static int __dwc3_gadget_ep_enable(struct dwc3_ep *dep, unsigned int action)
  			 * All stream eps will reinitiate stream on NoStream
  			 * rejection until we can determine that the host can
  			 * prime after the first transfer.
@@ -62534,7 +62497,7 @@ index 28a1194f8..8e9a2622d 100644
  		}
  	}
  
-@@ -808,7 +994,7 @@ static int __dwc3_gadget_ep_disable(struct dwc3_ep *dep)
+@@ -809,7 +995,7 @@ static int __dwc3_gadget_ep_disable(struct dwc3_ep *dep)
  
  	dep->stream_capable = false;
  	dep->type = 0;
@@ -62543,7 +62506,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	/* Clear out the ep descriptors for non-ep0 */
  	if (dep->number > 1) {
-@@ -971,49 +1157,17 @@ static u32 dwc3_calc_trbs_left(struct dwc3_ep *dep)
+@@ -972,49 +1158,17 @@ static u32 dwc3_calc_trbs_left(struct dwc3_ep *dep)
  	return trbs_left;
  }
  
@@ -62599,7 +62562,7 @@ index 28a1194f8..8e9a2622d 100644
  	trb->bpl = lower_32_bits(dma);
  	trb->bph = upper_32_bits(dma);
  
-@@ -1053,10 +1207,10 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1054,10 +1208,10 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  				unsigned int mult = 2;
  				unsigned int maxp = usb_endpoint_maxp(ep->desc);
  
@@ -62612,7 +62575,7 @@ index 28a1194f8..8e9a2622d 100644
  					mult--;
  
  				trb->size |= DWC3_TRB_SIZE_PCM1(mult);
-@@ -1105,19 +1259,6 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1106,19 +1260,6 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  	if (usb_endpoint_xfer_bulk(dep->endpoint.desc) && dep->stream_capable)
  		trb->ctrl |= DWC3_TRB_CTRL_SID_SOFN(stream_id);
  
@@ -62632,7 +62595,7 @@ index 28a1194f8..8e9a2622d 100644
  	trb->ctrl |= DWC3_TRB_CTRL_HWO;
  
  	dwc3_ep_inc_enq(dep);
-@@ -1125,6 +1266,50 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
+@@ -1126,6 +1267,50 @@ static void dwc3_prepare_one_trb(struct dwc3_ep *dep,
  	trace_dwc3_prepare_trb(dep, trb);
  }
  
@@ -62683,7 +62646,7 @@ index 28a1194f8..8e9a2622d 100644
  static bool dwc3_needs_extra_trb(struct dwc3_ep *dep, struct dwc3_request *req)
  {
  	unsigned int maxp = usb_endpoint_maxp(dep->endpoint.desc);
-@@ -1417,7 +1602,7 @@ static int __dwc3_gadget_kick_transfer(struct dwc3_ep *dep)
+@@ -1418,7 +1603,7 @@ static int __dwc3_gadget_kick_transfer(struct dwc3_ep *dep)
  		dwc3_stop_active_transfer(dep, true, true);
  
  		list_for_each_entry_safe(req, tmp, &dep->started_list, list)
@@ -62692,7 +62655,30 @@ index 28a1194f8..8e9a2622d 100644
  
  		/* If ep isn't started, then there's no end transfer pending */
  		if (!(dep->flags & DWC3_EP_END_TRANSFER_PENDING))
-@@ -1633,7 +1818,7 @@ static int __dwc3_gadget_ep_queue(struct dwc3_ep *dep, struct dwc3_request *req)
+@@ -1468,6 +1653,14 @@ static int __dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force, bool int
+ 	WARN_ON_ONCE(ret);
+ 	dep->resource_index = 0;
+ 
++	/*
++	 * The END_TRANSFER command will cause the controller to generate a
++	 * NoStream Event, and it's not due to the host DP NoStream rejection.
++	 * Ignore the next NoStream event.
++	 */
++	if (dep->stream_capable)
++		dep->flags |= DWC3_EP_IGNORE_NEXT_NOSTREAM;
++
+ 	if (!interrupt) {
+ 		if (!DWC3_IP_IS(DWC3) || DWC3_VER_IS_PRIOR(DWC3, 310A))
+ 			mdelay(1);
+@@ -1478,6 +1671,7 @@ static int __dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force, bool int
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(dwc3_stop_active_transfer);
+ 
+ /**
+  * dwc3_gadget_start_isoc_quirk - workaround invalid frame number
+@@ -1659,7 +1853,7 @@ static int __dwc3_gadget_ep_queue(struct dwc3_ep *dep, struct dwc3_request *req)
  	struct dwc3		*dwc = dep->dwc;
  
  	if (!dep->endpoint.desc || !dwc->pullups_connected || !dwc->connected) {
@@ -62701,7 +62687,7 @@ index 28a1194f8..8e9a2622d 100644
  				dep->name);
  		return -ESHUTDOWN;
  	}
-@@ -1746,10 +1931,25 @@ static void dwc3_gadget_ep_cleanup_cancelled_requests(struct dwc3_ep *dep)
+@@ -1772,10 +1966,25 @@ static void dwc3_gadget_ep_cleanup_cancelled_requests(struct dwc3_ep *dep)
  {
  	struct dwc3_request		*req;
  	struct dwc3_request		*tmp;
@@ -62728,7 +62714,7 @@ index 28a1194f8..8e9a2622d 100644
  	}
  }
  
-@@ -1793,7 +1993,8 @@ static int dwc3_gadget_ep_dequeue(struct usb_ep *ep,
+@@ -1819,7 +2028,8 @@ static int dwc3_gadget_ep_dequeue(struct usb_ep *ep,
  			 * cancelled.
  			 */
  			list_for_each_entry_safe(r, t, &dep->started_list, list)
@@ -62738,7 +62724,7 @@ index 28a1194f8..8e9a2622d 100644
  
  			dep->flags &= ~DWC3_EP_WAIT_TRANSFER_COMPLETE;
  
-@@ -1814,8 +2015,6 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
+@@ -1840,8 +2050,6 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
  {
  	struct dwc3_gadget_ep_cmd_params	params;
  	struct dwc3				*dwc = dep->dwc;
@@ -62747,7 +62733,7 @@ index 28a1194f8..8e9a2622d 100644
  	int					ret;
  
  	if (usb_endpoint_xfer_isoc(dep->endpoint.desc)) {
-@@ -1864,16 +2063,14 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
+@@ -1890,16 +2098,14 @@ int __dwc3_gadget_ep_set_halt(struct dwc3_ep *dep, int value, int protocol)
  
  		dwc3_stop_active_transfer(dep, true, true);
  
@@ -62766,7 +62752,7 @@ index 28a1194f8..8e9a2622d 100644
  		ret = dwc3_send_clear_stall_ep_cmd(dep);
  		if (ret) {
  			dev_err(dwc->dev, "failed to clear STALL on %s\n",
-@@ -2072,6 +2269,102 @@ static void dwc3_stop_active_transfers(struct dwc3 *dwc)
+@@ -2098,6 +2304,102 @@ static void dwc3_stop_active_transfers(struct dwc3 *dwc)
  	}
  }
  
@@ -62869,7 +62855,7 @@ index 28a1194f8..8e9a2622d 100644
  static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
  {
  	u32			reg;
-@@ -2094,6 +2387,7 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
+@@ -2120,6 +2422,7 @@ static int dwc3_gadget_run_stop(struct dwc3 *dwc, int is_on, int suspend)
  		if (dwc->has_hibernation)
  			reg |= DWC3_DCTL_KEEP_CONNECT;
  
@@ -62877,7 +62863,7 @@ index 28a1194f8..8e9a2622d 100644
  		dwc->pullups_connected = true;
  	} else {
  		reg &= ~DWC3_DCTL_RUN_STOP;
-@@ -2121,42 +2415,16 @@ static void dwc3_gadget_disable_irq(struct dwc3 *dwc);
+@@ -2147,42 +2450,16 @@ static void dwc3_gadget_disable_irq(struct dwc3 *dwc);
  static void __dwc3_gadget_stop(struct dwc3 *dwc);
  static int __dwc3_gadget_start(struct dwc3 *dwc);
  
@@ -62923,8 +62909,8 @@ index 28a1194f8..8e9a2622d 100644
  	/*
  	 * Per databook, when we want to stop the gadget, if a control transfer
  	 * is still in process, complete it and get the core into setup phase.
-@@ -2192,27 +2460,50 @@ static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
- 		return 0;
+@@ -2220,27 +2497,50 @@ static int dwc3_gadget_pullup(struct usb_gadget *g, int is_on)
+ 		return ret;
  	}
  
 -	if (dwc->pullups_connected == is_on) {
@@ -62987,7 +62973,7 @@ index 28a1194f8..8e9a2622d 100644
  	pm_runtime_put(dwc->dev);
  
  	return ret;
-@@ -2223,8 +2514,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
+@@ -2251,8 +2551,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
  	u32			reg;
  
  	/* Enable all but Start and End of Frame IRQs */
@@ -62997,7 +62983,7 @@ index 28a1194f8..8e9a2622d 100644
  			DWC3_DEVTEN_CMDCMPLTEN |
  			DWC3_DEVTEN_ERRTICERREN |
  			DWC3_DEVTEN_WKUPEVTEN |
-@@ -2237,7 +2527,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
+@@ -2265,7 +2564,7 @@ static void dwc3_gadget_enable_irq(struct dwc3 *dwc)
  
  	/* On 2.30a and above this bit enables U3/L2-L1 Suspend Events */
  	if (!DWC3_VER_IS_PRIOR(DWC3, 230A))
@@ -63006,7 +62992,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	dwc3_writel(dwc->regs, DWC3_DEVTEN, reg);
  }
-@@ -2280,9 +2570,7 @@ static void dwc3_gadget_setup_nump(struct dwc3 *dwc)
+@@ -2308,9 +2607,7 @@ static void dwc3_gadget_setup_nump(struct dwc3 *dwc)
  	u32 reg;
  
  	ram2_depth = DWC3_GHWPARAMS7_RAM2_DEPTH(dwc->hwparams.hwparams7);
@@ -63017,7 +63003,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	nump = ((ram2_depth * mdwidth / 8) - 24 - 16) / 1024;
  	nump = min_t(u32, nump, 16);
-@@ -2300,6 +2588,15 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
+@@ -2328,6 +2625,15 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
  	int			ret = 0;
  	u32			reg;
  
@@ -63033,7 +63019,7 @@ index 28a1194f8..8e9a2622d 100644
  	/*
  	 * Use IMOD if enabled via dwc->imod_interval. Otherwise, if
  	 * the core supports IMOD, disable it.
-@@ -2328,6 +2625,17 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
+@@ -2356,6 +2662,17 @@ static int __dwc3_gadget_start(struct dwc3 *dwc)
  
  	dwc3_gadget_setup_nump(dwc);
  
@@ -63051,7 +63037,7 @@ index 28a1194f8..8e9a2622d 100644
  	/* Start with SuperSpeed Default */
  	dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  
-@@ -2415,6 +2723,7 @@ static int dwc3_gadget_stop(struct usb_gadget *g)
+@@ -2443,6 +2760,7 @@ static int dwc3_gadget_stop(struct usb_gadget *g)
  
  	spin_lock_irqsave(&dwc->lock, flags);
  	dwc->gadget_driver	= NULL;
@@ -63059,7 +63045,7 @@ index 28a1194f8..8e9a2622d 100644
  	spin_unlock_irqrestore(&dwc->lock, flags);
  
  	free_irq(dwc->irq_gadget, dwc->ev_buf);
-@@ -2466,59 +2775,94 @@ static void dwc3_gadget_set_speed(struct usb_gadget *g,
+@@ -2494,59 +2812,94 @@ static void dwc3_gadget_set_speed(struct usb_gadget *g,
  {
  	struct dwc3		*dwc = gadget_to_dwc(g);
  	unsigned long		flags;
@@ -63201,7 +63187,7 @@ index 28a1194f8..8e9a2622d 100644
  	spin_unlock_irqrestore(&dwc->lock, flags);
  }
  
-@@ -2530,7 +2874,11 @@ static const struct usb_gadget_ops dwc3_gadget_ops = {
+@@ -2558,7 +2911,11 @@ static const struct usb_gadget_ops dwc3_gadget_ops = {
  	.udc_start		= dwc3_gadget_start,
  	.udc_stop		= dwc3_gadget_stop,
  	.udc_set_speed		= dwc3_gadget_set_speed,
@@ -63213,7 +63199,7 @@ index 28a1194f8..8e9a2622d 100644
  };
  
  /* -------------------------------------------------------------------------- */
-@@ -2553,12 +2901,10 @@ static int dwc3_gadget_init_control_endpoint(struct dwc3_ep *dep)
+@@ -2581,12 +2938,10 @@ static int dwc3_gadget_init_control_endpoint(struct dwc3_ep *dep)
  static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
  {
  	struct dwc3 *dwc = dep->dwc;
@@ -63228,7 +63214,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	/* MDWIDTH is represented in bits, we need it in bytes */
  	mdwidth /= 8;
-@@ -2600,12 +2946,10 @@ static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
+@@ -2628,12 +2983,10 @@ static int dwc3_gadget_init_in_endpoint(struct dwc3_ep *dep)
  static int dwc3_gadget_init_out_endpoint(struct dwc3_ep *dep)
  {
  	struct dwc3 *dwc = dep->dwc;
@@ -63243,7 +63229,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	/* MDWIDTH is represented in bits, convert to bytes */
  	mdwidth /= 8;
-@@ -2857,7 +3201,6 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
+@@ -2885,7 +3238,6 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
  		const struct dwc3_event_depevt *event,
  		struct dwc3_request *req, int status)
  {
@@ -63251,7 +63237,7 @@ index 28a1194f8..8e9a2622d 100644
  	int ret;
  
  	if (req->request.num_mapped_sgs)
-@@ -2878,35 +3221,7 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
+@@ -2906,35 +3258,7 @@ static int dwc3_gadget_ep_cleanup_completed_request(struct dwc3_ep *dep,
  		req->needs_extra_trb = false;
  	}
  
@@ -63288,7 +63274,7 @@ index 28a1194f8..8e9a2622d 100644
  
  out:
  	return ret;
-@@ -2931,6 +3246,11 @@ static void dwc3_gadget_ep_cleanup_completed_requests(struct dwc3_ep *dep,
+@@ -2959,6 +3283,11 @@ static void dwc3_gadget_ep_cleanup_completed_requests(struct dwc3_ep *dep,
  static bool dwc3_gadget_ep_should_continue(struct dwc3_ep *dep)
  {
  	struct dwc3_request	*req;
@@ -63300,7 +63286,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	if (!list_empty(&dep->pending_list))
  		return true;
-@@ -2958,14 +3278,14 @@ static bool dwc3_gadget_endpoint_trbs_complete(struct dwc3_ep *dep,
+@@ -2986,14 +3315,14 @@ static bool dwc3_gadget_endpoint_trbs_complete(struct dwc3_ep *dep,
  	struct dwc3		*dwc = dep->dwc;
  	bool			no_started_trb = true;
  
@@ -63318,7 +63304,7 @@ index 28a1194f8..8e9a2622d 100644
  	if (usb_endpoint_xfer_isoc(dep->endpoint.desc) &&
  		list_empty(&dep->started_list) &&
  		(list_empty(&dep->pending_list) || status == -EXDEV))
-@@ -3064,14 +3384,6 @@ static void dwc3_gadget_endpoint_command_complete(struct dwc3_ep *dep,
+@@ -3092,14 +3421,6 @@ static void dwc3_gadget_endpoint_command_complete(struct dwc3_ep *dep,
  	if (cmd != DWC3_DEPCMD_ENDTRANSFER)
  		return;
  
@@ -63333,7 +63319,7 @@ index 28a1194f8..8e9a2622d 100644
  	dep->flags &= ~DWC3_EP_END_TRANSFER_PENDING;
  	dep->flags &= ~DWC3_EP_TRANSFER_STARTED;
  	dwc3_gadget_ep_cleanup_cancelled_requests(dep);
-@@ -3210,7 +3522,7 @@ static void dwc3_endpoint_interrupt(struct dwc3 *dwc,
+@@ -3238,7 +3559,7 @@ static void dwc3_endpoint_interrupt(struct dwc3 *dwc,
  
  static void dwc3_disconnect_gadget(struct dwc3 *dwc)
  {
@@ -63342,7 +63328,7 @@ index 28a1194f8..8e9a2622d 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->disconnect(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3219,7 +3531,7 @@ static void dwc3_disconnect_gadget(struct dwc3 *dwc)
+@@ -3247,7 +3568,7 @@ static void dwc3_disconnect_gadget(struct dwc3 *dwc)
  
  static void dwc3_suspend_gadget(struct dwc3 *dwc)
  {
@@ -63351,7 +63337,7 @@ index 28a1194f8..8e9a2622d 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->suspend(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3228,7 +3540,7 @@ static void dwc3_suspend_gadget(struct dwc3 *dwc)
+@@ -3256,7 +3577,7 @@ static void dwc3_suspend_gadget(struct dwc3 *dwc)
  
  static void dwc3_resume_gadget(struct dwc3 *dwc)
  {
@@ -63360,7 +63346,7 @@ index 28a1194f8..8e9a2622d 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->resume(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3240,14 +3552,14 @@ static void dwc3_reset_gadget(struct dwc3 *dwc)
+@@ -3268,14 +3589,14 @@ static void dwc3_reset_gadget(struct dwc3 *dwc)
  	if (!dwc->gadget_driver)
  		return;
  
@@ -63376,29 +63362,8 @@ index 28a1194f8..8e9a2622d 100644
 +void dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force,
  	bool interrupt)
  {
- 	struct dwc3_gadget_ep_cmd_params params;
-@@ -3294,11 +3606,20 @@ static void dwc3_stop_active_transfer(struct dwc3_ep *dep, bool force,
- 	WARN_ON_ONCE(ret);
- 	dep->resource_index = 0;
- 
-+	/*
-+	 * The END_TRANSFER command will cause the controller to generate a
-+	 * NoStream Event, and it's not due to the host DP NoStream rejection.
-+	 * Ignore the next NoStream event.
-+	 */
-+	if (dep->stream_capable)
-+		dep->flags |= DWC3_EP_IGNORE_NEXT_NOSTREAM;
-+
- 	if (!interrupt)
- 		dep->flags &= ~DWC3_EP_TRANSFER_STARTED;
- 	else
- 		dep->flags |= DWC3_EP_END_TRANSFER_PENDING;
- }
-+EXPORT_SYMBOL_GPL(dwc3_stop_active_transfer);
- 
- static void dwc3_clear_stall_all_ep(struct dwc3 *dwc)
- {
-@@ -3413,12 +3734,18 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+ 	if (!(dep->flags & DWC3_EP_TRANSFER_STARTED) ||
+@@ -3429,12 +3750,18 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  	struct dwc3_ep		*dep;
  	int			ret;
  	u32			reg;
@@ -63417,7 +63382,7 @@ index 28a1194f8..8e9a2622d 100644
  	/*
  	 * RAMClkSel is reset to 0 after USB reset, so it must be reprogrammed
  	 * each time on Connect Done.
-@@ -3433,6 +3760,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+@@ -3449,6 +3776,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  		dwc->gadget->ep0->maxpacket = 512;
  		dwc->gadget->speed = USB_SPEED_SUPER_PLUS;
@@ -63429,7 +63394,7 @@ index 28a1194f8..8e9a2622d 100644
  		break;
  	case DWC3_DSTS_SUPERSPEED:
  		/*
-@@ -3454,6 +3786,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
+@@ -3470,6 +3802,11 @@ static void dwc3_gadget_conndone_interrupt(struct dwc3 *dwc)
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(512);
  		dwc->gadget->ep0->maxpacket = 512;
  		dwc->gadget->speed = USB_SPEED_SUPER;
@@ -63441,7 +63406,7 @@ index 28a1194f8..8e9a2622d 100644
  		break;
  	case DWC3_DSTS_HIGHSPEED:
  		dwc3_gadget_ep0_desc.wMaxPacketSize = cpu_to_le16(64);
-@@ -3545,7 +3882,7 @@ static void dwc3_gadget_wakeup_interrupt(struct dwc3 *dwc)
+@@ -3561,7 +3898,7 @@ static void dwc3_gadget_wakeup_interrupt(struct dwc3 *dwc)
  	 * implemented.
  	 */
  
@@ -63450,7 +63415,7 @@ index 28a1194f8..8e9a2622d 100644
  		spin_unlock(&dwc->lock);
  		dwc->gadget_driver->resume(dwc->gadget);
  		spin_lock(&dwc->lock);
-@@ -3690,6 +4027,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3706,6 +4043,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  {
  	switch (event->type) {
  	case DWC3_DEVICE_EVENT_DISCONNECT:
@@ -63458,7 +63423,7 @@ index 28a1194f8..8e9a2622d 100644
  		dwc3_gadget_disconnect_interrupt(dwc);
  		break;
  	case DWC3_DEVICE_EVENT_RESET:
-@@ -3697,6 +4035,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3713,6 +4051,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  		break;
  	case DWC3_DEVICE_EVENT_CONNECT_DONE:
  		dwc3_gadget_conndone_interrupt(dwc);
@@ -63466,7 +63431,7 @@ index 28a1194f8..8e9a2622d 100644
  		break;
  	case DWC3_DEVICE_EVENT_WAKEUP:
  		dwc3_gadget_wakeup_interrupt(dwc);
-@@ -3711,7 +4050,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
+@@ -3727,7 +4066,7 @@ static void dwc3_gadget_interrupt(struct dwc3 *dwc,
  	case DWC3_DEVICE_EVENT_LINK_STATUS_CHANGE:
  		dwc3_gadget_linksts_change_interrupt(dwc, event->event_info);
  		break;
@@ -63475,7 +63440,7 @@ index 28a1194f8..8e9a2622d 100644
  		/* It changed to be suspend event for version 2.30a and above */
  		if (!DWC3_VER_IS_PRIOR(DWC3, 230A)) {
  			/*
-@@ -3779,6 +4118,7 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
+@@ -3795,6 +4134,7 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
  	}
  
  	evt->count = 0;
@@ -63483,7 +63448,7 @@ index 28a1194f8..8e9a2622d 100644
  	ret = IRQ_HANDLED;
  
  	/* Unmask interrupt */
-@@ -3791,9 +4131,6 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
+@@ -3807,9 +4147,6 @@ static irqreturn_t dwc3_process_event_buf(struct dwc3_event_buffer *evt)
  		dwc3_writel(dwc->regs, DWC3_DEV_IMOD(0), dwc->imod_interval);
  	}
  
@@ -63493,7 +63458,7 @@ index 28a1194f8..8e9a2622d 100644
  	return ret;
  }
  
-@@ -3804,11 +4141,9 @@ static irqreturn_t dwc3_thread_interrupt(int irq, void *_evt)
+@@ -3820,11 +4157,9 @@ static irqreturn_t dwc3_thread_interrupt(int irq, void *_evt)
  	unsigned long flags;
  	irqreturn_t ret = IRQ_NONE;
  
@@ -63505,7 +63470,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	return ret;
  }
-@@ -3959,6 +4294,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -3980,6 +4315,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  	dev->platform_data		= dwc;
  	dwc->gadget->ops		= &dwc3_gadget_ops;
  	dwc->gadget->speed		= USB_SPEED_UNKNOWN;
@@ -63513,7 +63478,7 @@ index 28a1194f8..8e9a2622d 100644
  	dwc->gadget->sg_supported	= true;
  	dwc->gadget->name		= "dwc3-gadget";
  	dwc->gadget->lpm_capable	= !dwc->usb2_gadget_lpm_disable;
-@@ -3985,6 +4321,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -4006,6 +4342,7 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  				dwc->revision);
  
  	dwc->gadget->max_speed		= dwc->maximum_speed;
@@ -63521,7 +63486,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	/*
  	 * REVISIT: Here we should clear all pending IRQs to be
-@@ -4001,7 +4338,10 @@ int dwc3_gadget_init(struct dwc3 *dwc)
+@@ -4022,7 +4359,10 @@ int dwc3_gadget_init(struct dwc3 *dwc)
  		goto err5;
  	}
  
@@ -63533,7 +63498,7 @@ index 28a1194f8..8e9a2622d 100644
  
  	return 0;
  
-@@ -4056,9 +4396,10 @@ int dwc3_gadget_suspend(struct dwc3 *dwc)
+@@ -4077,9 +4417,10 @@ int dwc3_gadget_suspend(struct dwc3 *dwc)
  
  int dwc3_gadget_resume(struct dwc3 *dwc)
  {
@@ -64240,7 +64205,7 @@ index 1eb4fa2e6..177645f32 100644
  }
  EXPORT_SYMBOL_GPL(usb_ep_autoconfig_ss);
 diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
-index 8c48c9f80..1e3acc3e3 100644
+index b17acab77..1f1f667cf 100644
 --- a/drivers/usb/gadget/function/f_fs.c
 +++ b/drivers/usb/gadget/function/f_fs.c
 @@ -39,7 +39,7 @@
@@ -65479,7 +65444,7 @@ index 6c4fc4913..8fb61023d 100644
  
  #define to_uvc_file_handle(handle) \
 diff --git a/drivers/usb/gadget/function/uvc_configfs.c b/drivers/usb/gadget/function/uvc_configfs.c
-index 00fb58e50..62c20c0bc 100644
+index 2db01170d..8a65f590f 100644
 --- a/drivers/usb/gadget/function/uvc_configfs.c
 +++ b/drivers/usb/gadget/function/uvc_configfs.c
 @@ -12,6 +12,7 @@
@@ -65490,7 +65455,7 @@ index 00fb58e50..62c20c0bc 100644
  #include "u_uvc.h"
  #include "uvc_configfs.h"
  
-@@ -767,11 +768,13 @@ static const struct uvcg_config_group_type uvcg_control_grp_type = {
+@@ -824,11 +825,13 @@ static const struct uvcg_config_group_type uvcg_control_grp_type = {
  static const char * const uvcg_format_names[] = {
  	"uncompressed",
  	"mjpeg",
@@ -65504,7 +65469,7 @@ index 00fb58e50..62c20c0bc 100644
  };
  
  struct uvcg_format {
-@@ -1077,9 +1080,15 @@ struct uvcg_frame {
+@@ -1134,9 +1137,15 @@ struct uvcg_frame {
  		u16	w_height;
  		u32	dw_min_bit_rate;
  		u32	dw_max_bit_rate;
@@ -65520,7 +65485,7 @@ index 00fb58e50..62c20c0bc 100644
  	} __attribute__((packed)) frame;
  	u32 *dw_frame_interval;
  };
-@@ -1190,6 +1199,7 @@ UVCG_FRAME_ATTR(dw_min_bit_rate, dwMinBitRate, 32);
+@@ -1247,6 +1256,7 @@ UVCG_FRAME_ATTR(dw_min_bit_rate, dwMinBitRate, 32);
  UVCG_FRAME_ATTR(dw_max_bit_rate, dwMaxBitRate, 32);
  UVCG_FRAME_ATTR(dw_max_video_frame_buffer_size, dwMaxVideoFrameBufferSize, 32);
  UVCG_FRAME_ATTR(dw_default_frame_interval, dwDefaultFrameInterval, 32);
@@ -65528,7 +65493,7 @@ index 00fb58e50..62c20c0bc 100644
  
  #undef UVCG_FRAME_ATTR
  
-@@ -1324,7 +1334,7 @@ static ssize_t uvcg_frame_dw_frame_interval_store(struct config_item *item,
+@@ -1381,7 +1391,7 @@ static ssize_t uvcg_frame_dw_frame_interval_store(struct config_item *item,
  
  UVC_ATTR(uvcg_frame_, dw_frame_interval, dwFrameInterval);
  
@@ -65537,7 +65502,7 @@ index 00fb58e50..62c20c0bc 100644
  	&uvcg_frame_attr_b_frame_index,
  	&uvcg_frame_attr_bm_capabilities,
  	&uvcg_frame_attr_w_width,
-@@ -1337,9 +1347,28 @@ static struct configfs_attribute *uvcg_frame_attrs[] = {
+@@ -1394,9 +1404,28 @@ static struct configfs_attribute *uvcg_frame_attrs[] = {
  	NULL,
  };
  
@@ -65568,7 +65533,7 @@ index 00fb58e50..62c20c0bc 100644
  	.ct_owner	= THIS_MODULE,
  };
  
-@@ -1363,6 +1392,7 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
+@@ -1420,6 +1449,7 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
  	h->frame.dw_max_bit_rate		= 55296000;
  	h->frame.dw_max_video_frame_buffer_size	= 460800;
  	h->frame.dw_default_frame_interval	= 666666;
@@ -65576,7 +65541,7 @@ index 00fb58e50..62c20c0bc 100644
  
  	opts_item = group->cg_item.ci_parent->ci_parent->ci_parent;
  	opts = to_f_uvc_opts(opts_item);
-@@ -1375,6 +1405,9 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
+@@ -1432,6 +1462,9 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
  	} else if (fmt->type == UVCG_MJPEG) {
  		h->frame.b_descriptor_subtype = UVC_VS_FRAME_MJPEG;
  		h->fmt_type = UVCG_MJPEG;
@@ -65586,7 +65551,7 @@ index 00fb58e50..62c20c0bc 100644
  	} else {
  		mutex_unlock(&opts->lock);
  		kfree(h);
-@@ -1383,7 +1416,10 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
+@@ -1440,7 +1473,10 @@ static struct config_item *uvcg_frame_make(struct config_group *group,
  	++fmt->num_frames;
  	mutex_unlock(&opts->lock);
  
@@ -65598,7 +65563,7 @@ index 00fb58e50..62c20c0bc 100644
  
  	return &h->item;
  }
-@@ -1413,7 +1449,8 @@ static void uvcg_format_set_indices(struct config_group *fmt)
+@@ -1470,7 +1506,8 @@ static void uvcg_format_set_indices(struct config_group *fmt)
  	list_for_each_entry(ci, &fmt->cg_children, ci_entry) {
  		struct uvcg_frame *frm;
  
@@ -65608,7 +65573,7 @@ index 00fb58e50..62c20c0bc 100644
  			continue;
  
  		frm = to_uvcg_frame(ci);
-@@ -1856,6 +1893,261 @@ static const struct uvcg_config_group_type uvcg_mjpeg_grp_type = {
+@@ -1913,6 +1950,261 @@ static const struct uvcg_config_group_type uvcg_mjpeg_grp_type = {
  	.name = "mjpeg",
  };
  
@@ -65870,7 +65835,7 @@ index 00fb58e50..62c20c0bc 100644
  /* -----------------------------------------------------------------------------
   * streaming/color_matching/default
   */
-@@ -2049,6 +2341,10 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2106,6 +2398,10 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
  				container_of(fmt, struct uvcg_mjpeg, fmt);
  
  			*size += sizeof(m->desc);
@@ -65881,7 +65846,7 @@ index 00fb58e50..62c20c0bc 100644
  		} else {
  			return -EINVAL;
  		}
-@@ -2059,6 +2355,11 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2116,6 +2412,11 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
  		int sz = sizeof(frm->dw_frame_interval);
  
  		*size += sizeof(frm->frame);
@@ -65893,7 +65858,7 @@ index 00fb58e50..62c20c0bc 100644
  		*size += frm->frame.b_frame_interval_type * sz;
  	}
  	break;
-@@ -2069,6 +2370,27 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2126,6 +2427,27 @@ static int __uvcg_cnt_strm(void *priv1, void *priv2, void *priv3, int n,
  	return 0;
  }
  
@@ -65921,7 +65886,7 @@ index 00fb58e50..62c20c0bc 100644
  /*
   * Fill an array of streaming descriptors.
   *
-@@ -2123,6 +2445,15 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2180,6 +2502,15 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
  			m->desc.bNumFrameDescriptors = fmt->num_frames;
  			memcpy(*dest, &m->desc, sizeof(m->desc));
  			*dest += sizeof(m->desc);
@@ -65937,7 +65902,7 @@ index 00fb58e50..62c20c0bc 100644
  		} else {
  			return -EINVAL;
  		}
-@@ -2132,8 +2463,11 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2189,8 +2520,11 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
  		struct uvcg_frame *frm = priv1;
  		struct uvc_descriptor_header *h = *dest;
  
@@ -65951,7 +65916,7 @@ index 00fb58e50..62c20c0bc 100644
  		*dest += sz;
  		sz = frm->frame.b_frame_interval_type *
  			sizeof(*frm->dw_frame_interval);
-@@ -2145,6 +2479,9 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
+@@ -2202,6 +2536,9 @@ static int __uvcg_fill_strm(void *priv1, void *priv2, void *priv3, int n,
  		else if (frm->fmt_type == UVCG_MJPEG)
  			h->bLength = UVC_DT_FRAME_MJPEG_SIZE(
  				frm->frame.b_frame_interval_type);
@@ -65961,7 +65926,7 @@ index 00fb58e50..62c20c0bc 100644
  	}
  	break;
  	}
-@@ -2357,6 +2694,7 @@ static const struct uvcg_config_group_type uvcg_streaming_grp_type = {
+@@ -2414,6 +2751,7 @@ static const struct uvcg_config_group_type uvcg_streaming_grp_type = {
  		&uvcg_streaming_header_grp_type,
  		&uvcg_uncompressed_grp_type,
  		&uvcg_mjpeg_grp_type,
@@ -65969,7 +65934,7 @@ index 00fb58e50..62c20c0bc 100644
  		&uvcg_color_matching_grp_type,
  		&uvcg_streaming_class_grp_type,
  		NULL,
-@@ -2424,16 +2762,22 @@ end:									\
+@@ -2481,16 +2819,22 @@ end:									\
  									\
  UVC_ATTR(f_uvc_opts_, cname, cname)
  
@@ -69140,10 +69105,10 @@ index d0070814d..c4178357b 100644
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_handle_transfer);
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_urb_giveback);
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 473b0b64d..611401723 100644
+index b069fe3f8..58d457d8a 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
-@@ -20,7 +20,6 @@
+@@ -21,7 +21,6 @@
  
  #include "xhci.h"
  #include "xhci-trace.h"
@@ -69151,7 +69116,7 @@ index 473b0b64d..611401723 100644
  #include "xhci-debugfs.h"
  #include "xhci-dbgcap.h"
  
-@@ -66,7 +65,7 @@ static bool td_on_ring(struct xhci_td *td, struct xhci_ring *ring)
+@@ -67,7 +66,7 @@ static bool td_on_ring(struct xhci_td *td, struct xhci_ring *ring)
   * handshake done).  There are two failure modes:  "usec" have passed (major
   * hardware flakeout), or the register reads as all-ones (hardware removed).
   */
@@ -69160,7 +69125,7 @@ index 473b0b64d..611401723 100644
  {
  	u32	result;
  	int	ret;
-@@ -74,7 +73,7 @@ int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us)
+@@ -75,7 +74,7 @@ int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us)
  	ret = readl_poll_timeout_atomic(ptr, result,
  					(result & mask) == done ||
  					result == U32_MAX,
@@ -69169,7 +69134,7 @@ index 473b0b64d..611401723 100644
  	if (result == U32_MAX)		/* card removed */
  		return -ENODEV;
  
-@@ -149,11 +148,9 @@ int xhci_start(struct xhci_hcd *xhci)
+@@ -150,11 +149,9 @@ int xhci_start(struct xhci_hcd *xhci)
  		xhci_err(xhci, "Host took too long to start, "
  				"waited %u microseconds.\n",
  				XHCI_MAX_HALT_USEC);
@@ -69182,7 +69147,7 @@ index 473b0b64d..611401723 100644
  
  	return ret;
  }
-@@ -165,7 +162,7 @@ int xhci_start(struct xhci_hcd *xhci)
+@@ -166,7 +163,7 @@ int xhci_start(struct xhci_hcd *xhci)
   * Transactions will be terminated immediately, and operational registers
   * will be set to their defaults.
   */
@@ -69191,7 +69156,7 @@ index 473b0b64d..611401723 100644
  {
  	u32 command;
  	u32 state;
-@@ -198,7 +195,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
+@@ -199,7 +196,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
  	if (xhci->quirks & XHCI_INTEL_HOST)
  		udelay(1000);
  
@@ -69201,7 +69166,7 @@ index 473b0b64d..611401723 100644
  	if (ret)
  		return ret;
  
-@@ -211,7 +209,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
+@@ -212,7 +210,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
  	 * xHCI cannot write to any doorbells or operational registers other
  	 * than status until the "Controller Not Ready" flag is cleared.
  	 */
@@ -69211,7 +69176,7 @@ index 473b0b64d..611401723 100644
  
  	xhci->usb2_rhub.bus_state.port_c_suspend = 0;
  	xhci->usb2_rhub.bus_state.suspended_ports = 0;
-@@ -696,8 +695,6 @@ int xhci_run(struct usb_hcd *hcd)
+@@ -700,8 +699,6 @@ int xhci_run(struct usb_hcd *hcd)
  	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
  			"Finished xhci_run for USB2 roothub");
  
@@ -69220,7 +69185,7 @@ index 473b0b64d..611401723 100644
  	xhci_dbc_init(xhci);
  
  	xhci_debugfs_init(xhci);
-@@ -734,7 +731,7 @@ static void xhci_stop(struct usb_hcd *hcd)
+@@ -738,7 +735,7 @@ static void xhci_stop(struct usb_hcd *hcd)
  	xhci->xhc_state |= XHCI_STATE_HALTED;
  	xhci->cmd_ring_state = CMD_RING_STATE_STOPPED;
  	xhci_halt(xhci);
@@ -69229,7 +69194,7 @@ index 473b0b64d..611401723 100644
  	spin_unlock_irq(&xhci->lock);
  
  	xhci_cleanup_msix(xhci);
-@@ -783,28 +780,11 @@ void xhci_shutdown(struct usb_hcd *hcd)
+@@ -787,28 +784,11 @@ void xhci_shutdown(struct usb_hcd *hcd)
  	if (xhci->quirks & XHCI_SPURIOUS_REBOOT)
  		usb_disable_xhci_ports(to_pci_dev(hcd->self.sysdev));
  
@@ -69261,7 +69226,7 @@ index 473b0b64d..611401723 100644
  	spin_unlock_irq(&xhci->lock);
  
  	xhci_cleanup_msix(xhci);
-@@ -1013,7 +993,8 @@ int xhci_suspend(struct xhci_hcd *xhci, bool do_wakeup)
+@@ -1017,7 +997,8 @@ int xhci_suspend(struct xhci_hcd *xhci, bool do_wakeup)
  	xhci_dbc_suspend(xhci);
  
  	/* Don't poll the roothubs on bus suspend. */
@@ -69271,7 +69236,7 @@ index 473b0b64d..611401723 100644
  	clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
  	del_timer_sync(&hcd->rh_timer);
  	clear_bit(HCD_FLAG_POLL_RH, &xhci->shared_hcd->flags);
-@@ -1110,7 +1091,6 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+@@ -1114,7 +1095,6 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
  	int			retval = 0;
  	bool			comp_timer_running = false;
  	bool			pending_portevent = false;
@@ -69279,7 +69244,7 @@ index 473b0b64d..611401723 100644
  
  	if (!hcd->state)
  		return 0;
-@@ -1127,11 +1107,10 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+@@ -1131,11 +1111,10 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
  	set_bit(HCD_FLAG_HW_ACCESSIBLE, &xhci->shared_hcd->flags);
  
  	spin_lock_irq(&xhci->lock);
@@ -69294,7 +69259,7 @@ index 473b0b64d..611401723 100644
  		/*
  		 * Some controllers might lose power during suspend, so wait
  		 * for controller not ready bit to clear, just as in xHC init.
-@@ -1164,18 +1143,12 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+@@ -1168,18 +1147,12 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
  			spin_unlock_irq(&xhci->lock);
  			return -ETIMEDOUT;
  		}
@@ -69316,7 +69281,7 @@ index 473b0b64d..611401723 100644
  		if ((xhci->quirks & XHCI_COMP_MODE_QUIRK) &&
  				!(xhci_all_ports_seen_u0(xhci))) {
  			del_timer_sync(&xhci->comp_mode_recovery_timer);
-@@ -1190,7 +1163,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+@@ -1194,7 +1167,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
  		xhci_dbg(xhci, "Stop HCD\n");
  		xhci_halt(xhci);
  		xhci_zero_64b_regs(xhci);
@@ -69325,7 +69290,7 @@ index 473b0b64d..611401723 100644
  		spin_unlock_irq(&xhci->lock);
  		if (retval)
  			return retval;
-@@ -1285,7 +1258,8 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
+@@ -1289,7 +1262,8 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
  		usb_asmedia_modifyflowcontrol(to_pci_dev(hcd->self.controller));
  
  	/* Re-enable port polling. */
@@ -69335,7 +69300,7 @@ index 473b0b64d..611401723 100644
  	set_bit(HCD_FLAG_POLL_RH, &xhci->shared_hcd->flags);
  	usb_hcd_poll_rh_status(xhci->shared_hcd);
  	set_bit(HCD_FLAG_POLL_RH, &hcd->flags);
-@@ -1333,6 +1307,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
+@@ -1337,6 +1311,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
  			(usb_endpoint_dir_in(desc) ? 1 : 0) - 1;
  	return index;
  }
@@ -69343,7 +69308,7 @@ index 473b0b64d..611401723 100644
  
  /* The reverse operation to xhci_get_endpoint_index. Calculate the USB endpoint
   * address from the XHCI endpoint index.
-@@ -1343,6 +1318,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
+@@ -1347,6 +1322,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
  	unsigned int direction = ep_index % 2 ? USB_DIR_OUT : USB_DIR_IN;
  	return direction | number;
  }
@@ -69351,7 +69316,7 @@ index 473b0b64d..611401723 100644
  
  /* Find the flag for this endpoint (for use in the control context).  Use the
   * endpoint index to create a bitmask.  The slot context is bit 0, endpoint 0 is
-@@ -1353,15 +1329,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
+@@ -1357,15 +1333,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
  	return 1 << (xhci_get_endpoint_index(desc) + 1);
  }
  
@@ -69367,7 +69332,7 @@ index 473b0b64d..611401723 100644
  /* Compute the last valid endpoint context index.  Basically, this is the
   * endpoint index plus one.  For slot contexts with more than valid endpoint,
   * we find the most significant bit set in the added contexts flags.
-@@ -1507,12 +1474,9 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
+@@ -1511,12 +1478,9 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
  	struct urb_priv	*urb_priv;
  	int num_tds;
  
@@ -69382,7 +69347,7 @@ index 473b0b64d..611401723 100644
  
  	slot_id = urb->dev->slot_id;
  	ep_index = xhci_get_endpoint_index(&urb->ep->desc);
-@@ -1528,6 +1492,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
+@@ -1532,6 +1496,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
  		return -ENODEV;
  	}
  
@@ -69394,7 +69359,7 @@ index 473b0b64d..611401723 100644
  	if (usb_endpoint_xfer_isoc(&urb->ep->desc))
  		num_tds = urb->number_of_packets;
  	else if (usb_endpoint_is_bulk_out(&urb->ep->desc) &&
-@@ -1728,7 +1697,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1732,7 +1701,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
  
  	for (; i < urb_priv->num_tds; i++) {
  		td = &urb_priv->td[i];
@@ -69408,7 +69373,7 @@ index 473b0b64d..611401723 100644
  	}
  
  	/* Queue a stop endpoint command, but only if this is
-@@ -1774,8 +1748,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1778,8 +1752,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
   * disabled, so there's no need for mutual exclusion to protect
   * the xhci->devs[slot_id] structure.
   */
@@ -69419,7 +69384,7 @@ index 473b0b64d..611401723 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx, *out_ctx;
-@@ -1835,9 +1809,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1839,9 +1813,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  
  	xhci_endpoint_zero(xhci, xhci->devs[udev->slot_id], ep);
  
@@ -69429,7 +69394,7 @@ index 473b0b64d..611401723 100644
  	xhci_dbg(xhci, "drop ep 0x%x, slot id %d, new drop flags = %#x, new add flags = %#x\n",
  			(unsigned int) ep->desc.bEndpointAddress,
  			udev->slot_id,
-@@ -1845,6 +1816,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1849,6 +1820,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69437,7 +69402,7 @@ index 473b0b64d..611401723 100644
  
  /* Add an endpoint to a new possible bandwidth configuration for this device.
   * Only one call to this function is allowed per endpoint before
-@@ -1859,8 +1831,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1863,8 +1835,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
   * configuration or alt setting is installed in the device, so there's no need
   * for mutual exclusion to protect the xhci->devs[slot_id] structure.
   */
@@ -69448,7 +69413,7 @@ index 473b0b64d..611401723 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx;
-@@ -1934,15 +1906,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1938,15 +1910,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  		return -ENOMEM;
  	}
  
@@ -69464,7 +69429,7 @@ index 473b0b64d..611401723 100644
  	ctrl_ctx->add_flags |= cpu_to_le32(added_ctxs);
  	new_add_flags = le32_to_cpu(ctrl_ctx->add_flags);
  
-@@ -1967,6 +1930,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1971,6 +1934,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69472,7 +69437,7 @@ index 473b0b64d..611401723 100644
  
  static void xhci_zero_in_ctx(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev)
  {
-@@ -2876,6 +2840,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
+@@ -2880,6 +2844,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
  			xhci_finish_resource_reservation(xhci, ctrl_ctx);
  		spin_unlock_irqrestore(&xhci->lock, flags);
  	}
@@ -69487,7 +69452,7 @@ index 473b0b64d..611401723 100644
  	return ret;
  }
  
-@@ -3000,6 +2972,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3004,6 +2976,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  
  	return ret;
  }
@@ -69495,7 +69460,7 @@ index 473b0b64d..611401723 100644
  
  void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -3018,12 +2991,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3022,12 +2995,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  	for (i = 0; i < 31; i++) {
  		if (virt_dev->eps[i].new_ring) {
  			xhci_debugfs_remove_endpoint(xhci, virt_dev, i);
@@ -69514,7 +69479,7 @@ index 473b0b64d..611401723 100644
  
  static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  		struct xhci_container_ctx *in_ctx,
-@@ -3037,84 +3015,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
+@@ -3041,84 +3019,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  }
  
@@ -69599,7 +69564,7 @@ index 473b0b64d..611401723 100644
  static void xhci_endpoint_disable(struct usb_hcd *hcd,
  				  struct usb_host_endpoint *host_ep)
  {
-@@ -3260,6 +3160,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3264,6 +3164,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(stop_cmd->completion);
  
@@ -69613,7 +69578,7 @@ index 473b0b64d..611401723 100644
  	spin_lock_irqsave(&xhci->lock, flags);
  
  	/* config ep command clears toggle if add and drop ep flags are set */
-@@ -3291,6 +3198,11 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3295,6 +3202,11 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(cfg_cmd->completion);
  
@@ -69625,7 +69590,7 @@ index 473b0b64d..611401723 100644
  	xhci_free_command(xhci, cfg_cmd);
  cleanup:
  	xhci_free_command(xhci, stop_cmd);
-@@ -3312,7 +3224,7 @@ static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
+@@ -3316,7 +3228,7 @@ static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
  		return -EINVAL;
  	ret = xhci_check_args(xhci_to_hcd(xhci), udev, ep, 1, true, __func__);
  	if (ret <= 0)
@@ -69634,7 +69599,7 @@ index 473b0b64d..611401723 100644
  	if (usb_ss_max_streams(&ep->ss_ep_comp) == 0) {
  		xhci_warn(xhci, "WARN: SuperSpeed Endpoint Companion"
  				" descriptor for ep 0x%x does not support streams\n",
-@@ -3836,6 +3748,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
+@@ -3840,6 +3752,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
  	/* Wait for the Reset Device command to finish */
  	wait_for_completion(reset_device_cmd->completion);
  
@@ -69648,7 +69613,7 @@ index 473b0b64d..611401723 100644
  	/* The Reset Device command can't fail, according to the 0.95/0.96 spec,
  	 * unless we tried to reset a slot ID that wasn't enabled,
  	 * or the device wasn't in the addressed or configured state.
-@@ -3921,7 +3840,6 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3925,7 +3844,6 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
  	struct xhci_virt_device *virt_dev;
  	struct xhci_slot_ctx *slot_ctx;
@@ -69656,7 +69621,7 @@ index 473b0b64d..611401723 100644
  	int i, ret;
  
  	/*
-@@ -3950,11 +3868,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3954,11 +3872,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
  	}
  	virt_dev->udev = NULL;
  	xhci_disable_slot(xhci, udev->slot_id);
@@ -69668,7 +69633,7 @@ index 473b0b64d..611401723 100644
  }
  
  int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
-@@ -4086,6 +4000,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4090,6 +4004,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		xhci_warn(xhci, "Could not allocate xHCI USB device data structures\n");
  		goto disable_slot;
  	}
@@ -69683,7 +69648,7 @@ index 473b0b64d..611401723 100644
  	vdev = xhci->devs[slot_id];
  	slot_ctx = xhci_get_slot_ctx(xhci, vdev->out_ctx);
  	trace_xhci_alloc_dev(slot_ctx);
-@@ -4216,6 +4138,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4220,6 +4142,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	/* ctrl tx can take up to 5 sec; XXX: need more time for xHC? */
  	wait_for_completion(command->completion);
  
@@ -69697,7 +69662,7 @@ index 473b0b64d..611401723 100644
  	/* FIXME: From section 4.3.4: "Software shall be responsible for timing
  	 * the SetAddress() "recovery interval" required by USB and aborting the
  	 * command on a timeout.
-@@ -4300,10 +4229,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4304,10 +4233,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	return ret;
  }
  
@@ -69710,7 +69675,7 @@ index 473b0b64d..611401723 100644
  
  static int xhci_enable_device(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -4363,6 +4293,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4367,6 +4297,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  		return -ENOMEM;
  	}
  
@@ -69725,7 +69690,7 @@ index 473b0b64d..611401723 100644
  	xhci_slot_copy(xhci, command->in_ctx, virt_dev->out_ctx);
  	spin_unlock_irqrestore(&xhci->lock, flags);
  
-@@ -4387,6 +4325,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4391,6 +4329,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  	return ret;
  }
  
@@ -69756,7 +69721,7 @@ index 473b0b64d..611401723 100644
  #ifdef CONFIG_PM
  
  /* BESL to HIRD Encoding array for USB2 LPM */
-@@ -5011,7 +4973,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
+@@ -5015,7 +4977,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
  			struct usb_device *udev, enum usb3_link_state state)
  {
  	struct xhci_hcd	*xhci;
@@ -69764,7 +69729,7 @@ index 473b0b64d..611401723 100644
  	u16 hub_encoded_timeout;
  	int mel;
  	int ret;
-@@ -5025,13 +4986,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
+@@ -5029,13 +4990,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
  			!xhci->devs[udev->slot_id])
  		return USB3_LPM_DISABLED;
  
@@ -69778,7 +69743,7 @@ index 473b0b64d..611401723 100644
  	hub_encoded_timeout = xhci_calculate_lpm_timeout(hcd, udev, state);
  	mel = calculate_max_exit_latency(udev, state, hub_encoded_timeout);
  	if (mel < 0) {
-@@ -5091,7 +5045,7 @@ static int xhci_disable_usb3_lpm_timeout(struct usb_hcd *hcd,
+@@ -5095,7 +5049,7 @@ static int xhci_disable_usb3_lpm_timeout(struct usb_hcd *hcd,
  /* Once a hub descriptor is fetched for a device, we need to update the xHC's
   * internal data structures for the device.
   */
@@ -69787,7 +69752,7 @@ index 473b0b64d..611401723 100644
  			struct usb_tt *tt, gfp_t mem_flags)
  {
  	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
-@@ -5134,6 +5088,15 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+@@ -5138,6 +5092,15 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
  		return -ENOMEM;
  	}
  
@@ -69803,7 +69768,7 @@ index 473b0b64d..611401723 100644
  	xhci_slot_copy(xhci, config_cmd->in_ctx, vdev->out_ctx);
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  	slot_ctx = xhci_get_slot_ctx(xhci, config_cmd->in_ctx);
-@@ -5191,7 +5154,6 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+@@ -5195,7 +5158,6 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
  	xhci_free_command(xhci, config_cmd);
  	return ret;
  }
@@ -69811,7 +69776,7 @@ index 473b0b64d..611401723 100644
  
  static int xhci_get_frame(struct usb_hcd *hcd)
  {
-@@ -5310,7 +5272,7 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks)
+@@ -5314,7 +5276,7 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks)
  
  	xhci_dbg(xhci, "Resetting HCD\n");
  	/* Reset the internal HC memory state and registers. */
@@ -69820,7 +69785,7 @@ index 473b0b64d..611401723 100644
  	if (retval)
  		return retval;
  	xhci_dbg(xhci, "Reset complete\n");
-@@ -5458,12 +5420,20 @@ void xhci_init_driver(struct hc_driver *drv,
+@@ -5462,12 +5424,20 @@ void xhci_init_driver(struct hc_driver *drv,
  			drv->reset = over->reset;
  		if (over->start)
  			drv->start = over->start;
@@ -70118,10 +70083,10 @@ index c7749f6e3..b4462aafb 100644
  		ret += sprintf(str + ret, " HCHalted");
  	if (usbsts & STS_FATAL)
 diff --git a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
-index 9ee0fa775..57e54064f 100644
+index 045e24174..2d2c1e00e 100644
 --- a/drivers/usb/serial/cp210x.c
 +++ b/drivers/usb/serial/cp210x.c
-@@ -245,7 +245,6 @@ static const struct usb_device_id id_table[] = {
+@@ -246,7 +246,6 @@ static const struct usb_device_id id_table[] = {
  	{ USB_DEVICE(0x1FB9, 0x0602) }, /* Lake Shore Model 648 Magnet Power Supply */
  	{ USB_DEVICE(0x1FB9, 0x0700) }, /* Lake Shore Model 737 VSM Controller */
  	{ USB_DEVICE(0x1FB9, 0x0701) }, /* Lake Shore Model 776 Hall Matrix */
@@ -70129,7 +70094,7 @@ index 9ee0fa775..57e54064f 100644
  	{ USB_DEVICE(0x2626, 0xEA60) }, /* Aruba Networks 7xxx USB Serial Console */
  	{ USB_DEVICE(0x3195, 0xF190) }, /* Link Instruments MSO-19 */
  	{ USB_DEVICE(0x3195, 0xF280) }, /* Link Instruments MSO-28 */
-@@ -269,7 +268,6 @@ struct cp210x_serial_private {
+@@ -270,7 +269,6 @@ struct cp210x_serial_private {
  	speed_t			min_speed;
  	speed_t			max_speed;
  	bool			use_actual_rate;
@@ -70137,7 +70102,7 @@ index 9ee0fa775..57e54064f 100644
  };
  
  enum cp210x_event_state {
-@@ -1341,16 +1339,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
+@@ -1342,16 +1340,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
  
  static void cp210x_enable_event_mode(struct usb_serial_port *port)
  {
@@ -70154,7 +70119,7 @@ index 9ee0fa775..57e54064f 100644
  	port_priv->event_state = ES_DATA;
  	port_priv->event_mode = true;
  
-@@ -1758,8 +1752,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1759,8 +1753,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  
  	/*  2 banks of GPIO - One for the pins taken from each serial port */
  	if (intf_num == 0) {
@@ -70163,7 +70128,7 @@ index 9ee0fa775..57e54064f 100644
  		if (mode.eci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1770,9 +1762,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1771,9 +1763,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_ECI_GPIO_MODE_MASK) >>
  						CP210X_ECI_GPIO_MODE_OFFSET);
@@ -70174,7 +70139,7 @@ index 9ee0fa775..57e54064f 100644
  		if (mode.sci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1783,6 +1774,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1784,6 +1775,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_SCI_GPIO_MODE_MASK) >>
  						CP210X_SCI_GPIO_MODE_OFFSET);
@@ -70182,7 +70147,7 @@ index 9ee0fa775..57e54064f 100644
  	} else {
  		return -ENODEV;
  	}
-@@ -2102,46 +2094,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
+@@ -2103,46 +2095,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
  	priv->use_actual_rate = use_actual_rate;
  }
  
@@ -70229,7 +70194,7 @@ index 9ee0fa775..57e54064f 100644
  static int cp210x_attach(struct usb_serial *serial)
  {
  	int result;
-@@ -2162,7 +2114,6 @@ static int cp210x_attach(struct usb_serial *serial)
+@@ -2163,7 +2115,6 @@ static int cp210x_attach(struct usb_serial *serial)
  
  	usb_set_serial_data(serial, priv);
  
@@ -70238,7 +70203,7 @@ index 9ee0fa775..57e54064f 100644
  
  	result = cp210x_gpio_init(serial);
 diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index 14a7af7f3..21b1488fe 100644
+index 243f97a30..b7df1430a 100644
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
 @@ -162,8 +162,6 @@ static void option_instat_callback(struct urb *urb);
@@ -70267,7 +70232,7 @@ index 14a7af7f3..21b1488fe 100644
  /* These Yuga products use Qualcomm's vendor ID */
  #define YUGA_PRODUCT_CLM920_NC5			0x9625
  
-@@ -253,21 +250,10 @@ static void option_instat_callback(struct urb *urb);
+@@ -255,23 +252,12 @@ static void option_instat_callback(struct urb *urb);
  #define QUECTEL_PRODUCT_EG95			0x0195
  #define QUECTEL_PRODUCT_BG96			0x0296
  #define QUECTEL_PRODUCT_EP06			0x0306
@@ -70284,12 +70249,14 @@ index 14a7af7f3..21b1488fe 100644
 -#define QUECTEL_PRODUCT_RM520N			0x0801
 -#define QUECTEL_PRODUCT_EC200U			0x0901
  #define QUECTEL_PRODUCT_EC200S_CN		0x6002
+ #define QUECTEL_PRODUCT_EM061K_LWW		0x6008
+ #define QUECTEL_PRODUCT_EM061K_LCN		0x6009
  #define QUECTEL_PRODUCT_EC200T			0x6026
 -#define QUECTEL_PRODUCT_RM500K			0x7001
  
  #define CMOTECH_VENDOR_ID			0x16d8
  #define CMOTECH_PRODUCT_6001			0x6001
-@@ -402,8 +388,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -406,8 +392,6 @@ static void option_instat_callback(struct urb *urb);
  #define LONGCHEER_VENDOR_ID			0x1c9e
  
  /* 4G Systems products */
@@ -70298,7 +70265,7 @@ index 14a7af7f3..21b1488fe 100644
  /* This is the 4G XS Stick W14 a.k.a. Mobilcom Debitel Surf-Stick *
   * It seems to contain a Qualcomm QSC6240/6290 chipset            */
  #define FOUR_G_SYSTEMS_PRODUCT_W14		0x9603
-@@ -446,12 +430,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -450,12 +434,6 @@ static void option_instat_callback(struct urb *urb);
  #define CINTERION_PRODUCT_CLS8			0x00b0
  #define CINTERION_PRODUCT_MV31_MBIM		0x00b3
  #define CINTERION_PRODUCT_MV31_RMNET		0x00b7
@@ -70311,7 +70278,7 @@ index 14a7af7f3..21b1488fe 100644
  
  /* Olivetti products */
  #define OLIVETTI_VENDOR_ID			0x0b3c
-@@ -587,13 +565,6 @@ static void option_instat_callback(struct urb *urb);
+@@ -591,13 +569,6 @@ static void option_instat_callback(struct urb *urb);
  #define WETELECOM_PRODUCT_6802			0x6802
  #define WETELECOM_PRODUCT_WMD300		0x6803
  
@@ -70323,9 +70290,9 @@ index 14a7af7f3..21b1488fe 100644
 -#define SIERRA_VENDOR_ID			0x1199
 -#define SIERRA_PRODUCT_EM9191			0x90d3
  
- /* Device flags */
- 
-@@ -1092,10 +1063,6 @@ static const struct usb_device_id option_ids[] = {
+ /* UNISOC (Spreadtrum) products */
+ #define UNISOC_VENDOR_ID			0x1782
+@@ -1101,10 +1072,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
  	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5821E_ESIM),
  	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
@@ -70336,7 +70303,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/* ADU-E100, ADU-310 */
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
  	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
-@@ -1137,16 +1104,8 @@ static const struct usb_device_id option_ids[] = {
+@@ -1146,16 +1113,8 @@ static const struct usb_device_id option_ids[] = {
  	/* u-blox products using Qualcomm vendor ID */
  	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R410M),
  	  .driver_info = RSVD(1) | RSVD(3) },
@@ -70354,7 +70321,7 @@ index 14a7af7f3..21b1488fe 100644
  	/* Quectel products using Quectel vendor ID */
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC21, 0xff, 0xff, 0xff),
  	  .driver_info = NUMEP2 },
-@@ -1160,48 +1119,22 @@ static const struct usb_device_id option_ids[] = {
+@@ -1169,30 +1128,11 @@ static const struct usb_device_id option_ids[] = {
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0xff, 0xff),
  	  .driver_info = NUMEP2 },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0, 0) },
@@ -70382,20 +70349,20 @@ index 14a7af7f3..21b1488fe 100644
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0x00, 0x40) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x30) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x40) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) | RSVD(2) | RSVD(3) | RSVD(4) | NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0xff, 0x30) },	/* EM160R-GL */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, 0x0700, 0xff), /* BG95 */
--	  .driver_info = RSVD(3) | ZLP },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM061K_LCN, 0xff, 0xff, 0x30) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM061K_LCN, 0xff, 0x00, 0x40) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM061K_LCN, 0xff, 0xff, 0x40) },
+@@ -1214,17 +1154,10 @@ static const struct usb_device_id option_ids[] = {
+ 	  .driver_info = RSVD(3) | ZLP },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x30) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x10),
- 	  .driver_info = ZLP },
+-	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x10),
+-	  .driver_info = ZLP },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0xff, 0x30) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0x40) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0900, 0xff, 0, 0), /* RM500U-CN */
+ 	  .driver_info = ZLP },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200U, 0xff, 0, 0) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200S_CN, 0xff, 0, 0) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200T, 0xff, 0, 0) },
@@ -70403,7 +70370,7 @@ index 14a7af7f3..21b1488fe 100644
  
  	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6001) },
  	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_CMU_300) },
-@@ -1278,10 +1211,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1301,10 +1234,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(0) | RSVD(1) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1056, 0xff),	/* Telit FD980 */
  	  .driver_info = NCTRL(2) | RSVD(3) },
@@ -70414,16 +70381,16 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1060, 0xff),	/* Telit LN920 (rmnet) */
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1061, 0xff),	/* Telit LN920 (MBIM) */
-@@ -1298,8 +1227,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1321,8 +1250,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(2) | RSVD(3) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1073, 0xff),	/* Telit FN990 (ECM) */
  	  .driver_info = NCTRL(0) | RSVD(1) },
 -	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1075, 0xff),	/* Telit FN990 (PCIe) */
 -	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(3) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910_DUAL_MODEM),
-@@ -1334,7 +1261,6 @@ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1080, 0xff),	/* Telit FE990 (rmnet) */
+ 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
+ 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1081, 0xff),	/* Telit FE990 (MBIM) */
+@@ -1365,7 +1292,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1231, 0xff),	/* Telit LE910Cx (RNDIS) */
  	  .driver_info = NCTRL(2) | RSVD(3) },
@@ -70431,7 +70398,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1260),
  	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
  	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1261),
-@@ -1347,16 +1273,10 @@ static const struct usb_device_id option_ids[] = {
+@@ -1378,16 +1304,10 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = NCTRL(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x7011, 0xff),	/* Telit LE910-S1 (ECM) */
  	  .driver_info = NCTRL(2) },
@@ -70448,7 +70415,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0002, 0xff, 0xff, 0xff),
  	  .driver_info = RSVD(1) },
-@@ -1729,8 +1649,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -1760,8 +1680,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(2) },
  	{ USB_DEVICE_INTERFACE_CLASS(ZTE_VENDOR_ID, 0x1476, 0xff) },	/* GosunCn ZTE WeLink ME3630 (ECM/NCM mode) */
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1481, 0xff, 0x00, 0x00) }, /* ZTE MF871A */
@@ -70457,7 +70424,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1533, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1534, 0xff, 0xff, 0xff) },
  	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1535, 0xff, 0xff, 0xff) },
-@@ -1978,8 +1896,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -2009,8 +1927,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(2) },
  	{ USB_DEVICE(AIRPLUS_VENDOR_ID, AIRPLUS_PRODUCT_MCD650) },
  	{ USB_DEVICE(TLAYTECH_VENDOR_ID, TLAYTECH_PRODUCT_TEU800) },
@@ -70466,7 +70433,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE(LONGCHEER_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W14),
  	  .driver_info = NCTRL(0) | NCTRL(1) },
  	{ USB_DEVICE(LONGCHEER_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W100),
-@@ -2039,18 +1955,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -2070,18 +1986,6 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(3)},
  	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_RMNET, 0xff),
  	  .driver_info = RSVD(0)},
@@ -70485,7 +70452,7 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD100),
  	  .driver_info = RSVD(4) },
  	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD120),
-@@ -2193,17 +2097,12 @@ static const struct usb_device_id option_ids[] = {
+@@ -2224,17 +2128,12 @@ static const struct usb_device_id option_ids[] = {
  	  .driver_info = RSVD(3) },
  	{ USB_DEVICE(0x1508, 0x1001),						/* Fibocom NL668 (IOT version) */
  	  .driver_info = RSVD(4) | RSVD(5) | RSVD(6) },
@@ -70503,16 +70470,16 @@ index 14a7af7f3..21b1488fe 100644
  	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a0, 0xff) },			/* Fibocom NL668-AM/NL652-EU (laptop MBIM) */
  	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a2, 0xff) },			/* Fibocom FM101-GL (laptop MBIM) */
  	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a4, 0xff),			/* Fibocom FM101-GL (laptop MBIM) */
-@@ -2212,9 +2111,6 @@ static const struct usb_device_id option_ids[] = {
+@@ -2243,9 +2142,6 @@ static const struct usb_device_id option_ids[] = {
  	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1404, 0xff) },			/* GosunCn GM500 RNDIS */
  	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1405, 0xff) },			/* GosunCn GM500 MBIM */
  	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1406, 0xff) },			/* GosunCn GM500 ECM/NCM */
 -	{ USB_DEVICE_AND_INTERFACE_INFO(OPPO_VENDOR_ID, OPPO_PRODUCT_R11, 0xff, 0xff, 0x30) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0xff, 0x30) },
 -	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0, 0) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(UNISOC_VENDOR_ID, TOZED_PRODUCT_LT70C, 0xff, 0, 0) },
  	{ } /* Terminating entry */
  };
- MODULE_DEVICE_TABLE(usb, option_ids);
 diff --git a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
 index b1e844bf3..c81f70530 100644
 --- a/drivers/usb/serial/qcserial.c
@@ -70528,7 +70495,7 @@ index b1e844bf3..c81f70530 100644
  	{DEVICE_SWI(0x413c, 0x81a3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card */
  	{DEVICE_SWI(0x413c, 0x81a4)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card */
 diff --git a/drivers/usb/storage/scsiglue.c b/drivers/usb/storage/scsiglue.c
-index e5a971b83..a345f2982 100644
+index b8e1109f0..9cffdd43c 100644
 --- a/drivers/usb/storage/scsiglue.c
 +++ b/drivers/usb/storage/scsiglue.c
 @@ -102,6 +102,10 @@ static int slave_configure(struct scsi_device *sdev)
@@ -70612,7 +70579,7 @@ index 20dcbccb2..8d3848322 100644
  		"ST",
  		"2A",
 diff --git a/drivers/usb/storage/unusual_uas.h b/drivers/usb/storage/unusual_uas.h
-index c7b763d6d..34c6c33ae 100644
+index 1f8c9b16a..1e9b8efe4 100644
 --- a/drivers/usb/storage/unusual_uas.h
 +++ b/drivers/usb/storage/unusual_uas.h
 @@ -50,7 +50,7 @@ UNUSUAL_DEV(0x059f, 0x1061, 0x0000, 0x9999,
@@ -70637,9 +70604,9 @@ index c7b763d6d..34c6c33ae 100644
  /* Reported-by: David Webb <djw@noc.ac.uk> */
  UNUSUAL_DEV(0x0bc2, 0x331a, 0x0000, 0x9999,
  		"Seagate",
-@@ -111,6 +117,12 @@ UNUSUAL_DEV(0x152d, 0x0578, 0x0000, 0x9999,
+@@ -118,6 +124,12 @@ UNUSUAL_DEV(0x152d, 0x0583, 0x0000, 0x9999,
  		USB_SC_DEVICE, USB_PR_DEVICE, NULL,
- 		US_FL_BROKEN_FUA),
+ 		US_FL_NO_REPORT_OPCODES),
  
 +UNUSUAL_DEV(0x152d, 0x0583, 0x0000, 0x9999,
 +		"JMicron",
@@ -70650,7 +70617,7 @@ index c7b763d6d..34c6c33ae 100644
  /* Reported-by: Thinh Nguyen <thinhn@synopsys.com> */
  UNUSUAL_DEV(0x154b, 0xf00b, 0x0000, 0x9999,
  		"PNY",
-@@ -132,6 +144,12 @@ UNUSUAL_DEV(0x17ef, 0x3899, 0x0000, 0x9999,
+@@ -139,6 +151,12 @@ UNUSUAL_DEV(0x17ef, 0x3899, 0x0000, 0x9999,
  		USB_SC_DEVICE, USB_PR_DEVICE, NULL,
  		US_FL_IGNORE_UAS),
  
@@ -70676,7 +70643,7 @@ index 60d375e9c..1a6b5e872 100644
  	  DisplayPort USB Type-C Alternate Mode allows DisplayPort
  	  displays and adapters to be attached to the USB Type-C
 diff --git a/drivers/usb/typec/altmodes/displayport.c b/drivers/usb/typec/altmodes/displayport.c
-index e8eaca5a8..8769cab04 100644
+index 0d4b1c0ee..d65b6866c 100644
 --- a/drivers/usb/typec/altmodes/displayport.c
 +++ b/drivers/usb/typec/altmodes/displayport.c
 @@ -11,12 +11,14 @@
@@ -70752,9 +70719,9 @@ index e8eaca5a8..8769cab04 100644
  		/* Is USB together with DP preferred */
  		if (dp->data.status & DP_STATUS_PREFER_MULTI_FUNC &&
  		    pin_assign & DP_PIN_ASSIGN_MULTI_FUNC_MASK)
-@@ -104,6 +117,13 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
- 		else if (pin_assign & DP_PIN_ASSIGN_DP_ONLY_MASK)
- 			pin_assign &= DP_PIN_ASSIGN_DP_ONLY_MASK;
+@@ -108,6 +121,13 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
+ 				pin_assign = BIT(DP_PIN_ASSIGN_C);
+ 		}
  
 +		/*
 +		 * DFP_U never selects Pin Assignment E when Pin Assignment C
@@ -70766,7 +70733,7 @@ index e8eaca5a8..8769cab04 100644
  		if (!pin_assign)
  			return -EINVAL;
  
-@@ -118,6 +138,7 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
+@@ -122,6 +142,7 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
  static int dp_altmode_status_update(struct dp_altmode *dp)
  {
  	bool configured = !!DP_CONF_GET_PIN_ASSIGN(dp->data.conf);
@@ -70774,7 +70741,7 @@ index e8eaca5a8..8769cab04 100644
  	u8 con = DP_STATUS_CONNECTION(dp->data.status);
  	int ret = 0;
  
-@@ -130,6 +151,11 @@ static int dp_altmode_status_update(struct dp_altmode *dp)
+@@ -134,6 +155,11 @@ static int dp_altmode_status_update(struct dp_altmode *dp)
  		ret = dp_altmode_configure(dp, con);
  		if (!ret)
  			dp->state = DP_STATE_CONFIGURE;
@@ -70786,7 +70753,7 @@ index e8eaca5a8..8769cab04 100644
  	}
  
  	return ret;
-@@ -156,9 +182,14 @@ static int dp_altmode_configured(struct dp_altmode *dp)
+@@ -160,9 +186,14 @@ static int dp_altmode_configured(struct dp_altmode *dp)
  
  static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
  {
@@ -70802,7 +70769,7 @@ index e8eaca5a8..8769cab04 100644
  	ret = typec_altmode_notify(dp->alt, TYPEC_STATE_SAFE, &dp->data);
  	if (ret) {
  		dev_err(&dp->alt->dev,
-@@ -181,6 +212,7 @@ static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
+@@ -185,6 +216,7 @@ static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
  static void dp_altmode_work(struct work_struct *work)
  {
  	struct dp_altmode *dp = container_of(work, struct dp_altmode, work);
@@ -70810,7 +70777,7 @@ index e8eaca5a8..8769cab04 100644
  	u32 header;
  	u32 vdo;
  	int ret;
-@@ -194,7 +226,10 @@ static void dp_altmode_work(struct work_struct *work)
+@@ -198,7 +230,10 @@ static void dp_altmode_work(struct work_struct *work)
  			dev_err(&dp->alt->dev, "failed to enter mode\n");
  		break;
  	case DP_STATE_UPDATE:
@@ -70822,7 +70789,7 @@ index e8eaca5a8..8769cab04 100644
  		vdo = 1;
  		ret = typec_altmode_vdm(dp->alt, header, &vdo, 2);
  		if (ret)
-@@ -409,18 +444,6 @@ static const char * const pin_assignments[] = {
+@@ -413,18 +448,6 @@ static const char * const pin_assignments[] = {
  	[DP_PIN_ASSIGN_F] = "F",
  };
  
@@ -70841,7 +70808,7 @@ index e8eaca5a8..8769cab04 100644
  static ssize_t
  pin_assignment_store(struct device *dev, struct device_attribute *attr,
  		     const char *buf, size_t size)
-@@ -447,7 +470,7 @@ pin_assignment_store(struct device *dev, struct device_attribute *attr,
+@@ -451,7 +474,7 @@ pin_assignment_store(struct device *dev, struct device_attribute *attr,
  		goto out_unlock;
  	}
  
@@ -70850,7 +70817,7 @@ index e8eaca5a8..8769cab04 100644
  
  	if (!(DP_CONF_GET_PIN_ASSIGN(conf) & assignments)) {
  		ret = -EINVAL;
-@@ -484,7 +507,7 @@ static ssize_t pin_assignment_show(struct device *dev,
+@@ -488,7 +511,7 @@ static ssize_t pin_assignment_show(struct device *dev,
  
  	cur = get_count_order(DP_CONF_GET_PIN_ASSIGN(dp->data.conf));
  
@@ -70859,7 +70826,7 @@ index e8eaca5a8..8769cab04 100644
  
  	for (i = 0; assignments; assignments >>= 1, i++) {
  		if (assignments & 1) {
-@@ -518,16 +541,17 @@ static const struct attribute_group dp_altmode_group = {
+@@ -526,16 +549,17 @@ static const struct attribute_group dp_altmode_group = {
  int dp_altmode_probe(struct typec_altmode *alt)
  {
  	const struct typec_altmode *port = typec_altmode_get_partner(alt);
@@ -70881,7 +70848,7 @@ index e8eaca5a8..8769cab04 100644
  		return -ENODEV;
  
  	ret = sysfs_create_group(&alt->dev.kobj, &dp_altmode_group);
-@@ -546,6 +570,11 @@ int dp_altmode_probe(struct typec_altmode *alt)
+@@ -554,6 +578,11 @@ int dp_altmode_probe(struct typec_altmode *alt)
  	alt->desc = "DisplayPort";
  	alt->ops = &dp_altmode_ops;
  
@@ -70893,7 +70860,7 @@ index e8eaca5a8..8769cab04 100644
  	typec_altmode_set_drvdata(alt, dp);
  
  	dp->state = DP_STATE_ENTER;
-@@ -561,6 +590,13 @@ void dp_altmode_remove(struct typec_altmode *alt)
+@@ -569,6 +598,13 @@ void dp_altmode_remove(struct typec_altmode *alt)
  
  	sysfs_remove_group(&alt->dev.kobj, &dp_altmode_group);
  	cancel_work_sync(&dp->work);
@@ -73500,7 +73467,7 @@ index 03dee12d2..bc4ac3c52 100644
 +
  #endif
 diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 81a55e974..e51b3d8e6 100644
+index e6fe2f581..821b5b3e1 100644
 --- a/include/linux/power_supply.h
 +++ b/include/linux/power_supply.h
 @@ -49,6 +49,7 @@ enum {
@@ -73534,7 +73501,7 @@ index 81a55e974..e51b3d8e6 100644
  static inline struct power_supply *
  devm_power_supply_get_by_phandle(struct device *dev, const char *property)
  { return NULL; }
-@@ -426,9 +437,16 @@ static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
+@@ -427,9 +438,16 @@ static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
  extern int power_supply_get_property(struct power_supply *psy,
  			    enum power_supply_property psp,
  			    union power_supply_propval *val);
@@ -74102,7 +74069,7 @@ index e7351d64f..e5cdba2db 100644
  
  /*-------------------------------------------------------------------------*/
 diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
-index c0cf20b19..3dbb42c63 100644
+index 528be6700..67b502ccd 100644
 --- a/include/linux/usb/hcd.h
 +++ b/include/linux/usb/hcd.h
 @@ -66,7 +66,6 @@
@@ -75238,10 +75205,10 @@ index 652f169a0..428926e35 100644
  struct uvc_request_data {
  	__s32 length;
 diff --git a/include/uapi/linux/usb/video.h b/include/uapi/linux/usb/video.h
-index bfdae12cd..b82436fd9 100644
+index c58854fb7..d160d5bdd 100644
 --- a/include/uapi/linux/usb/video.h
 +++ b/include/uapi/linux/usb/video.h
-@@ -567,5 +567,63 @@ struct UVC_FRAME_MJPEG(n) {				\
+@@ -597,5 +597,63 @@ struct UVC_FRAME_MJPEG(n) {				\
  	__le32 dwFrameInterval[n];			\
  } __attribute__ ((packed))
  
@@ -75442,10 +75409,10 @@ index b28817c59..1e650c284 100644
  
  /*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */
 diff --git a/init/Kconfig b/init/Kconfig
-index 4b5a6fc0f..cf5edde30 100644
+index 70bd7f690..608425841 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -1352,6 +1352,11 @@ config BLK_DEV_INITRD
+@@ -1364,6 +1364,11 @@ config BLK_DEV_INITRD
  if BLK_DEV_INITRD
  
  source "usr/Kconfig"
@@ -75457,7 +75424,7 @@ index 4b5a6fc0f..cf5edde30 100644
  
  endif
  
-@@ -1711,6 +1716,13 @@ config KALLSYMS
+@@ -1723,6 +1728,13 @@ config KALLSYMS
  	  symbolic stack backtraces. This increases the size of the kernel
  	  somewhat, as all symbols have to be loaded into the kernel image.
  
@@ -75722,7 +75689,7 @@ index 5899260a8..f5b51d8fe 100644
 +
  obj-$(CONFIG_ENERGY_MODEL)	+= energy_model.o
 diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index 119b929dc..41430128d 100644
+index 334173fe6..c2c858c6d 100644
 --- a/kernel/power/energy_model.c
 +++ b/kernel/power/energy_model.c
 @@ -52,6 +52,17 @@ static int em_debug_cpus_show(struct seq_file *s, void *unused)
@@ -75752,7 +75719,7 @@ index 119b929dc..41430128d 100644
  	/* Create a sub-directory for each performance state */
  	for (i = 0; i < dev->em_pd->nr_perf_states; i++)
  		em_debug_create_ps(&dev->em_pd->table[i], d);
-@@ -245,17 +258,24 @@ EXPORT_SYMBOL_GPL(em_cpu_get);
+@@ -242,17 +255,24 @@ EXPORT_SYMBOL_GPL(em_cpu_get);
   * @cpus	: Pointer to cpumask_t, which in case of a CPU device is
   *		obligatory. It can be taken from i.e. 'policy->cpus'. For other
   *		type of devices this should be set to NULL.
@@ -75778,7 +75745,7 @@ index 119b929dc..41430128d 100644
  {
  	unsigned long cap, prev_cap = 0;
  	int cpu, ret;
-@@ -308,6 +328,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+@@ -305,6 +325,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
  	if (ret)
  		goto unlock;
  
@@ -75974,7 +75941,7 @@ index af6f23d8b..240805041 100644
  {
  	/* The boot cpu is always logical cpu 0 */
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d4ebc1d4e..c6242ad9f 100644
+index 9afa1dd0f..b71a9b960 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -18,6 +18,7 @@
@@ -76040,8 +76007,8 @@ index d4ebc1d4e..c6242ad9f 100644
  	cpu = default_cpu;
  unlock:
  	rcu_read_unlock();
-@@ -1654,11 +1676,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
- {
+@@ -1657,11 +1679,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
+ 
  	enqueue_task(rq, p, flags);
  
 +	wgcm_activate_task(p);
@@ -76056,7 +76023,7 @@ index d4ebc1d4e..c6242ad9f 100644
  	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
  
  	dequeue_task(rq, p, flags);
-@@ -1770,7 +1796,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
+@@ -1773,7 +1799,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
  	if (is_per_cpu_kthread(p))
  		return cpu_online(cpu);
  
@@ -76067,7 +76034,7 @@ index d4ebc1d4e..c6242ad9f 100644
  }
  
  /*
-@@ -2433,7 +2461,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
+@@ -2436,7 +2464,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
  			}
  			fallthrough;
  		case possible:
@@ -76076,7 +76043,7 @@ index d4ebc1d4e..c6242ad9f 100644
  			state = fail;
  			break;
  
-@@ -2627,6 +2655,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
+@@ -2630,6 +2658,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
  {
  	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
  
@@ -76085,7 +76052,7 @@ index d4ebc1d4e..c6242ad9f 100644
  	lockdep_assert_held(&rq->lock);
  
  	if (p->sched_contributes_to_load)
-@@ -3023,6 +3053,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
+@@ -3026,6 +3056,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
  	if (!(p->state & state))
  		goto unlock;
  
@@ -76105,7 +76072,7 @@ index d4ebc1d4e..c6242ad9f 100644
  	trace_sched_waking(p);
  
  	/* We're going to change ->state: */
-@@ -3269,6 +3312,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+@@ -3272,6 +3315,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
  #ifdef CONFIG_SCHED_RTG
  	p->rtg_depth = 0;
  #endif
@@ -76114,7 +76081,7 @@ index d4ebc1d4e..c6242ad9f 100644
  }
  
  DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
-@@ -5719,16 +5764,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
+@@ -5722,16 +5767,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
  {
  	return _sched_setscheduler(p, policy, param, true);
  }
@@ -76134,7 +76101,7 @@ index d4ebc1d4e..c6242ad9f 100644
  
  /**
   * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
-@@ -5748,6 +5796,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
+@@ -5751,6 +5799,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
  {
  	return _sched_setscheduler(p, policy, param, false);
  }
@@ -76142,7 +76109,7 @@ index d4ebc1d4e..c6242ad9f 100644
  
  /*
   * SCHED_FIFO is a broken scheduler model; that is, it is fundamentally
-@@ -7055,6 +7104,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
+@@ -7058,6 +7107,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
  	 */
  	update_rq_clock(rq);
  
@@ -76152,7 +76119,7 @@ index d4ebc1d4e..c6242ad9f 100644
  	for (;;) {
  		/*
  		 * There's this thread running, bail when that's the only
-@@ -9190,6 +9242,10 @@ void sched_exit(struct task_struct *p)
+@@ -9193,6 +9245,10 @@ void sched_exit(struct task_struct *p)
  	sched_set_group_id(p, 0);
  #endif
  
@@ -76164,7 +76131,7 @@ index d4ebc1d4e..c6242ad9f 100644
  
  	/* rq->curr == p */
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 0a94f01a1..932f44711 100644
+index e5e72262e..11160db51 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
 @@ -86,6 +86,7 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
@@ -76212,7 +76179,7 @@ index 0a94f01a1..932f44711 100644
  
  		r = removed_runnable;
  		sub_positive(&sa->runnable_avg, r);
-@@ -5361,7 +5352,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
+@@ -5420,7 +5411,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
  /*
   * When a group wakes up we want to make sure that its quota is not already
   * expired/exceeded, otherwise it may be allowed to steal additional ticks of
@@ -76221,7 +76188,7 @@ index 0a94f01a1..932f44711 100644
   */
  static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
  {
-@@ -10821,8 +10812,20 @@ void nohz_balance_enter_idle(int cpu)
+@@ -10987,8 +10978,20 @@ void nohz_balance_enter_idle(int cpu)
  	SCHED_WARN_ON(cpu != smp_processor_id());
  
  	/* If this CPU is going down, then nothing needs to be done: */
@@ -76327,7 +76294,7 @@ index 2c613e1cf..134aa5ee2 100644
  }
  
 diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-index 0f296598a..2944bdcc0 100644
+index 15b4cc7b8..d81bccf60 100644
 --- a/kernel/sched/rt.c
 +++ b/kernel/sched/rt.c
 @@ -1393,6 +1393,27 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se, unsigned int flags)
@@ -76450,10 +76417,10 @@ index c529706be..92a6875bc 100644
 +#define LOAD_AVG_PERIOD pelt_load_avg_period
 +#define LOAD_AVG_MAX pelt_load_avg_max
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 3457a8ac7..5d526e366 100644
+index 23cd54413..72d2067c6 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -1911,6 +1911,7 @@ extern const int		sched_latency_to_weight[40];
+@@ -1914,6 +1914,7 @@ extern const int		sched_latency_to_weight[40];
  #else
  #define ENQUEUE_MIGRATED	0x00
  #endif
@@ -76959,10 +76926,10 @@ index 190f1117f..421bb2fa6 100644
  {
  	struct symbol *sym;
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 662f7b4a9..a4e66d3b1 100644
+index 3c3e3a4c9..aa5d03b00 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -101,7 +101,7 @@
+@@ -103,7 +103,7 @@
  #include "ibpkey.h"
  #include "xfrm.h"
  #include "netlabel.h"
