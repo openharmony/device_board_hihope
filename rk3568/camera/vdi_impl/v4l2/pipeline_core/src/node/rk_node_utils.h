@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -11,10 +11,8 @@
  * limitations under the License.
  */
 
-#ifndef __NODE_UTILS_H__
-#include "stdint.h"
-#include "mutex"
-#include "memory"
+#ifndef __RK_NODE_UTILS_H__
+#define __RK_NODE_UTILS_H__
 #include "ibuffer.h"
 namespace OHOS::Camera {
     class RkNodeUtils {
@@ -23,5 +21,4 @@ namespace OHOS::Camera {
     };
 };
 
-#define __NODE_UTILS_H__
 #endif

@@ -30,6 +30,7 @@ RKCodecNode::RKCodecNode(const std::string& name, const std::string& type, const
     CAMERA_LOGV("%{public}s enter, type(%{public}s)\n", name_.c_str(), type_.c_str());
     jpegRotation_ = static_cast<uint32_t>(JXFORM_ROT_270);
     jpegQuality_ = 100; // 100:jpeg quality
+    mppStatus_ = 0;
 }
 
 RKCodecNode::~RKCodecNode()
@@ -308,10 +309,10 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
         buffer->SetIsValidDataInSurfaceBuffer(true);
         buffer->SetEsFrameSize(jpegSize);
     } else {
-        CAMERA_LOGI("RKCodecNode::Yuv422ToJpeg memcpy_s failed 2, ret = %{public}d\n", ret);
+        CAMERA_LOGE("RKCodecNode::Yuv422ToJpeg memcpy_s failed 2, ret = %{public}d\n", ret);
         buffer->SetEsFrameSize(0);
     }
-    CAMERA_LOGI("RKCodecNode::Yuv420ToJpeg jpegSize = %{public}d\n", jpegSize);
+    CAMERA_LOGI("RKCodecNode::Yuv422ToJpeg jpegSize = %{public}d\n", jpegSize);
     free(jBuf);
 }
 
@@ -321,6 +322,8 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
     size_t buf_size = 0;
     struct timespec ts = {};
     int64_t timestamp = 0;
+    constexpr uint32_t minIFrameBegin = 5;
+
     CAMERA_LOGD("RKCodecNode::Yuv420ToH264 begin");
 
     auto oldFormat = buffer->GetCurFormat();
@@ -331,7 +334,7 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
     if (!buffer->GetIsValidDataInSurfaceBuffer()) {
         CAMERA_LOGE("RKCodecNode::Yuv420ToH264 cp sb to cb");
         auto ret = memcpy_s(buffer->GetSuffaceBufferAddr(), buffer->GetSuffaceBufferSize(),
-            buffer->GetVirAddress(), buffer->GetSize());
+            buffer->GetVirAddress(), buffer->GetSuffaceBufferSize());
         if (ret != 0) {
             CAMERA_LOGE("RKCodecNode::Yuv420ToH264 memcpy_s failed 1, ret = %{public}d\n", ret);
         }
@@ -346,7 +349,8 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
             args.format      = MPP_FMT_YUV420P;
             args.type        = MPP_VIDEO_CodingAVC;
             halCtx_ = hal_mpp_ctx_create(&args);
-            CAMERA_LOGI("RKCodecNode::Yuv420ToH264 hal_mpp_ctx_create finish, index = %{public}d", buffer->GetIndex());
+            CAMERA_LOGI("RKCodecNode::Yuv420ToH264 hal_mpp_ctx_create d, index = %{public}d, mppStatus_ = %{public}d",
+                buffer->GetIndex(), mppStatus_);
         }
         if (halCtx_ == nullptr) {
             CAMERA_LOGI("RKCodecNode::Yuv420ToH264 halCtx_ = %{public}p\n", halCtx_);
@@ -354,8 +358,11 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
         }
         buf_size = ((MpiEncTestData *)halCtx_)->frame_size;
         ret = hal_mpp_encode(halCtx_, buffer->GetFileDescriptor(), (unsigned char *)buffer->GetVirAddress(), &buf_size);
-        hal_mpp_ctx_delete(halCtx_);
-        halCtx_ = nullptr;
+        if (mppStatus_ < minIFrameBegin) {
+            mppStatus_++;
+            hal_mpp_ctx_delete(halCtx_);
+            halCtx_ = nullptr;
+        }
     }
     SerchIFps((unsigned char *)buffer->GetVirAddress(), buf_size, buffer);
 
@@ -412,7 +419,13 @@ RetCode RKCodecNode::Capture(const int32_t streamId, const int32_t captureId)
 RetCode RKCodecNode::CancelCapture(const int32_t streamId)
 {
     CAMERA_LOGI("RKCodecNode::CancelCapture streamid = %{public}d", streamId);
-
+    std::unique_lock<std::mutex> l(hal_mpp);
+    if (halCtx_ != nullptr) {
+        CAMERA_LOGI("RKCodecNode::Stop hal_mpp_ctx_delete\n");
+        hal_mpp_ctx_delete(halCtx_);
+        halCtx_ = nullptr;
+        mppStatus_ = 0;
+    }
     return RC_OK;
 }
 
