@@ -14,7 +14,8 @@
 #include "rk_scale_node.h"
 #include "rk_node_utils.h"
 #include <securec.h>
-
+#include "cstdint"
+#include "memory"
 namespace OHOS::Camera {
 RKScaleNode::RKScaleNode(const std::string& name, const std::string& type, const std::string &cameraId)
     : NodeBase(name, type, cameraId)
@@ -59,7 +60,7 @@ void RKScaleNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
 
     int32_t id = buffer->GetStreamId();
     CAMERA_LOGI("RKScaleNode::DeliverBuffer, streamId[%{public}d],\
-index[%{public}d], %{public}d * %{public}d ==> %{public}d * %{public}d, encodeType = %{public}d", 
+index[%{public}d], %{public}d * %{public}d ==> %{public}d * %{public}d, encodeType = %{public}d",
         buffer->GetStreamId(), buffer->GetIndex(),
         buffer->GetCurWidth(), buffer->GetCurHeight(), buffer->GetWidth(), buffer->GetHeight(),
         buffer->GetEncodeType());

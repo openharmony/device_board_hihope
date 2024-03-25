@@ -1,3 +1,16 @@
+/*
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "rk_node_utils.h"
 #include "map"
 #include "camera.h"
@@ -24,13 +37,14 @@ static uint32_t ConvertOhosFormat2RkFormat(uint32_t format)
     return RK_FORMAT_UNKNOWN;
 }
 
-static bool IsNeedDoTransformCheck(std::shared_ptr<IBuffer>& buffer)
+static bool CheckIfNeedDoTransform(std::shared_ptr<IBuffer>& buffer)
 {
     if (buffer == nullptr) {
-        CAMERA_LOGI("BufferScaleFormatTransform Error buffer == nullptr");
+        CAMERA_LOGE("BufferScaleFormatTransform Error buffer == nullptr");
         return false;
     }
-    CAMERA_LOGI("BufferScaleFormatTransform, streamId[%d], index[%d], %d * %d ==> %d * %d, fomat: %d ==> %d , encodeType: %d",
+    CAMERA_LOGD("BufferScaleFormatTransform,\
+streamId[%d], index[%d], %d * %d ==> %d * %d, fomat: %d ==> %d , encodeType: %d",
         buffer->GetStreamId(), buffer->GetIndex(),
         buffer->GetCurWidth(), buffer->GetCurHeight(), buffer->GetWidth(), buffer->GetHeight(),
         buffer->GetCurFormat(), buffer->GetFormat(), buffer->GetEncodeType());
@@ -60,54 +74,13 @@ static bool IsNeedDoTransformCheck(std::shared_ptr<IBuffer>& buffer)
     return true;
 }
 
-// void BufferScaleFormatTransform2(std::shared_ptr<IBuffer>& buffer)
-// {
-//     static std::mutex mtx;
-//     if (!IsNeedDoTransformCheck(buffer)) {
-//         return;
-//     }
-
-//     auto tmpBuffer = malloc(buffer->GetWidth() * buffer->GetWidth() * 4);
-//     auto srcRkFmt = ConvertOhosFormat2RkFormat(buffer->GetCurFormat());
-//     auto dstRkFmt = ConvertOhosFormat2RkFormat(buffer->GetFormat());
-//     {
-//         std::lock_guard<std::mutex> l(mtx);
-//         static int32_t count = 0;
-//         count++;
-//         CAMERA_LOGE("RockchipRga1 start %{public}d", count);
-//         RockchipRga rkRga;
-//         rga_info_t src = {};
-//         rga_info_t dst = {};
-
-//         src.mmuFlag = 1;
-//         src.rotation = 0;
-//         src.virAddr = buffer->GetVirAddress();
-//         src.fd = -1;
-
-//         dst.fd = -1;
-//         dst.mmuFlag = 1;
-//         dst.virAddr = tmpBuffer;
-//         rga_set_rect(&src.rect, 0, 0, buffer->GetCurWidth(), buffer->GetCurHeight(),
-//             buffer->GetCurWidth(), buffer->GetCurHeight(), srcRkFmt);
-//         rga_set_rect(&dst.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
-//             buffer->GetWidth(), buffer->GetHeight(), dstRkFmt);
-
-//         rkRga.RkRgaBlit(&src, &dst, NULL);
-//         rkRga.RkRgaFlush();
-//         CAMERA_LOGE("RockchipRga1 end %{public}d", count);
-//     }
-
-//     buffer->SetCurFormat(buffer->GetFormat());
-//     buffer->SetCurWidth(buffer->GetWidth());
-//     buffer->SetCurHeight(buffer->GetHeight());
-//     buffer->SetIsValidDataInSurfaceBuffer(false);
-//     memcpy_s(buffer->GetVirAddress(), buffer->GetSize(), tmpBuffer, buffer->GetSize());
-//     free(tmpBuffer);
-// }
-
 static void TransformToVirAddress(std::shared_ptr<IBuffer>& buffer, int32_t srcRkFmt, int32_t dstRkFmt)
 {
     auto tmpBuffer = malloc(buffer->GetSize());
+    if (tmpBuffer == nullptr) {
+        CAMERA_LOGE("TransformToVirAddress malloc tmpBuffer fail");
+        return;
+    }
     memcpy_s(tmpBuffer, buffer->GetSize(), buffer->GetVirAddress(), buffer->GetSize());
 
     RockchipRga rkRga;
@@ -161,7 +134,7 @@ static void TransformToFd(std::shared_ptr<IBuffer>& buffer, int32_t srcRkFmt, in
 void RkNodeUtils::BufferScaleFormatTransform(std::shared_ptr<IBuffer>& buffer, bool flagToFd)
 {
     static std::mutex mtx;
-    if (!IsNeedDoTransformCheck(buffer)) {
+    if (!CheckIfNeedDoTransform(buffer)) {
         return;
     }
     auto srcRkFmt = ConvertOhosFormat2RkFormat(buffer->GetCurFormat());
@@ -171,64 +144,18 @@ void RkNodeUtils::BufferScaleFormatTransform(std::shared_ptr<IBuffer>& buffer, b
         std::lock_guard<std::mutex> l(mtx);
         static int32_t count = 0;
         count++;
-        CAMERA_LOGE("RockchipRga start %{public}d", count);
+        CAMERA_LOGD("RockchipRga start %{public}d", count);
         if (flagToFd) {
             TransformToFd(buffer, srcRkFmt, dstRkFmt);
         } else {
             TransformToVirAddress(buffer, srcRkFmt, dstRkFmt);
         }
 
-        CAMERA_LOGE("RockchipRga end %{public}d", count);
+        CAMERA_LOGD("RockchipRga end %{public}d", count);
     }
 
     buffer->SetCurFormat(buffer->GetFormat());
     buffer->SetCurWidth(buffer->GetWidth());
     buffer->SetCurHeight(buffer->GetHeight());
 }
-
-#if 0
-void RkNodeUtils::BufferScaleFormatTransform(std::shared_ptr<IBuffer>& buffer, bool flagToFd)
-{
-    static std::mutex mtx;
-    if (!IsNeedDoTransformCheck(buffer)) {
-        return;
-    }
-    auto srcRkFmt = ConvertOhosFormat2RkFormat(buffer->GetCurFormat());
-    auto dstRkFmt = ConvertOhosFormat2RkFormat(buffer->GetFormat());
-    int dma_fd = buffer->GetFileDescriptor();
-
-    {
-        std::lock_guard<std::mutex> l(mtx);
-        static int32_t count = 0;
-        count++;
-        CAMERA_LOGE("RockchipRga start %{public}d", count);
-        RockchipRga rkRga;
-        rga_info_t src = {};
-        rga_info_t dst = {};
-
-        src.mmuFlag = 1;
-        src.rotation = 0;
-        src.virAddr = buffer->GetVirAddress();
-        src.fd = -1;
-
-        dst.mmuFlag = 1;
-        dst.fd = flagToFd ? buffer->GetFileDescriptor() : -1;
-        dst.virAddr = flagToFd ?  0 : buffer->GetSuffaceBufferAddr();
-
-        rga_set_rect(&src.rect, 0, 0, buffer->GetCurWidth(), buffer->GetCurHeight(),
-            buffer->GetCurWidth(), buffer->GetCurHeight(), srcRkFmt);
-        rga_set_rect(&dst.rect, 0, 0, buffer->GetWidth(), buffer->GetHeight(),
-            buffer->GetWidth(), buffer->GetHeight(), dstRkFmt);
-
-        rkRga.RkRgaBlit(&src, &dst, NULL);
-        rkRga.RkRgaFlush();
-        CAMERA_LOGE("RockchipRga end %{public}d", count);
-    }
-
-    buffer->SetCurFormat(buffer->GetFormat());
-    buffer->SetCurWidth(buffer->GetWidth());
-    buffer->SetCurHeight(buffer->GetHeight());
-    buffer->SetIsValidDataInSurfaceBuffer(true);
-}
-#endif
 };

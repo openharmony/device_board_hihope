@@ -50,10 +50,10 @@ ohos_shared_library("camera_pipeline_core") {
     defines += [ "CAMERA_BUILT_ON_USB" ]
   }
   sources = [
-    "$board_camera_path/pipeline_core/src/node/rk_node_utils.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_codec_node.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_exif_node.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_face_node.cpp",
+    "$board_camera_path/pipeline_core/src/node/rk_node_utils.cpp",
     "$board_camera_path/pipeline_core/src/node/rk_scale_node.cpp",
     "$camera_path/pipeline_core/src/pipeline_core.cpp",
     "//device/soc/rockchip/rk3568/hardware/mpp/src/mpi_enc_utils.c",
