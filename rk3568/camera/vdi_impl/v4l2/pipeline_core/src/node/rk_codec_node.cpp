@@ -290,15 +290,20 @@ static void SerchIFps(unsigned char* buf, size_t bufSize, std::shared_ptr<IBuffe
     }
 }
 
+static void BufferFormatTransform(std::shared_ptr<IBuffer>& buffer, uint32_t format)
+{
+    auto oldFmt = buffer->GetFormat();
+    buffer->SetFormat(format);
+    RkNodeUtils::BufferScaleFormatTransform(buffer, false);
+    buffer->SetFormat(oldFmt);
+}
+
 void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
 {
     int32_t ret = 0;
-    CAMERA_LOGI("RKCodecNode::Yuv422ToJpeg begin");
+    CAMERA_LOGD("RKCodecNode::Yuv422ToJpeg begin");
 
-    auto oldFmt = buffer->GetFormat();
-    buffer->SetFormat(CAMERA_FORMAT_RGB_888);
-    RkNodeUtils::BufferScaleFormatTransform(buffer, false);
-    buffer->SetFormat(oldFmt);
+    BufferFormatTransform(buffer, CAMERA_FORMAT_RGB_888);
 
     unsigned char* jBuf = nullptr;
     unsigned long jpegSize = 0;
@@ -325,18 +330,16 @@ void RKCodecNode::Yuv420ToH264(std::shared_ptr<IBuffer>& buffer)
     constexpr uint32_t minIFrameBegin = 5;
 
     CAMERA_LOGD("RKCodecNode::Yuv420ToH264 begin");
-
-    auto oldFormat = buffer->GetCurFormat();
-    buffer->SetFormat(CAMERA_FORMAT_YCRCB_420_P);
-    RkNodeUtils::BufferScaleFormatTransform(buffer, false);
-    buffer->SetFormat(oldFormat);
+    BufferFormatTransform(buffer, CAMERA_FORMAT_YCRCB_420_P);
 
     if (!buffer->GetIsValidDataInSurfaceBuffer()) {
-        CAMERA_LOGE("RKCodecNode::Yuv420ToH264 cp sb to cb");
+        CAMERA_LOGD("RKCodecNode::Yuv420ToH264 cp sb to cb");
         auto ret = memcpy_s(buffer->GetSuffaceBufferAddr(), buffer->GetSuffaceBufferSize(),
             buffer->GetVirAddress(), buffer->GetSuffaceBufferSize());
         if (ret != 0) {
             CAMERA_LOGE("RKCodecNode::Yuv420ToH264 memcpy_s failed 1, ret = %{public}d\n", ret);
+            buffer->SetBufferStatus(CAMERA_BUFFER_STATUS_INVALID);
+            return;
         }
     }
 

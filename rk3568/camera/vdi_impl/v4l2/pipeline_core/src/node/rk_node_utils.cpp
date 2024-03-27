@@ -43,8 +43,8 @@ static bool CheckIfNeedDoTransform(std::shared_ptr<IBuffer>& buffer)
         CAMERA_LOGE("BufferScaleFormatTransform Error buffer == nullptr");
         return false;
     }
-    CAMERA_LOGD("BufferScaleFormatTransform,\
-streamId[%d], index[%d], %d * %d ==> %d * %d, fomat: %d ==> %d , encodeType: %d",
+    CAMERA_LOGD("BufferScaleFormatTransform, \
+streamId[%d], index[%d], %d * %d ==> %d * %d, format: %d ==> %d , encodeType: %d",
         buffer->GetStreamId(), buffer->GetIndex(),
         buffer->GetCurWidth(), buffer->GetCurHeight(), buffer->GetWidth(), buffer->GetHeight(),
         buffer->GetCurFormat(), buffer->GetFormat(), buffer->GetEncodeType());
@@ -142,16 +142,11 @@ void RkNodeUtils::BufferScaleFormatTransform(std::shared_ptr<IBuffer>& buffer, b
 
     {
         std::lock_guard<std::mutex> l(mtx);
-        static int32_t count = 0;
-        count++;
-        CAMERA_LOGD("RockchipRga start %{public}d", count);
         if (flagToFd) {
             TransformToFd(buffer, srcRkFmt, dstRkFmt);
         } else {
             TransformToVirAddress(buffer, srcRkFmt, dstRkFmt);
         }
-
-        CAMERA_LOGD("RockchipRga end %{public}d", count);
     }
 
     buffer->SetCurFormat(buffer->GetFormat());
