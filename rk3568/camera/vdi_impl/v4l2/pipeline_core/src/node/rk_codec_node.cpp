@@ -317,7 +317,7 @@ void RKCodecNode::Yuv420ToJpeg(std::shared_ptr<IBuffer>& buffer)
         CAMERA_LOGE("RKCodecNode::Yuv422ToJpeg memcpy_s failed 2, ret = %{public}d\n", ret);
         buffer->SetEsFrameSize(0);
     }
-    CAMERA_LOGI("RKCodecNode::Yuv422ToJpeg jpegSize = %{public}d\n", jpegSize);
+    CAMERA_LOGI("RKCodecNode::Yuv422ToJpeg jpegSize = %{public}lu\n", jpegSize);
     free(jBuf);
 }
 
