@@ -57,18 +57,7 @@ void RKFaceNode::DeliverBuffer(std::shared_ptr<IBuffer>& buffer)
 
     CameraDumper& dumper = CameraDumper::GetInstance();
     dumper.DumpBuffer("board_RKFaceNode", ENABLE_RKFACE_NODE_CONVERTED, buffer);
-
-    int32_t id = buffer->GetStreamId();
-
-    outPutPorts_ = GetOutPorts();
-    for (auto& it : outPutPorts_) {
-        if (it->format_.streamId_ == id) {
-            CopyMetadataBuffer(metaData_, buffer, metaDataSize_);
-            it->DeliverBuffer(buffer);
-            CAMERA_LOGI("RKFaceNode deliver buffer streamid = %{public}d", it->format_.streamId_);
-            return;
-        }
-    }
+    NodeBase::DeliverBuffer(buffer);
 }
 
 RetCode RKFaceNode::Config(const int32_t streamId, const CaptureMeta& meta)
