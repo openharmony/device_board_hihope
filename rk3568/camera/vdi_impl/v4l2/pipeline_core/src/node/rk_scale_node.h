@@ -42,11 +42,6 @@ public:
     virtual RetCode Capture(const int32_t streamId, const int32_t captureId) override;
     RetCode CancelCapture(const int32_t streamId) override;
     RetCode Flush(const int32_t streamId);
-private:
-    void PreviewScaleConver(std::shared_ptr<IBuffer>& buffer);
-    void ScaleConver(std::shared_ptr<IBuffer>& buffer);
-    std::vector<std::shared_ptr<IPort>>   outPutPorts_;
-    std::shared_ptr<IBufferPool>          bufferPool_ = nullptr;    // buffer pool of branch stream
 };
 } // namespace OHOS::Camera
 #endif
