@@ -168,12 +168,14 @@ static int32_t CaptureStopImpl(struct AlsaCapture *captureIns)
 {
     struct AlsaMixerCtlElement mixerItem;
     CHECK_NULL_PTR_RETURN_DEFAULT(captureIns);
+    CHECK_NULL_PTR_RETURN_DEFAULT(captureIns->soundCard);
 
     SndElementItemInit(&mixerItem);
     mixerItem.numid = SND_NUMID_CAPUTRE_MIC_PATH;
     mixerItem.name = SND_ELEM_CAPUTRE_MIC_PATH;
     mixerItem.value = SND_IN_CARD_MIC_OFF;
     SndElementWrite(&captureIns->soundCard, &mixerItem);
+    CHECK_NULL_PTR_RETURN_DEFAULT(captureIns->soundCard.pcmHandle);
     snd_pcm_drop(captureIns->soundCard.pcmHandle);
     return HDF_SUCCESS;
 }
