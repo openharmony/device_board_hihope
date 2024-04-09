@@ -168,7 +168,7 @@ static int32_t CaptureStopImpl(struct AlsaCapture *captureIns)
 {
     struct AlsaMixerCtlElement mixerItem;
     CHECK_NULL_PTR_RETURN_DEFAULT(captureIns);
-    CHECK_NULL_PTR_RETURN_DEFAULT(captureIns->soundCard);
+    CHECK_NULL_PTR_RETURN_DEFAULT(&captureIns->soundCard);
 
     SndElementItemInit(&mixerItem);
     mixerItem.numid = SND_NUMID_CAPUTRE_MIC_PATH;

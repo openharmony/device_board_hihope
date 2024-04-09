@@ -195,7 +195,7 @@ static int32_t RenderStopImpl(struct AlsaRender *renderIns)
     struct AlsaMixerCtlElement elem;
     struct AlsaSoundCard *cardIns = (struct AlsaSoundCard *)renderIns;
     CHECK_NULL_PTR_RETURN_DEFAULT(cardIns);
-    CHECK_NULL_PTR_RETURN_DEFAULT(renderIns->soundCard);
+    CHECK_NULL_PTR_RETURN_DEFAULT(&renderIns->soundCard);
 
     SndElementItemInit(&elem);
     elem.numid = SND_NUMID_PLAYBACK_PATH;
