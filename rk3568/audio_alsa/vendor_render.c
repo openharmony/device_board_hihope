@@ -192,7 +192,10 @@ static int32_t RenderStopImpl(struct AlsaRender *renderIns)
 {
     int32_t ret;
     struct AlsaMixerCtlElement elem;
+    CHECK_NULL_PTR_RETURN_DEFAULT(renderIns);
     struct AlsaSoundCard *cardIns = (struct AlsaSoundCard *)renderIns;
+    CHECK_NULL_PTR_RETURN_DEFAULT(cardIns);
+    CHECK_NULL_PTR_RETURN_DEFAULT(&renderIns->soundCard);
 
     SndElementItemInit(&elem);
     elem.numid = SND_NUMID_PLAYBACK_PATH;
@@ -204,6 +207,7 @@ static int32_t RenderStopImpl(struct AlsaRender *renderIns)
         return HDF_FAILURE;
     }
 
+    CHECK_NULL_PTR_RETURN_DEFAULT(renderIns->soundCard.pcmHandle);
     snd_pcm_drain(renderIns->soundCard.pcmHandle);
     return HDF_SUCCESS;
 }
