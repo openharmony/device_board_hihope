@@ -23,8 +23,15 @@ DEPS=(
     "device/soc/hisilicon/common/platform/wifi"
     "third_party/FreeBSD/sys/dev/evdev"
     "drivers/hdf_core"
-    "prebuilts/clang/ohos/linux-x86_64/llvm/bin"
 )
+
+case $(uname -m) in
+    aarch64)
+        DEPS+=("prebuilts/clang/ohos/linux-aarch64/llvm/bin")
+        ;;
+    *)
+        DEPS+=("prebuilts/clang/ohos/linux-x86_64/llvm/bin")
+esac
 
 function is_kernel_change
 {
@@ -40,7 +47,7 @@ function is_kernel_change
 
     for dep in ${DEPS[@]}
     do
-        if [[ $dep == "prebuilts/clang/ohos/linux-x86_64/llvm/bin" ]];then
+        if [[ $dep == "prebuilts/clang/ohos/linux-x86_64/llvm/bin" || $dep == "prebuilts/clang/ohos/linux-aarch64/llvm/bin" ]];then
             echo $dep: >> $BUILD_INFO_PATH/current_build.info
             echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" >> $BUILD_INFO_PATH/current_build.info
             cd $ROOT_PATH/$dep
