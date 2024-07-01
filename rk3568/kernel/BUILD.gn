@@ -13,8 +13,8 @@
 
 import("//build/config/clang/clang.gni")
 import("//build/ohos.gni")
-kernel_build_script_dir = "//kernel/linux/linux-5.10"
-kernel_source_dir = "//kernel/linux/linux-5.10"
+kernel_build_script_dir = "//kernel/linux/${linux_kernel_version}"
+kernel_source_dir = "//kernel/linux/${linux_kernel_version}"
 
 action("kernel") {
   script = "build_kernel.sh"
@@ -22,7 +22,7 @@ action("kernel") {
 
   product_path = "vendor/$product_company/$product_name"
   outputs = [
-    "$root_build_dir/../kernel/src_tmp/linux-5.10/boot_linux",
+    "$root_build_dir/../kernel/src_tmp/${linux_kernel_version}/boot_linux",
     "$root_build_dir/../kernel/checkpoint/compile_check",
   ]
   args = [
@@ -34,6 +34,7 @@ action("kernel") {
     device_company,
     device_name,
     product_company,
+    "${linux_kernel_version}",
     build_variant,
     device_type,
   ]
