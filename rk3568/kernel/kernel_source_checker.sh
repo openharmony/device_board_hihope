@@ -16,6 +16,7 @@
 DEPS=(
     "kernel/linux/build"
     "kernel/linux/linux-5.10"
+    "kernel/linux/linux-6.6"
     "kernel/linux/patches"
     "kernel/linux/config"
     "kernel/linux/common_modules"

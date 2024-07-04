@@ -21,15 +21,16 @@ export PRODUCT_PATH=${4}
 export DEVICE_COMPANY=${6}
 export DEVICE_NAME=${7}
 export PRODUCT_COMPANY=${8}
-KERNEL_FORM=${9}
-KERNEL_PROD=${10}
-ENABLE_LTO_O0=${11}
+KERNEL_VERSION=${9}
+KERNEL_FORM=${10}
+KERNEL_PROD=${11}
+ENABLE_LTO_O0=${12}
 
-KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/linux-5.10
-KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/linux-5.10
-KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/linux-5.10
-KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/linux-5.10
-KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/linux-5.10/rk3568_patch/kernel.patch
+KERNEL_SRC_TMP_PATH=${ROOT_DIR}/out/kernel/src_tmp/${KERNEL_VERSION}
+KERNEL_OBJ_TMP_PATH=${ROOT_DIR}/out/kernel/OBJ/${KERNEL_VERSION}
+KERNEL_SOURCE=${ROOT_DIR}/kernel/linux/${KERNEL_VERSION}
+KERNEL_PATCH_PATH=${ROOT_DIR}/kernel/linux/patches/${KERNEL_VERSION}
+KERNEL_PATCH=${ROOT_DIR}/kernel/linux/patches/${KERNEL_VERSION}/rk3568_patch/kernel.patch
 BUILD_SCRIPT_PATH=${3}
 NEWIP_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/newip/apply_newip.sh
 TZDRIVER_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/tzdriver/apply_tzdriver.sh
@@ -40,8 +41,8 @@ QOS_AUTH_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/qos_auth/apply_qos_a
 UNIFIED_COLLECTION_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/ucollection/apply_ucollection.sh
 CODE_SIGN_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/code_sign/apply_code_sign.sh
 
-HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10
-DEVICE_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/linux-5.10/${DEVICE_NAME}
+HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/${KERNEL_VERSION}
+DEVICE_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/${KERNEL_VERSION}/${DEVICE_NAME}
 DEFCONFIG_BASE_FILE=${HARMONY_CONFIG_PATH}/base_defconfig
 DEFCONFIG_TYPE_FILE=${HARMONY_CONFIG_PATH}/type/standard_defconfig
 DEFCONFIG_FORM_FILE=${HARMONY_CONFIG_PATH}/form/${KERNEL_FORM}_defconfig
@@ -81,47 +82,54 @@ function copy_and_patch_kernel_source()
     #HDF patch
     bash ${ROOT_DIR}/drivers/hdf_core/adapter/khdf/linux/patch_hdf.sh ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${KERNEL_PATCH_PATH} ${DEVICE_NAME}
 
+    #update linux-6.6 kernel stdarg.h path to linux/stdarg.h
+    if [ ${KERNEL_VERSION} == "linux-6.6" ]
+    then
+      sed -i 's/<stdarg.h>/<linux\/stdarg.h>/' ${KERNEL_SRC_TMP_PATH}/bounds_checking_function/include/securec.h
+      sed -i 's/"stdarg.h"/"linux\/stdarg.h"/' ${ROOT_DIR}/drivers/hdf_core/framework/support/platform/src/fwk/platform_device.c
+    fi
+
     #kernel patch
     patch -p1 < ${KERNEL_PATCH}
 
     #newip
     if [ -f $NEWIP_PATCH_FILE ]; then
-        bash $NEWIP_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $NEWIP_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #tzdriver
     if [ -f $TZDRIVER_PATCH_FILE ]; then
-        bash $TZDRIVER_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $TZDRIVER_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #xpm
     if [ -f $XPM_PATCH_FILE ]; then
-        bash $XPM_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $XPM_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #ced
     if [ -f $CED_PATCH_FILE ]; then
-        bash $CED_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $CED_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #qos_auth
     if [ -f $QOS_AUTH_PATCH_FILE ]; then
-        bash $QOS_AUTH_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $QOS_AUTH_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #hideaddr
     if [ -f $HIDEADDR_PATCH_FILE ]; then
-        bash $HIDEADDR_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $HIDEADDR_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #ucollection
     if [ -f $UNIFIED_COLLECTION_PATCH_FILE ]; then
-        bash $UNIFIED_COLLECTION_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $UNIFIED_COLLECTION_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     #code_sign
     if [ -f $CODE_SIGN_PATCH_FILE ]; then
-	bash $CODE_SIGN_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} linux-5.10
+        bash $CODE_SIGN_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     cp -rf ${BUILD_SCRIPT_PATH}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
@@ -135,7 +143,7 @@ function copy_and_patch_kernel_source()
         DEFCONFIG_PROC_FILE=
         echo "warning no prod config file $(DEFCONFIG_PROC_FILE)"
     fi
-    bash ${ROOT_DIR}/kernel/linux/linux-5.10/scripts/kconfig/merge_config.sh -O ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/ -m ${DEFCONFIG_TYPE_FILE} ${DEFCONFIG_FORM_FILE} ${DEFCONFIG_ARCH_FILE} ${DEFCONFIG_PROC_FILE} ${DEFCONFIG_BASE_FILE}
+    bash ${ROOT_DIR}/kernel/linux/${KERNEL_VERSION}/scripts/kconfig/merge_config.sh -O ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/ -m ${DEFCONFIG_TYPE_FILE} ${DEFCONFIG_FORM_FILE} ${DEFCONFIG_ARCH_FILE} ${DEFCONFIG_PROC_FILE} ${DEFCONFIG_BASE_FILE}
     mv ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/.config ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
 
     #selinux config patch
@@ -166,16 +174,22 @@ cd ${KERNEL_SRC_TMP_PATH}
 
 eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
 
+# revert linux-6.6 hdf stdarg.h path
+if [ ${KERNEL_VERSION} == "linux-6.6" ]
+then
+  sed -i 's/"linux\/stdarg.h"/"stdarg.h"/' ${ROOT_DIR}/drivers/hdf_core/framework/support/platform/src/fwk/platform_device.c
+fi
+
 mkdir -p ${2}
 
-if [ "enable_ramdisk" != "${12}" ]; then
+if [ "enable_ramdisk" != "${13}" ]; then
     cp ${KERNEL_OBJ_TMP_PATH}/boot_linux.img ${2}/boot_linux.img
 fi
 cp ${KERNEL_OBJ_TMP_PATH}/resource.img ${2}/resource.img
 cp ${3}/loader/MiniLoaderAll.bin ${2}/MiniLoaderAll.bin
 cp ${3}/loader/uboot.img ${2}/uboot.img
 
-if [ "enable_absystem" == "${14}" ]; then
+if [ "enable_absystem" == "${15}" ]; then
     cp ${3}/loader/parameter_ab.txt ${2}/parameter_ab.txt
     cp ${3}/loader/config_ab.cfg ${2}/config_ab.cfg
 else
@@ -185,7 +199,7 @@ fi
 
 popd
 
-../kernel/src_tmp/linux-5.10/make-boot.sh ..
+../kernel/src_tmp/${KERNEL_VERSION}/make-boot.sh ..
 
 if [ ${KERNEL_SOURCE_CHANGED} -ne 0 ]; then
     cp ${ROOT_DIR}/out/kernel/checkpoint/last_build.info ${ROOT_DIR}/out/kernel/checkpoint/last_build.backup
