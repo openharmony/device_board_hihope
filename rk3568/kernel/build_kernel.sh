@@ -40,6 +40,7 @@ HIDEADDR_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/memory_security/appl
 QOS_AUTH_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/qos_auth/apply_qos_auth.sh
 UNIFIED_COLLECTION_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/ucollection/apply_ucollection.sh
 CODE_SIGN_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/code_sign/apply_code_sign.sh
+DEC_PATCH_FILE=${ROOT_DIR}/kernel/linux/common_modules/dec/apply_dec.sh
 
 HARMONY_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/${KERNEL_VERSION}
 DEVICE_CONFIG_PATH=${ROOT_DIR}/kernel/linux/config/${KERNEL_VERSION}/${DEVICE_NAME}
@@ -130,6 +131,11 @@ function copy_and_patch_kernel_source()
     #code_sign
     if [ -f $CODE_SIGN_PATCH_FILE ]; then
         bash $CODE_SIGN_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
+    fi
+
+    #dec
+    if [ -f $DEC_PATCH_FILE ]; then
+        bash $DEC_PATCH_FILE ${ROOT_DIR} ${KERNEL_SRC_TMP_PATH} ${DEVICE_NAME} ${KERNEL_VERSION}
     fi
 
     cp -rf ${BUILD_SCRIPT_PATH}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
