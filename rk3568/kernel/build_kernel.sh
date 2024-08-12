@@ -87,7 +87,6 @@ function copy_and_patch_kernel_source()
     if [ ${KERNEL_VERSION} == "linux-6.6" ]
     then
       sed -i 's/<stdarg.h>/<linux\/stdarg.h>/' ${KERNEL_SRC_TMP_PATH}/bounds_checking_function/include/securec.h
-      sed -i 's/"stdarg.h"/"linux\/stdarg.h"/' ${ROOT_DIR}/drivers/hdf_core/framework/support/platform/src/fwk/platform_device.c
     fi
 
     #kernel patch
@@ -179,12 +178,6 @@ fi
 cd ${KERNEL_SRC_TMP_PATH}
 
 eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
-
-# revert linux-6.6 hdf stdarg.h path
-if [ ${KERNEL_VERSION} == "linux-6.6" ]
-then
-  sed -i 's/"linux\/stdarg.h"/"stdarg.h"/' ${ROOT_DIR}/drivers/hdf_core/framework/support/platform/src/fwk/platform_device.c
-fi
 
 mkdir -p ${2}
 
