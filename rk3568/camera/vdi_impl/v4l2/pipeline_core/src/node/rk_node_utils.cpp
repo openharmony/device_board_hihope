@@ -45,7 +45,7 @@ static bool CheckIfNeedDoTransform(std::shared_ptr<IBuffer>& buffer)
     }
     CAMERA_LOGD("BufferScaleFormatTransform, streamId[%{public}d], index[%{public}d], \
                 %{public}d * %{public}d ==> %{public}d * %{public}d, \
-                format: %{public}d ==> %{public}d , encodeType: %{public}d",
+                format: %{public}d ==> %{public}d, encodeType: %{public}d",
         buffer->GetStreamId(), buffer->GetIndex(),
         buffer->GetCurWidth(), buffer->GetCurHeight(), buffer->GetWidth(), buffer->GetHeight(),
         buffer->GetCurFormat(), buffer->GetFormat(), buffer->GetEncodeType());
