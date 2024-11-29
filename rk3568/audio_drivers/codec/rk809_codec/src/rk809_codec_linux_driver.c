@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/module.h>
 #include <linux/of.h>
@@ -35,7 +36,20 @@ MODULE_DEVICE_TABLE(of, rk817_codec_dt_ids);
 
 static int rk817_platform_probe(struct platform_device *pdev)
 {
+    int ret;
+    struct clk *clk;
+
     rk817_pdev = pdev;
+
+    clk = devm_clk_get(&pdev->dev, "mclk");
+    if (!IS_ERR(clk)) {
+        ret = clk_prepare_enable(clk);
+        if (ret) {
+            dev_err(&pdev->dev, "enable rk817-codec mclk fail!");
+            return ret;
+        }
+    }
+
     dev_info(&pdev->dev, "got rk817-codec platform_device");
     return 0;
 }
