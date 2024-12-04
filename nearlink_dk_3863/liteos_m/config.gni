@@ -12,6 +12,7 @@
 # limitations under the License.
 
 enable_soc_his_sdkv100 = true
+
 # Kernel type, e.g. "linux", "liteos_a", "liteos_m".
 kernel_type = "liteos_m"
 
@@ -68,13 +69,12 @@ board_cflags = [
   "-DCHIP_WS63=1",
   "-DLOSCFG_XTS_SUPPORT",
   "-DLWIP_CONFIG_FILE=\"lwip/lwipopts_default.h\"",
-
 ]
 board_cxx_flags = board_cflags
 board_ld_flags = []
 
 # Board related headfiles search path.
-sdk ="sdk"
+sdk = "sdk"
 
 board_include_dirs = [
   "${ohos_root_path}commonlibrary/utils_lite/include",
