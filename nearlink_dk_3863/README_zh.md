@@ -2,13 +2,11 @@
 
 
 ## 介绍
-NearLink_DK_WS63采用海思星闪WS63的解决方案，具备对802.11b/g/n/ax无线通信协议的支持，同时兼容BLE5.3协议，具备BLE Mesh和BLE网关能力；支持SLE1.0协议及SLE网关功能；可基于OpenHarmony轻量系统开发物联网场景功能，是物联网智能终端领域的理想选择。
+NearLink_DK_WS63采用海思星闪WS63的解决方案，具备对802.11b/g/n/ax无线通信协议的支持；支持SLE1.0协议及SLE网关功能；可基于OpenHarmony轻量系统开发物联网场景功能，是物联网智能终端领域的理想选择。
 NearLink_DK_WS63具有以下特点：
 稳定、可靠的通信能力
 支持复杂环境下 TPC、自动速率、弱干扰免疫等可靠性通信算法
 灵活的组网能力
-支持 BLE Mesh 组网
-支持 Wi-Fi、BLE 或 SLE 三种组网方式
 完善的网络支持
 支持 IPv4/IPv6 网络功能
 支持 DHCPv4/DHCPv6 Client/Server
@@ -56,15 +54,6 @@ PHY支持 IEEE 802.11b/g/n/ax MAC 支持 IEEE 802.11d/e/i/k/v/w
 支持 RF 自校准方案
 支持 STBC 和 LDPC
 
-蓝牙
-
-低功耗蓝牙 Bluetooth Low Energy（BLE）
-支持 BLE 4.0/4.1/4.2/5.0/5.1/5.2
-支持 125Kbps、500Kbps、1Mbps、2Mbps 速率
-支持多路广播
-支持 Class 1
-支持高功率 20dBm
-支持 BLE Mesh，支持 BLE 网关
 
 星闪
 
