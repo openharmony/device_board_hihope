@@ -222,6 +222,7 @@ if (product_name == "rk3568_mini_system") {
         "hdf_core:libhdf_utils",
         "hdf_core:libhdi",
         "hilog:libhilog",
+        "hisysevent:libhisysevent",
         "ipc:ipc_single",
       ]
       if (use_hitrace) {
@@ -274,6 +275,7 @@ if (product_name == "rk3568_mini_system") {
         "hdf_core:libhdf_utils",
         "hdf_core:libhdi",
         "hilog:libhilog",
+        "hisysevent:libhisysevent",
         "hitrace:hitrace_meter",
         "ipc:ipc_single",
       ]
