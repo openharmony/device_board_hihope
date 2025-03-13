@@ -139,7 +139,6 @@ if (product_name == "rk3568_mini_system") {
 
   host_sources = [
     "$camera_path/../v4l2/src/camera_device/camera_device_vdi_impl.cpp",
-    "$camera_path/../v4l2/src/camera_dump.cpp",
     "$camera_path/../v4l2/src/camera_host/camera_host_config.cpp",
     "$camera_path/../v4l2/src/camera_host/camera_host_vdi_impl.cpp",
     "$camera_path/../v4l2/src/camera_host/hcs_deal.cpp",
@@ -173,6 +172,7 @@ if (product_name == "rk3568_mini_system") {
     "$camera_path/buffer_manager/src/buffer_adapter/standard",
     "$camera_path/utils/event",
     "$camera_path/../../display/interfaces/include",
+    "$camera_path/dump/include",
 
     #producer
     "$camera_path/pipeline_core/utils",
@@ -205,6 +205,9 @@ if (product_name == "rk3568_mini_system") {
     }
     if (use_hitrace) {
       defines += [ "HITRACE_LOG_ENABLED" ]
+    }
+    if (drivers_peripheral_camera_feature_usb) {
+      defines += [ "CAMERA_BUILT_ON_USB" ]
     }
 
     if (is_standard_system) {
@@ -258,6 +261,9 @@ if (product_name == "rk3568_mini_system") {
     }
     if (use_hitrace) {
       defines += [ "HITRACE_LOG_ENABLED" ]
+    }
+    if (drivers_peripheral_camera_feature_usb) {
+      defines += [ "CAMERA_BUILT_ON_USB" ]
     }
 
     if (is_standard_system) {

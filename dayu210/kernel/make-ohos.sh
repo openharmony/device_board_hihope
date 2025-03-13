@@ -15,13 +15,13 @@
 
 set -e
 
-export PATH=../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/:$PATH
+export PATH=../../../../../prebuilts/clang/ohos/linux-x86_64/llvm/bin/:$PATH
 export PRODUCT_PATH=vendor/hihope/dayu210
 IMAGE_SIZE=64  # 64M
 IMAGE_BLOCKS=4096
 
 CPUs=`sed -n "N;/processor/p" /proc/cpuinfo|wc -l`
-MAKE="make CROSS_COMPILE=../../../../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-"
+MAKE="make CROSS_COMPILE=../../../../../prebuilts/gcc/linux-x86/aarch64/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-"
 BUILD_PATH=boot_linux
 EXTLINUX_PATH=${BUILD_PATH}/extlinux
 EXTLINUX_CONF=${EXTLINUX_PATH}/extlinux.conf

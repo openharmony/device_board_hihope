@@ -14,7 +14,7 @@
 # limitations under the License.
 
 set -e
-BOOT_LINUX=${1}/kernel/src_tmp/linux-5.10
+BOOT_LINUX=${1}/rk3588/kernel/src_tmp/linux-5.10
 OUT_IMAGE=${1}/rk3588/packages/phone/images/
 IMAGE_SIZE=64  # 64M
 IMAGE_BLOCKS=4096
