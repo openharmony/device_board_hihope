@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index 64db4e99e..937095621 100644
+index 56cd8e688..04f8945bb 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -493,14 +493,16 @@ LINUXINCLUDE    := \
+@@ -500,14 +500,16 @@ LINUXINCLUDE    := \
  		-I$(objtree)/arch/$(SRCARCH)/include/generated \
  		$(if $(building_out_of_srctree),-I$(srctree)/include) \
  		-I$(objtree)/include \
@@ -21,7 +21,7 @@ index 64db4e99e..937095621 100644
  KBUILD_CPPFLAGS := -D__KERNEL__
  KBUILD_AFLAGS_KERNEL :=
  KBUILD_CFLAGS_KERNEL :=
-@@ -956,9 +958,6 @@ endif
+@@ -952,9 +954,6 @@ endif
  # arch Makefile may override CC so keep this after arch Makefile is included
  NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC) -print-file-name=include)
  
@@ -31,7 +31,7 @@ index 64db4e99e..937095621 100644
  # Variable Length Arrays (VLAs) should not be used anywhere in the kernel
  KBUILD_CFLAGS += -Wvla
  
-@@ -1396,7 +1395,7 @@ kselftest-merge:
+@@ -1392,7 +1391,7 @@ kselftest-merge:
  # Devicetree files
  
  ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
@@ -113,6 +113,19 @@ index 4c0e72781..2094dce73 100644
  	return 0;
  }
  
+diff --git a/drivers/accesstokenid/access_tokenid.c b/drivers/accesstokenid/access_tokenid.c
+index 1f0134a7e..e10ecb2df 100644
+--- a/drivers/accesstokenid/access_tokenid.c
++++ b/drivers/accesstokenid/access_tokenid.c
+@@ -119,7 +119,7 @@ int access_tokenid_set_ftokenid(struct file *file, void __user *uarg)
+ 	return 0;
+ }
+ 
+-static bool check_permission_for_set_token_permission()
++static bool check_permission_for_set_token_permission(void)
+ {
+ 	kuid_t uid = current_uid();
+ 	return uid_eq(uid, ACCESS_TOKEN_UID);
 diff --git a/drivers/clk/rockchip/Kconfig b/drivers/clk/rockchip/Kconfig
 index 47cd6c5de..99e66263a 100644
 --- a/drivers/clk/rockchip/Kconfig
@@ -3165,7 +3178,7 @@ index 1f95d0aca..2f4e970d7 100644
 +MODULE_LICENSE("GPL");
 +#endif
 diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index aea285651..6e428043a 100644
+index e1dcdb0ea..16e691ff4 100644
 --- a/drivers/cpufreq/cpufreq-dt-platdev.c
 +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
 @@ -66,21 +66,6 @@ static const struct of_device_id whitelist[] __initconst = {
@@ -3512,10 +3525,10 @@ index e363ae04a..bbf10ab42 100644
  		list_del(&priv->node);
  	}
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 583423909..6926796dc 100644
+index 162de402b..6f998b1d0 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -688,8 +688,12 @@ static ssize_t show_##file_name				\
+@@ -690,8 +690,12 @@ static ssize_t show_##file_name				\
  	return sprintf(buf, "%u\n", policy->object);	\
  }
  
@@ -3529,7 +3542,7 @@ index 583423909..6926796dc 100644
  show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
  show_one(scaling_min_freq, min);
  show_one(scaling_max_freq, max);
-@@ -1400,7 +1404,7 @@ static int cpufreq_online(unsigned int cpu)
+@@ -1402,7 +1406,7 @@ static int cpufreq_online(unsigned int cpu)
  
  		ret = freq_qos_add_request(&policy->constraints,
  					   policy->min_freq_req, FREQ_QOS_MIN,
@@ -3538,7 +3551,7 @@ index 583423909..6926796dc 100644
  		if (ret < 0) {
  			/*
  			 * So we don't call freq_qos_remove_request() for an
-@@ -1420,7 +1424,7 @@ static int cpufreq_online(unsigned int cpu)
+@@ -1422,7 +1426,7 @@ static int cpufreq_online(unsigned int cpu)
  
  		ret = freq_qos_add_request(&policy->constraints,
  					   policy->max_freq_req, FREQ_QOS_MAX,
@@ -3547,7 +3560,7 @@ index 583423909..6926796dc 100644
  		if (ret < 0) {
  			policy->max_freq_req = NULL;
  			goto out_destroy_policy;
-@@ -2535,6 +2539,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+@@ -2552,6 +2556,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
  
  	return ret;
  }
@@ -3609,10 +3622,10 @@ index 29acaf48e..0e51ed256 100644
  }
 +EXPORT_SYMBOL_GPL(cpuidle_governor_latency_req);
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index c6f460550..db0fe99c8 100644
+index 93df6cef4..8182968b9 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1761,6 +1761,40 @@ static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
+@@ -1803,6 +1803,40 @@ static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
  }
  static DEVICE_ATTR_RW(timer);
  
@@ -3653,7 +3666,7 @@ index c6f460550..db0fe99c8 100644
  static struct attribute *devfreq_attrs[] = {
  	&dev_attr_name.attr,
  	&dev_attr_governor.attr,
-@@ -1773,6 +1807,7 @@ static struct attribute *devfreq_attrs[] = {
+@@ -1815,6 +1849,7 @@ static struct attribute *devfreq_attrs[] = {
  	&dev_attr_max_freq.attr,
  	&dev_attr_trans_stat.attr,
  	&dev_attr_timer.attr,
@@ -3662,7 +3675,7 @@ index c6f460550..db0fe99c8 100644
  };
  ATTRIBUTE_GROUPS(devfreq);
 diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
-index 9a88faaf8..395790397 100644
+index 4dafdf231..395790397 100644
 --- a/drivers/devfreq/event/rockchip-dfi.c
 +++ b/drivers/devfreq/event/rockchip-dfi.c
 @@ -20,26 +20,81 @@
@@ -4071,11 +4084,11 @@ index 9a88faaf8..395790397 100644
  	struct rockchip_dfi *info = devfreq_event_get_drvdata(edev);
  	void __iomem *dfi_regs = info->regs;
 +	u32 mon_idx = 0, i;
- 
--	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
++
 +	if (info->mon_idx)
 +		mon_idx = info->mon_idx;
-+
+ 
+-	writel_relaxed(SOFTWARE_DIS, dfi_regs + DDRMON_CTRL);
 +	for (i = 0; i < MAX_DMC_NUM_CH; i++) {
 +		if (!(info->ch_msk & BIT(i)))
 +			continue;
@@ -4334,16 +4347,30 @@ index 9a88faaf8..395790397 100644
  
  	data->regs = devm_platform_ioremap_resource(pdev, 0);
  	if (IS_ERR(data->regs))
-@@ -202,23 +680,101 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		if (IS_ERR(data->regmap_pmu))
- 			return PTR_ERR(data->regmap_pmu);
+@@ -194,32 +672,109 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
+ 		return PTR_ERR(data->clk);
  	}
--	data->dev = dev;
-+
+ 
++	/* try to find the optional reference to the pmu syscon */
+ 	node = of_parse_phandle(np, "rockchip,pmu", 0);
+-	if (!node)
+-		return dev_err_probe(&pdev->dev, -ENODEV, "Can't find pmu_grf registers\n");
++	if (node) {
++		data->regmap_pmu = syscon_node_to_regmap(node);
++		of_node_put(node);
++		if (IS_ERR(data->regmap_pmu))
++			return PTR_ERR(data->regmap_pmu);
++	}
+ 
+-	data->regmap_pmu = syscon_node_to_regmap(node);
+-	of_node_put(node);
+-	if (IS_ERR(data->regmap_pmu))
+-		return PTR_ERR(data->regmap_pmu);
 +	regmap_read(data->regmap_pmu, PMUGRF_OS_REG2, &val);
 +	data->dram_type = READ_DRAMTYPE_INFO(val);
 +	data->ch_msk = READ_CH_INFO(val);
-+
+ 
+-	data->dev = dev;
 +	desc->ops = &rockchip_dfi_ops;
 +
 +	return 0;
@@ -5076,7 +5103,7 @@ index 7475e09b0..d64fc0392 100644
  
  	dma_fence_end_signalling(tmp);
 diff --git a/drivers/dma-buf/dma-heap.c b/drivers/dma-buf/dma-heap.c
-index bbbfa28b2..4fb22001b 100644
+index bbbfa28b2..d859c7ddf 100644
 --- a/drivers/dma-buf/dma-heap.c
 +++ b/drivers/dma-buf/dma-heap.c
 @@ -14,7 +14,6 @@
@@ -5181,26 +5208,16 @@ index bbbfa28b2..4fb22001b 100644
  
  static int dma_heap_open(struct inode *inode, struct file *file)
  {
-@@ -90,15 +144,9 @@ static long dma_heap_ioctl_allocate(struct file *file, void *data)
+@@ -90,8 +144,6 @@ static long dma_heap_ioctl_allocate(struct file *file, void *data)
  	if (heap_allocation->fd)
  		return -EINVAL;
  
 -	if (heap_allocation->fd_flags & ~DMA_HEAP_VALID_FD_FLAGS)
 -		return -EINVAL;
--
--	if (heap_allocation->heap_flags & ~DMA_HEAP_VALID_HEAP_FLAGS)
--		return -EINVAL;
--
--	fd = dma_heap_buffer_alloc(heap, heap_allocation->len,
--				   heap_allocation->fd_flags,
--				   heap_allocation->heap_flags);
-+	fd = dma_heap_bufferfd_alloc(heap, heap_allocation->len,
-+				     heap_allocation->fd_flags,
-+				     heap_allocation->heap_flags);
- 	if (fd < 0)
- 		return fd;
  
-@@ -124,7 +172,6 @@ static long dma_heap_ioctl(struct file *file, unsigned int ucmd,
+ 	if (heap_allocation->heap_flags & ~DMA_HEAP_VALID_HEAP_FLAGS)
+ 		return -EINVAL;
+@@ -124,7 +176,6 @@ static long dma_heap_ioctl(struct file *file, unsigned int ucmd,
  	if (nr >= ARRAY_SIZE(dma_heap_ioctl_cmds))
  		return -EINVAL;
  
@@ -5208,7 +5225,7 @@ index bbbfa28b2..4fb22001b 100644
  	/* Get the kernel ioctl cmd that matches */
  	kcmd = dma_heap_ioctl_cmds[nr];
  
-@@ -191,6 +238,47 @@ void *dma_heap_get_drvdata(struct dma_heap *heap)
+@@ -191,6 +242,47 @@ void *dma_heap_get_drvdata(struct dma_heap *heap)
  {
  	return heap->priv;
  }
@@ -5256,7 +5273,7 @@ index bbbfa28b2..4fb22001b 100644
  
  /**
   * dma_heap_get_name() - get heap name
-@@ -203,11 +291,11 @@ const char *dma_heap_get_name(struct dma_heap *heap)
+@@ -203,11 +295,11 @@ const char *dma_heap_get_name(struct dma_heap *heap)
  {
  	return heap->name;
  }
@@ -5270,7 +5287,7 @@ index bbbfa28b2..4fb22001b 100644
  	unsigned int minor;
  	int ret;
  
-@@ -221,10 +309,20 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+@@ -221,10 +313,20 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
  		return ERR_PTR(-EINVAL);
  	}
  
@@ -5291,7 +5308,7 @@ index bbbfa28b2..4fb22001b 100644
  	heap->name = exp_info->name;
  	heap->ops = exp_info->ops;
  	heap->priv = exp_info->priv;
-@@ -249,37 +347,27 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+@@ -249,37 +351,27 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
  		goto err1;
  	}
  
@@ -5339,7 +5356,7 @@ index bbbfa28b2..4fb22001b 100644
  err2:
  	cdev_del(&heap->heap_cdev);
  err1:
-@@ -288,27 +376,88 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
+@@ -288,27 +380,88 @@ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info)
  	kfree(heap);
  	return err_ret;
  }
@@ -6812,7 +6829,7 @@ index 0bf688e3c..18f55f954 100644
  module_init(system_heap_create);
  MODULE_LICENSE("GPL v2");
 diff --git a/drivers/dma-buf/sw_sync.c b/drivers/dma-buf/sw_sync.c
-index 348b3a917..3daa6c76b 100644
+index 7f5ed1aa7..e403cde8a 100644
 --- a/drivers/dma-buf/sw_sync.c
 +++ b/drivers/dma-buf/sw_sync.c
 @@ -7,6 +7,8 @@
@@ -6902,7 +6919,7 @@ index ed26664f1..8af2bc899 100644
  
  extern struct notifier_block gpio_of_notifier;
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 4e9b3a95f..95994151a 100644
+index b37e6660d..67e8d6a63 100644
 --- a/drivers/gpu/drm/Kconfig
 +++ b/drivers/gpu/drm/Kconfig
 @@ -32,6 +32,10 @@ config DRM_MIPI_DBI
@@ -13059,7 +13076,7 @@ index 376fa6eb4..163dcc03b 100644
  MODULE_AUTHOR("Philippe Cornu <philippe.cornu@st.com>");
  MODULE_DESCRIPTION("DW MIPI DSI host controller driver");
 diff --git a/drivers/gpu/drm/drm_atomic_helper.c b/drivers/gpu/drm/drm_atomic_helper.c
-index 7fc8e7000..4108c7265 100644
+index 0fde260b7..fee489a4a 100644
 --- a/drivers/gpu/drm/drm_atomic_helper.c
 +++ b/drivers/gpu/drm/drm_atomic_helper.c
 @@ -296,12 +296,14 @@ update_connector_routing(struct drm_atomic_state *state,
@@ -13089,7 +13106,7 @@ index 7fc8e7000..4108c7265 100644
  
  	DRM_DEBUG_ATOMIC("[CONNECTOR:%d:%s] using [ENCODER:%d:%s] on [CRTC:%d:%s]\n",
  			 connector->base.id,
-@@ -3554,6 +3557,9 @@ int drm_atomic_helper_legacy_gamma_set(struct drm_crtc *crtc,
+@@ -3563,6 +3566,9 @@ int drm_atomic_helper_legacy_gamma_set(struct drm_crtc *crtc,
  	replaced  = drm_property_replace_blob(&crtc_state->degamma_lut, NULL);
  	replaced |= drm_property_replace_blob(&crtc_state->ctm, NULL);
  	replaced |= drm_property_replace_blob(&crtc_state->gamma_lut, blob);
@@ -13125,10 +13142,10 @@ index 9ad740451..c29183d2a 100644
  EXPORT_SYMBOL(__drm_atomic_helper_crtc_destroy_state);
  
 diff --git a/drivers/gpu/drm/drm_atomic_uapi.c b/drivers/gpu/drm/drm_atomic_uapi.c
-index 25c269bc4..975ece7e0 100644
+index b60628333..1184ba39d 100644
 --- a/drivers/gpu/drm/drm_atomic_uapi.c
 +++ b/drivers/gpu/drm/drm_atomic_uapi.c
-@@ -459,6 +459,16 @@ static int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
+@@ -461,6 +461,16 @@ static int drm_atomic_crtc_set_property(struct drm_crtc *crtc,
  					&replaced);
  		state->color_mgmt_changed |= replaced;
  		return ret;
@@ -13145,7 +13162,7 @@ index 25c269bc4..975ece7e0 100644
  	} else if (property == config->prop_out_fence_ptr) {
  		s32 __user *fence_ptr = u64_to_user_ptr(val);
  
-@@ -501,6 +511,10 @@ drm_atomic_crtc_get_property(struct drm_crtc *crtc,
+@@ -503,6 +513,10 @@ drm_atomic_crtc_get_property(struct drm_crtc *crtc,
  		*val = (state->ctm) ? state->ctm->base.id : 0;
  	else if (property == config->gamma_lut_property)
  		*val = (state->gamma_lut) ? state->gamma_lut->base.id : 0;
@@ -13245,7 +13262,7 @@ index 138ff34b3..7b270b68a 100644
   * drm_crtc_enable_color_mgmt().
   *
 @@ -60,7 +60,7 @@
-  * “CTM”:
+  * "CTM":
   *	Blob property to set the current transformation matrix (CTM) apply to
   *	pixel data after the lookup through the degamma LUT and before the
 - *	lookup through the gamma LUT. The data is interpreted as a struct
@@ -13257,7 +13274,7 @@ index 138ff34b3..7b270b68a 100644
   *	boot-up state too. Drivers can access the blob for the color conversion
   *	matrix through &drm_crtc_state.ctm.
   *
-+ * ”CUBIC_LUT”:
++ * "CUBIC_LUT":
 + *	Blob property to set the cubic (3D) lookup table performing color
 + *	mapping after the transformation matrix and before the lookup through
 + *	the gamma LUT. Unlike the degamma and gamma LUTs that map color
@@ -13278,13 +13295,13 @@ index 138ff34b3..7b270b68a 100644
 + *	boot-up state too. Drivers can access this blob through
 + *	&drm_crtc_state.cubic_lut.
 + *
-+ * ”CUBIC_LUT_SIZE”:
++ * "CUBIC_LUT_SIZE":
 + *	Unsigned range property to give the size of the lookup table to be set
 + *	on the CUBIC_LUT property (the size depends on the underlying hardware).
 + *	If drivers support multiple LUT sizes then they should publish the
 + *	largest size, and sub-sample smaller sized LUTs appropriately.
 + *
-  * “GAMMA_LUT”:
+  * "GAMMA_LUT":
   *	Blob property to set the gamma lookup table (LUT) mapping pixel data
 - *	after the transformation matrix to data sent to the connector. The
 - *	data is interpreted as an array of &struct drm_color_lut elements.
@@ -13299,6 +13316,131 @@ index 138ff34b3..7b270b68a 100644
   *
   *	Setting this to NULL (blob property value set to 0) means a
   *	linear/pass-thru gamma table should be used. This is generally the
+diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
+index c4ed4f1b3..9c3bbe2c3 100644
+--- a/drivers/gpu/drm/drm_connector.c
++++ b/drivers/gpu/drm/drm_connector.c
+@@ -64,14 +64,6 @@
+  * support can instead use e.g. drm_helper_hpd_irq_event().
+  */
+ 
+-/*
+- * Global connector list for drm_connector_find_by_fwnode().
+- * Note drm_connector_[un]register() first take connector->lock and then
+- * take the connector_list_lock.
+- */
+-static DEFINE_MUTEX(connector_list_lock);
+-static LIST_HEAD(connector_list);
+-
+ struct drm_conn_prop_enum_list {
+ 	int type;
+ 	const char *name;
+@@ -273,7 +265,6 @@ int drm_connector_init(struct drm_device *dev,
+ 		goto out_put_type_id;
+ 	}
+ 
+-	INIT_LIST_HEAD(&connector->global_connector_list_entry);
+ 	INIT_LIST_HEAD(&connector->probed_modes);
+ 	INIT_LIST_HEAD(&connector->modes);
+ 	mutex_init(&connector->mutex);
+@@ -480,8 +471,6 @@ void drm_connector_cleanup(struct drm_connector *connector)
+ 	drm_mode_object_unregister(dev, &connector->base);
+ 	kfree(connector->name);
+ 	connector->name = NULL;
+-	fwnode_handle_put(connector->fwnode);
+-	connector->fwnode = NULL;
+ 	spin_lock_irq(&dev->mode_config.connector_list_lock);
+ 	list_del(&connector->head);
+ 	dev->mode_config.num_connector--;
+@@ -543,9 +532,6 @@ int drm_connector_register(struct drm_connector *connector)
+ 	/* Let userspace know we have a new connector */
+ 	drm_sysfs_hotplug_event(connector->dev);
+ 
+-	mutex_lock(&connector_list_lock);
+-	list_add_tail(&connector->global_connector_list_entry, &connector_list);
+-	mutex_unlock(&connector_list_lock);
+ 	goto unlock;
+ 
+ err_debugfs:
+@@ -574,10 +560,6 @@ void drm_connector_unregister(struct drm_connector *connector)
+ 		return;
+ 	}
+ 
+-	mutex_lock(&connector_list_lock);
+-	list_del_init(&connector->global_connector_list_entry);
+-	mutex_unlock(&connector_list_lock);
+-
+ 	if (connector->funcs->early_unregister)
+ 		connector->funcs->early_unregister(connector);
+ 
+@@ -2480,67 +2462,6 @@ int drm_mode_getconnector(struct drm_device *dev, void *data,
+ 	return ret;
+ }
+ 
+-/**
+- * drm_connector_find_by_fwnode - Find a connector based on the associated fwnode
+- * @fwnode: fwnode for which to find the matching drm_connector
+- *
+- * This functions looks up a drm_connector based on its associated fwnode. When
+- * a connector is found a reference to the connector is returned. The caller must
+- * call drm_connector_put() to release this reference when it is done with the
+- * connector.
+- *
+- * Returns: A reference to the found connector or an ERR_PTR().
+- */
+-struct drm_connector *drm_connector_find_by_fwnode(struct fwnode_handle *fwnode)
+-{
+-	struct drm_connector *connector, *found = ERR_PTR(-ENODEV);
+-
+-	if (!fwnode)
+-		return ERR_PTR(-ENODEV);
+-
+-	mutex_lock(&connector_list_lock);
+-
+-	list_for_each_entry(connector, &connector_list, global_connector_list_entry) {
+-		if (connector->fwnode == fwnode ||
+-		    (connector->fwnode && connector->fwnode->secondary == fwnode)) {
+-			drm_connector_get(connector);
+-			found = connector;
+-			break;
+-		}
+-	}
+-
+-	mutex_unlock(&connector_list_lock);
+-
+-	return found;
+-}
+-
+-/**
+- * drm_connector_oob_hotplug_event - Report out-of-band hotplug event to connector
+- * @connector: connector to report the event on
+- *
+- * On some hardware a hotplug event notification may come from outside the display
+- * driver / device. An example of this is some USB Type-C setups where the hardware
+- * muxes the DisplayPort data and aux-lines but does not pass the altmode HPD
+- * status bit to the GPU's DP HPD pin.
+- *
+- * This function can be used to report these out-of-band events after obtaining
+- * a drm_connector reference through calling drm_connector_find_by_fwnode().
+- */
+-void drm_connector_oob_hotplug_event(struct fwnode_handle *connector_fwnode)
+-{
+-	struct drm_connector *connector;
+-
+-	connector = drm_connector_find_by_fwnode(connector_fwnode);
+-	if (IS_ERR(connector))
+-		return;
+-
+-	if (connector->funcs->oob_hotplug_event)
+-		connector->funcs->oob_hotplug_event(connector);
+-
+-	drm_connector_put(connector);
+-}
+-EXPORT_SYMBOL(drm_connector_oob_hotplug_event);
+-
+ 
+ /**
+  * DOC: Tile group
 diff --git a/drivers/gpu/drm/drm_debugfs.c b/drivers/gpu/drm/drm_debugfs.c
 index b0a826489..3d7182001 100644
 --- a/drivers/gpu/drm/drm_debugfs.c
@@ -13321,7 +13463,7 @@ index b0a826489..3d7182001 100644
  			   from_kuid_munged(seq_user_ns(m), uid),
  			   priv->magic);
 diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c
-index 4334e466b..ab52f7fed 100644
+index 39eb39e78..efc2372d3 100644
 --- a/drivers/gpu/drm/drm_edid.c
 +++ b/drivers/gpu/drm/drm_edid.c
 @@ -1835,20 +1835,11 @@ static void connector_bad_edid(struct drm_connector *connector,
@@ -13470,7 +13612,7 @@ index 4334e466b..ab52f7fed 100644
  }
  
 diff --git a/drivers/gpu/drm/drm_file.c b/drivers/gpu/drm/drm_file.c
-index 537e7de8e..01670305d 100644
+index 93da7b5d7..aa9a9191f 100644
 --- a/drivers/gpu/drm/drm_file.c
 +++ b/drivers/gpu/drm/drm_file.c
 @@ -177,7 +177,6 @@ struct drm_file *drm_file_alloc(struct drm_minor *minor)
@@ -13873,10 +14015,10 @@ index aef226340..da4f085fc 100644
  	return ret;
  }
 diff --git a/drivers/gpu/drm/drm_mipi_dsi.c b/drivers/gpu/drm/drm_mipi_dsi.c
-index 19fb1d93a..3caf9ff34 100644
+index 83918ac1f..6b830f4c4 100644
 --- a/drivers/gpu/drm/drm_mipi_dsi.c
 +++ b/drivers/gpu/drm/drm_mipi_dsi.c
-@@ -356,6 +356,7 @@ static ssize_t mipi_dsi_device_transfer(struct mipi_dsi_device *dsi,
+@@ -369,6 +369,7 @@ static ssize_t mipi_dsi_device_transfer(struct mipi_dsi_device *dsi,
  
  	if (dsi->mode_flags & MIPI_DSI_MODE_LPM)
  		msg->flags |= MIPI_DSI_MSG_USE_LPM;
@@ -13912,10 +14054,10 @@ index fad2c1181..58050d4ae 100644
  				   DRM_MODE_PROP_IMMUTABLE | DRM_MODE_PROP_BLOB,
  				   "IN_FORMATS", 0);
 diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 0f99e5453..d42c7310b 100644
+index 8bebc29a1..1ced8f34b 100644
 --- a/drivers/gpu/drm/drm_modes.c
 +++ b/drivers/gpu/drm/drm_modes.c
-@@ -1940,6 +1940,7 @@ void drm_mode_convert_to_umode(struct drm_mode_modeinfo *out,
+@@ -1943,6 +1943,7 @@ void drm_mode_convert_to_umode(struct drm_mode_modeinfo *out,
  	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
  	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
  }
@@ -13923,7 +14065,7 @@ index 0f99e5453..d42c7310b 100644
  
  /**
   * drm_crtc_convert_umode - convert a modeinfo into a drm_display_mode
-@@ -2016,6 +2017,7 @@ int drm_mode_convert_umode(struct drm_device *dev,
+@@ -2019,6 +2020,7 @@ int drm_mode_convert_umode(struct drm_device *dev,
  
  	return 0;
  }
@@ -13932,10 +14074,10 @@ index 0f99e5453..d42c7310b 100644
  /**
   * drm_mode_is_420_only - if a given videomode can be only supported in YCBCR420
 diff --git a/drivers/gpu/drm/drm_prime.c b/drivers/gpu/drm/drm_prime.c
-index 825499ea3..272e5cdd6 100644
+index 893421d81..9a5a5a737 100644
 --- a/drivers/gpu/drm/drm_prime.c
 +++ b/drivers/gpu/drm/drm_prime.c
-@@ -784,6 +784,28 @@ int drm_gem_dmabuf_mmap(struct dma_buf *dma_buf, struct vm_area_struct *vma)
+@@ -786,6 +786,28 @@ int drm_gem_dmabuf_mmap(struct dma_buf *dma_buf, struct vm_area_struct *vma)
  }
  EXPORT_SYMBOL(drm_gem_dmabuf_mmap);
  
@@ -13964,7 +14106,7 @@ index 825499ea3..272e5cdd6 100644
  static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
  	.cache_sgt_mapping = true,
  	.attach = drm_gem_map_attach,
-@@ -794,6 +816,7 @@ static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
+@@ -796,6 +818,7 @@ static const struct dma_buf_ops drm_gem_prime_dmabuf_ops =  {
  	.mmap = drm_gem_dmabuf_mmap,
  	.vmap = drm_gem_dmabuf_vmap,
  	.vunmap = drm_gem_dmabuf_vunmap,
@@ -13993,7 +14135,7 @@ index f135b7959..286edbe1b 100644
  
  /**
 diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
-index 1a87cc445..7c7d10225 100644
+index 51470020b..aea210bf2 100644
 --- a/drivers/gpu/drm/panel/panel-simple.c
 +++ b/drivers/gpu/drm/panel/panel-simple.c
 @@ -30,6 +30,7 @@
@@ -14440,7 +14582,7 @@ index 1a87cc445..7c7d10225 100644
  		connector_type = DRM_MODE_CONNECTOR_DPI;
  		break;
  	case DRM_MODE_CONNECTOR_LVDS:
-@@ -3906,6 +4188,9 @@ static const struct panel_desc arm_rtsm = {
+@@ -3913,6 +4195,9 @@ static const struct panel_desc arm_rtsm = {
  
  static const struct of_device_id platform_of_match[] = {
  	{
@@ -14450,7 +14592,7 @@ index 1a87cc445..7c7d10225 100644
  		.compatible = "ampire,am-1280800n3tzqw-t00h",
  		.data = &ampire_am_1280800n3tzqw_t00h,
  	}, {
-@@ -4314,15 +4599,132 @@ static const struct of_device_id platform_of_match[] = {
+@@ -4321,15 +4606,132 @@ static const struct of_device_id platform_of_match[] = {
  };
  MODULE_DEVICE_TABLE(of, platform_of_match);
  
@@ -14584,7 +14726,7 @@ index 1a87cc445..7c7d10225 100644
  }
  
  static int panel_simple_platform_remove(struct platform_device *pdev)
-@@ -4557,6 +4959,9 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
+@@ -4564,6 +4966,9 @@ static const struct panel_desc_dsi osd101t2045_53ts = {
  
  static const struct of_device_id dsi_of_match[] = {
  	{
@@ -14594,7 +14736,7 @@ index 1a87cc445..7c7d10225 100644
  		.compatible = "auo,b080uan01",
  		.data = &auo_b080uan01
  	}, {
-@@ -4583,9 +4988,33 @@ static const struct of_device_id dsi_of_match[] = {
+@@ -4590,9 +4995,33 @@ static const struct of_device_id dsi_of_match[] = {
  };
  MODULE_DEVICE_TABLE(of, dsi_of_match);
  
@@ -14628,7 +14770,7 @@ index 1a87cc445..7c7d10225 100644
  	const struct of_device_id *id;
  	int err;
  
-@@ -4593,12 +5022,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
+@@ -4600,12 +5029,47 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
  	if (!id)
  		return -ENODEV;
  
@@ -15333,7 +15475,7 @@ index 512581698..4726b16a3 100644
  };
  MODULE_DEVICE_TABLE(of, rockchip_dp_dt_ids);
 diff --git a/drivers/gpu/drm/rockchip/cdn-dp-core.c b/drivers/gpu/drm/rockchip/cdn-dp-core.c
-index adeaa0140..d7cc434fa 100644
+index 53cad1003..347062832 100644
 --- a/drivers/gpu/drm/rockchip/cdn-dp-core.c
 +++ b/drivers/gpu/drm/rockchip/cdn-dp-core.c
 @@ -6,7 +6,6 @@
@@ -15572,9 +15714,9 @@ index adeaa0140..d7cc434fa 100644
  	struct cdn_dp_device *dp;
 -	struct extcon_dev *extcon;
  	struct phy *phy;
+ 	int ret;
  	int i;
- 
-@@ -1156,21 +1104,18 @@ static int cdn_dp_probe(struct platform_device *pdev)
+@@ -1157,21 +1105,18 @@ static int cdn_dp_probe(struct platform_device *pdev)
  	dp_data = (struct cdn_dp_data *)match->data;
  
  	for (i = 0; i < dp_data->max_phy; i++) {
@@ -15598,7 +15740,7 @@ index adeaa0140..d7cc434fa 100644
  		port->phy = phy;
  		port->dp = dp;
  		port->id = i;
-@@ -1178,7 +1123,7 @@ static int cdn_dp_probe(struct platform_device *pdev)
+@@ -1179,7 +1124,7 @@ static int cdn_dp_probe(struct platform_device *pdev)
  	}
  
  	if (!dp->ports) {
@@ -22277,7 +22419,7 @@ index 2fdc455c4..065fa7fde 100644
  	drm_fb_helper_unregister_fbi(helper);
  
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
-index 62e5d0970..51dead7f3 100644
+index 6038aafa2..8186f0c4b 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_gem.c
 @@ -4,7 +4,7 @@
@@ -22816,9 +22958,9 @@ index 62e5d0970..51dead7f3 100644
  		ret = rockchip_drm_gem_object_mmap_dma(obj, vma);
 +	}
  
- 	if (ret)
- 		drm_gem_vm_close(vma);
-@@ -298,9 +607,13 @@ static void rockchip_gem_release_object(struct rockchip_gem_object *rk_obj)
+ 	return ret;
+ }
+@@ -295,9 +604,13 @@ static void rockchip_gem_release_object(struct rockchip_gem_object *rk_obj)
  static struct rockchip_gem_object *
  	rockchip_gem_alloc_object(struct drm_device *drm, unsigned int size)
  {
@@ -22832,7 +22974,7 @@ index 62e5d0970..51dead7f3 100644
  	size = round_up(size, PAGE_SIZE);
  
  	rk_obj = kzalloc(sizeof(*rk_obj), GFP_KERNEL);
-@@ -311,12 +624,15 @@ static struct rockchip_gem_object *
+@@ -308,12 +621,15 @@ static struct rockchip_gem_object *
  
  	drm_gem_object_init(drm, obj, size);
  
@@ -22849,7 +22991,7 @@ index 62e5d0970..51dead7f3 100644
  {
  	struct rockchip_gem_object *rk_obj;
  	int ret;
-@@ -324,6 +640,7 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
+@@ -321,6 +637,7 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
  	rk_obj = rockchip_gem_alloc_object(drm, size);
  	if (IS_ERR(rk_obj))
  		return rk_obj;
@@ -22857,7 +22999,7 @@ index 62e5d0970..51dead7f3 100644
  
  	ret = rockchip_gem_alloc_buf(rk_obj, alloc_kmap);
  	if (ret)
-@@ -336,6 +653,28 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
+@@ -333,6 +650,28 @@ rockchip_gem_create_object(struct drm_device *drm, unsigned int size,
  	return ERR_PTR(ret);
  }
  
@@ -22886,7 +23028,7 @@ index 62e5d0970..51dead7f3 100644
  /*
   * rockchip_gem_free_object - (struct drm_driver)->gem_free_object_unlocked
   * callback function
-@@ -353,7 +692,11 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
+@@ -350,7 +689,11 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
  			dma_unmap_sgtable(drm->dev, rk_obj->sgt,
  					  DMA_BIDIRECTIONAL, 0);
  		}
@@ -22899,7 +23041,7 @@ index 62e5d0970..51dead7f3 100644
  	} else {
  		rockchip_gem_free_buf(rk_obj);
  	}
-@@ -371,13 +714,14 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
+@@ -368,13 +711,14 @@ void rockchip_gem_free_object(struct drm_gem_object *obj)
  static struct rockchip_gem_object *
  rockchip_gem_create_with_handle(struct drm_file *file_priv,
  				struct drm_device *drm, unsigned int size,
@@ -22916,7 +23058,7 @@ index 62e5d0970..51dead7f3 100644
  	if (IS_ERR(rk_obj))
  		return ERR_CAST(rk_obj);
  
-@@ -414,7 +758,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
+@@ -411,7 +755,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
  			     struct drm_mode_create_dumb *args)
  {
  	struct rockchip_gem_object *rk_obj;
@@ -22925,7 +23067,7 @@ index 62e5d0970..51dead7f3 100644
  
  	/*
  	 * align to 64 bytes since Mali requires it.
-@@ -423,7 +767,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
+@@ -420,7 +764,7 @@ int rockchip_gem_dumb_create(struct drm_file *file_priv,
  	args->size = args->pitch * args->height;
  
  	rk_obj = rockchip_gem_create_with_handle(file_priv, dev, args->size,
@@ -22934,7 +23076,7 @@ index 62e5d0970..51dead7f3 100644
  
  	return PTR_ERR_OR_ZERO(rk_obj);
  }
-@@ -514,6 +858,21 @@ rockchip_gem_prime_import_sg_table(struct drm_device *drm,
+@@ -511,6 +855,21 @@ rockchip_gem_prime_import_sg_table(struct drm_device *drm,
  		goto err_free_rk_obj;
  	}
  
@@ -22956,7 +23098,7 @@ index 62e5d0970..51dead7f3 100644
  	return &rk_obj->base;
  
  err_free_rk_obj:
-@@ -546,3 +905,155 @@ void rockchip_gem_prime_vunmap(struct drm_gem_object *obj, void *vaddr)
+@@ -543,3 +902,155 @@ void rockchip_gem_prime_vunmap(struct drm_gem_object *obj, void *vaddr)
  
  	/* Nothing to do if allocated by DMA mapping API. */
  }
@@ -23189,7 +23331,7 @@ index 7ffc541be..6a1d8e55b 100644
 +void rockchip_gem_get_ddr_info(void);
  #endif /* _ROCKCHIP_DRM_GEM_H */
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-index af98bfcde..ccf39dcf6 100644
+index 682d78fab..ccf39dcf6 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 @@ -6,21 +6,28 @@
@@ -23642,7 +23784,7 @@ index af98bfcde..ccf39dcf6 100644
  static inline uint32_t vop_get_intr_type(struct vop *vop,
  					 const struct vop_reg *reg, int type)
  {
-@@ -243,9 +432,147 @@ static inline uint32_t vop_get_intr_type(struct vop *vop,
+@@ -243,27 +432,157 @@ static inline uint32_t vop_get_intr_type(struct vop *vop,
  	return ret;
  }
  
@@ -23783,15 +23925,35 @@ index af98bfcde..ccf39dcf6 100644
 +static inline void vop_write_lut(struct vop *vop, uint32_t offset, uint32_t v)
 +{
 +	writel(v, vop->lut_regs + offset);
-+}
-+
+ }
+ 
+-static bool has_rb_swapped(uint32_t version, uint32_t format)
 +static inline uint32_t vop_read_lut(struct vop *vop, uint32_t offset)
 +{
 +	return readl(vop->lut_regs + offset);
- }
- 
- static bool has_rb_swapped(uint32_t format)
-@@ -276,38 +603,150 @@ static enum vop_data_format vop_convert_format(uint32_t format)
++}
++
++static bool has_rb_swapped(uint32_t format)
+ {
+ 	switch (format) {
+ 	case DRM_FORMAT_XBGR8888:
+ 	case DRM_FORMAT_ABGR8888:
++	case DRM_FORMAT_BGR888:
+ 	case DRM_FORMAT_BGR565:
+ 		return true;
+-	/*
+-	 * full framework (IP version 3.x) only need rb swapped for RGB888 and
+-	 * little framework (IP version 2.x) only need rb swapped for BGR888,
+-	 * check for 3.x to also only rb swap BGR888 for unknown vop version
+-	 */
+-	case DRM_FORMAT_RGB888:
+-		return VOP_MAJOR(version) == 3;
+-	case DRM_FORMAT_BGR888:
+-		return VOP_MAJOR(version) != 3;
+ 	default:
+ 		return false;
+ 	}
+@@ -284,38 +603,150 @@ static enum vop_data_format vop_convert_format(uint32_t format)
  	case DRM_FORMAT_BGR565:
  		return VOP_FMT_RGB565;
  	case DRM_FORMAT_NV12:
@@ -23956,7 +24118,7 @@ index af98bfcde..ccf39dcf6 100644
  }
  
  static uint16_t scl_vop_cal_scale(enum scale_mode mode, uint32_t src,
-@@ -344,29 +783,37 @@ static uint16_t scl_vop_cal_scale(enum scale_mode mode, uint32_t src,
+@@ -352,29 +783,37 @@ static uint16_t scl_vop_cal_scale(enum scale_mode mode, uint32_t src,
  	return val;
  }
  
@@ -24004,7 +24166,7 @@ index af98bfcde..ccf39dcf6 100644
  	if (!win->phy->scl->ext) {
  		VOP_SCL_SET(vop, win, scale_yrgb_x,
  			    scl_cal_scale2(src_w, dst_w));
-@@ -448,46 +895,412 @@ static void scl_vop_cal_scl_fac(struct vop *vop, const struct vop_win_data *win,
+@@ -456,40 +895,406 @@ static void scl_vop_cal_scl_fac(struct vop *vop, const struct vop_win_data *win,
  	}
  }
  
@@ -24189,16 +24351,11 @@ index af98bfcde..ccf39dcf6 100644
 - *     the "FRAME_SYNC" interrupt.
 - * (2) the active data region of each frame ends at dsp_vact_end
 - * (3) we should program this same number (dsp_vact_end) into dsp_line_frag_num,
-- *      to get "LINE_FLAG" interrupt at the end of the active on screen data.
 + * rk3399 colorspace path:
 + *      Input        Win csc                     Output
 + * 1. YUV(2020)  --> Y2R->2020To709->R2Y   --> YUV_OUTPUT(601/709)
 + *    RGB        --> R2Y                  __/
-  *
-- * VOP_INTR_CTRL0.dsp_line_frag_num = VOP_DSP_VACT_ST_END.dsp_vact_end
-- * Interrupts
-- * LINE_FLAG -------------------------------+
-- * FRAME_SYNC ----+                         |
++ *
 + * 2. YUV(2020)  --> bypasss               --> YUV_OUTPUT(2020)
 + *    RGB        --> 709To2020->R2Y       __/
 + *
@@ -24434,16 +24591,10 @@ index af98bfcde..ccf39dcf6 100644
 + *     the "FRAME_SYNC" interrupt.
 + * (2) the active data region of each frame ends at dsp_vact_end
 + * (3) we should program this same number (dsp_vact_end) into dsp_line_frag_num,
-+ *      to get "LINE_FLAG" interrupt at the end of the active on screen data.
-+ *
-+ * VOP_INTR_CTRL0.dsp_line_frag_num = VOP_DSP_VACT_ST_END.dsp_vact_end
-+ * Interrupts
-+ * LINE_FLAG -------------------------------+
-+ * FRAME_SYNC ----+                         |
-  *                |                         |
-  *                v                         v
-  *                | Vsync | Vbp |  Vactive  | Vfp |
-@@ -567,147 +1380,217 @@ static void vop_core_clks_disable(struct vop *vop)
+  *      to get "LINE_FLAG" interrupt at the end of the active on screen data.
+  *
+  * VOP_INTR_CTRL0.dsp_line_frag_num = VOP_DSP_VACT_ST_END.dsp_vact_end
+@@ -575,147 +1380,217 @@ static void vop_core_clks_disable(struct vop *vop)
  	clk_disable(vop->hclk);
  }
  
@@ -24743,22 +24894,22 @@ index af98bfcde..ccf39dcf6 100644
 -	if (crtc->state->self_refresh_active)
 -		rockchip_drm_set_win_enabled(crtc, false);
 -
+-	if (crtc->state->self_refresh_active)
+-		goto out;
+-
 -	mutex_lock(&vop->vop_lock);
 -
 +	vop_lock(vop);
 +	VOP_CTRL_SET(vop, reg_done_frm, 1);
 +	VOP_CTRL_SET(vop, dsp_interlace, 0);
  	drm_crtc_vblank_off(crtc);
--
--	if (crtc->state->self_refresh_active)
--		goto out;
 +	VOP_CTRL_SET(vop, out_mode, ROCKCHIP_OUT_MODE_P888);
 +	VOP_CTRL_SET(vop, afbdc_en, 0);
 +	vop_disable_all_planes(vop);
  
  	/*
  	 * Vop standby will take effect at end of current frame,
-@@ -721,27 +1604,32 @@ static void vop_crtc_atomic_disable(struct drm_crtc *crtc,
+@@ -729,28 +1604,33 @@ static void vop_crtc_atomic_disable(struct drm_crtc *crtc,
  
  	spin_lock(&vop->reg_lock);
  
@@ -24797,13 +24948,14 @@ index af98bfcde..ccf39dcf6 100644
 +	clk_disable_unprepare(vop->hclk);
 +	vop_unlock(vop);
  
--out:
 -	mutex_unlock(&vop->vop_lock);
 +	rockchip_clear_system_status(sys_status);
  
+-out:
  	if (crtc->state->event && !crtc->state->active) {
  		spin_lock_irq(&crtc->dev->event_lock);
-@@ -752,29 +1640,20 @@ static void vop_crtc_atomic_disable(struct drm_crtc *crtc,
+ 		drm_crtc_send_vblank_event(crtc, crtc->state->event);
+@@ -760,29 +1640,20 @@ static void vop_crtc_atomic_disable(struct drm_crtc *crtc,
  	}
  }
  
@@ -24842,7 +24994,7 @@ index af98bfcde..ccf39dcf6 100644
  }
  
  static int vop_plane_atomic_check(struct drm_plane *plane,
-@@ -783,21 +1662,43 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -791,21 +1662,43 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  	struct drm_crtc *crtc = state->crtc;
  	struct drm_crtc_state *crtc_state;
  	struct drm_framebuffer *fb = state->fb;
@@ -24889,7 +25041,7 @@ index af98bfcde..ccf39dcf6 100644
  	ret = drm_atomic_helper_check_plane_state(state, crtc_state,
  						  min_scale, max_scale,
  						  true, true);
-@@ -807,13 +1708,34 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -815,9 +1708,30 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  	if (!state->visible)
  		return 0;
  
@@ -24899,10 +25051,7 @@ index af98bfcde..ccf39dcf6 100644
 +	vop_plane_state->format = vop_convert_format(fb->format->format);
 +	if (vop_plane_state->format < 0)
 +		return vop_plane_state->format;
- 
--	/*
--	 * Src.x1 can be odd when do clip, but yuv plane start point
--	 * need align with 2 pixel.
++
 +	vop = to_vop(crtc);
 +	vop_data = vop->data;
 +
@@ -24923,19 +25072,20 @@ index af98bfcde..ccf39dcf6 100644
 +			  vop_data->max_input.height);
 +		return -EINVAL;
 +	}
-+
-+	/*
-+	 * Src.x1 can be odd when do clip, but yuv plane start point
-+	 * need align with 2 pixel.
- 	 */
- 	if (fb->format->is_yuv && ((state->src.x1 >> 16) % 2)) {
- 		DRM_ERROR("Invalid Source: Yuv format not support odd xpos\n");
-@@ -825,28 +1747,28 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+ 
+ 	/*
+ 	 * Src.x1 can be odd when do clip, but yuv plane start point
+@@ -833,28 +1747,28 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  		return -EINVAL;
  	}
  
 -	if (rockchip_afbc(fb->modifier)) {
 -		struct vop *vop = to_vop(crtc);
+-
+-		if (!vop->data->afbc) {
+-			DRM_ERROR("vop does not support AFBC\n");
+-			return -EINVAL;
+-		}
 +	offset = (src->x1 >> 16) * fb->format->cpp[0];
 +	vop_plane_state->offset = offset + fb->offsets[0];
 +	if (state->rotation & DRM_MODE_REFLECT_Y)
@@ -24943,10 +25093,9 @@ index af98bfcde..ccf39dcf6 100644
 +	else
 +		offset += (src->y1 >> 16) * fb->pitches[0];
  
--		if (!vop->data->afbc) {
--			DRM_ERROR("vop does not support AFBC\n");
--			return -EINVAL;
--		}
+-		ret = vop_convert_afbc_format(fb->format->format);
+-		if (ret < 0)
+-			return ret;
 +	obj = fb->obj[0];
 +	rk_obj = to_rockchip_obj(obj);
 +	vop_plane_state->yrgb_mst = rk_obj->dma_addr + offset + fb->offsets[0];
@@ -24954,30 +25103,27 @@ index af98bfcde..ccf39dcf6 100644
 +		int hsub = fb->format->hsub;
 +		int vsub = fb->format->vsub;
  
--		ret = vop_convert_afbc_format(fb->format->format);
--		if (ret < 0)
--			return ret;
-+		offset = (src->x1 >> 16) * fb->format->cpp[1] / hsub;
-+		offset += (src->y1 >> 16) * fb->pitches[1] / vsub;
- 
 -		if (state->src.x1 || state->src.y1) {
 -			DRM_ERROR("AFBC does not support offset display, xpos=%d, ypos=%d, offset=%d\n", state->src.x1, state->src.y1, fb->offsets[0]);
 -			return -EINVAL;
 -		}
-+		uv_obj = fb->obj[1];
-+		rk_uv_obj = to_rockchip_obj(uv_obj);
++		offset = (src->x1 >> 16) * fb->format->cpp[1] / hsub;
++		offset += (src->y1 >> 16) * fb->pitches[1] / vsub;
  
 -		if (state->rotation && state->rotation != DRM_MODE_ROTATE_0) {
 -			DRM_ERROR("No rotation support in AFBC, rotation=%d\n",
 -				  state->rotation);
 -			return -EINVAL;
 -		}
++		uv_obj = fb->obj[1];
++		rk_uv_obj = to_rockchip_obj(uv_obj);
++
 +		dma_addr = rk_uv_obj->dma_addr + offset + fb->offsets[1];
 +		vop_plane_state->uv_mst = dma_addr;
  	}
  
  	return 0;
-@@ -855,15 +1777,33 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -863,15 +1777,33 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  static void vop_plane_atomic_disable(struct drm_plane *plane,
  				     struct drm_plane_state *old_state)
  {
@@ -25013,7 +25159,7 @@ index af98bfcde..ccf39dcf6 100644
  
  	spin_unlock(&vop->reg_lock);
  }
-@@ -873,26 +1813,46 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
+@@ -881,26 +1813,46 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
  {
  	struct drm_plane_state *state = plane->state;
  	struct drm_crtc *crtc = state->crtc;
@@ -25074,7 +25220,7 @@ index af98bfcde..ccf39dcf6 100644
  
  	/*
  	 * can't update plane when vop is disabled.
-@@ -908,206 +1868,426 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
+@@ -916,206 +1868,426 @@ static void vop_plane_atomic_update(struct drm_plane *plane,
  		return;
  	}
  
@@ -25085,10 +25231,10 @@ index af98bfcde..ccf39dcf6 100644
  	actual_w = drm_rect_width(src) >> 16;
  	actual_h = drm_rect_height(src) >> 16;
 -	act_info = (actual_h - 1) << 16 | ((actual_w - 1) & 0xffff);
--
+ 
 -	dsp_info = (drm_rect_height(dest) - 1) << 16;
 -	dsp_info |= (drm_rect_width(dest) - 1) & 0xffff;
- 
+-
 -	dsp_stx = dest->x1 + crtc->mode.htotal - crtc->mode.hsync_start;
 -	dsp_sty = dest->y1 + crtc->mode.vtotal - crtc->mode.vsync_start;
 -	dsp_st = dsp_sty << 16 | (dsp_stx & 0xffff);
@@ -25193,9 +25339,10 @@ index af98bfcde..ccf39dcf6 100644
  	VOP_WIN_SET(vop, win, dsp_info, dsp_info);
  	VOP_WIN_SET(vop, win, dsp_st, dsp_st);
  
- 	rb_swap = has_rb_swapped(fb->format->format);
+-	rb_swap = has_rb_swapped(vop->data->version, fb->format->format);
 -	VOP_WIN_SET(vop, win, rb_swap, rb_swap);
 -
++	rb_swap = has_rb_swapped(fb->format->format);
  	/*
 -	 * Blending win0 with the background color doesn't seem to work
 -	 * correctly. We only get the background color, no matter the contents
@@ -25296,10 +25443,8 @@ index af98bfcde..ccf39dcf6 100644
 +		vop->rockchip_crtc.vop_dump_times--;
 +	}
 +#endif
- }
- 
--static int vop_plane_atomic_async_check(struct drm_plane *plane,
--					struct drm_plane_state *state)
++}
++
 +static const struct drm_plane_helper_funcs plane_helper_funcs = {
 +	.prepare_fb = vop_plane_prepare_fb,
 +	.cleanup_fb = vop_plane_cleanup_fb,
@@ -25338,6 +25483,64 @@ index af98bfcde..ccf39dcf6 100644
 +				    uint32_t src_x, uint32_t src_y,
 +				    uint32_t src_w, uint32_t src_h,
 +				    struct drm_modeset_acquire_ctx *ctx)
++{
++	struct drm_atomic_state *state;
++	struct drm_plane_state *plane_state;
++	struct vop_plane_state *vop_plane_state;
++	int ret = 0;
++
++	state = drm_atomic_state_alloc(plane->dev);
++	if (!state)
++		return -ENOMEM;
++
++	state->acquire_ctx = ctx;
++	plane_state = drm_atomic_get_plane_state(state, plane);
++	if (IS_ERR(plane_state)) {
++		ret = PTR_ERR(plane_state);
++		goto fail;
++	}
++
++	vop_plane_state = to_vop_plane_state(plane_state);
++
++	ret = drm_atomic_set_crtc_for_plane(plane_state, crtc);
++	if (ret != 0)
++		goto fail;
++	drm_atomic_set_fb_for_plane(plane_state, fb);
++	plane_state->crtc_x = crtc_x;
++	plane_state->crtc_y = crtc_y;
++	plane_state->crtc_w = crtc_w;
++	plane_state->crtc_h = crtc_h;
++	plane_state->src_x = src_x;
++	plane_state->src_y = src_y;
++	plane_state->src_w = src_w;
++	plane_state->src_h = src_h;
++
++	if (plane == crtc->cursor || vop_plane_state->async_commit)
++		state->legacy_cursor_update = true;
++
++	ret = drm_atomic_commit(state);
++fail:
++	drm_atomic_state_put(state);
++	return ret;
+ }
+ 
+-static int vop_plane_atomic_async_check(struct drm_plane *plane,
+-					struct drm_plane_state *state)
++/**
++ * drm_atomic_helper_disable_plane copy from drm_atomic_helper_disable_plane
++ * be designed to support async commit at ioctl DRM_IOCTL_MODE_SETPLANE.
++ *
++ * @plane: plane to disable
++ * @ctx: lock acquire context
++ *
++ * Provides a default plane disable handler using the atomic driver interface.
++ *
++ * RETURNS:
++ * Zero on success, error code on failure
++ */
++static int __maybe_unused
++rockchip_atomic_helper_disable_plane(struct drm_plane *plane,
++				     struct drm_modeset_acquire_ctx *ctx)
  {
 -	struct vop_win *vop_win = to_vop_win(plane);
 -	const struct vop_win_data *win = vop_win->data;
@@ -25365,26 +25568,17 @@ index af98bfcde..ccf39dcf6 100644
 +		ret = PTR_ERR(plane_state);
 +		goto fail;
 +	}
++	vop_plane_state = to_vop_plane_state(plane_state);
  
 -	if (!plane->state->fb)
 -		return -EINVAL;
-+	vop_plane_state = to_vop_plane_state(plane_state);
++	if ((plane_state->crtc && plane_state->crtc->cursor == plane) ||
++	    vop_plane_state->async_commit)
++		plane_state->state->legacy_cursor_update = true;
 +
-+	ret = drm_atomic_set_crtc_for_plane(plane_state, crtc);
++	ret = __drm_atomic_helper_disable_plane(plane, plane_state);
 +	if (ret != 0)
 +		goto fail;
-+	drm_atomic_set_fb_for_plane(plane_state, fb);
-+	plane_state->crtc_x = crtc_x;
-+	plane_state->crtc_y = crtc_y;
-+	plane_state->crtc_w = crtc_w;
-+	plane_state->crtc_h = crtc_h;
-+	plane_state->src_x = src_x;
-+	plane_state->src_y = src_y;
-+	plane_state->src_w = src_w;
-+	plane_state->src_h = src_h;
-+
-+	if (plane == crtc->cursor || vop_plane_state->async_commit)
-+		state->legacy_cursor_update = true;
 +
 +	ret = drm_atomic_commit(state);
 +fail:
@@ -25392,79 +25586,16 @@ index af98bfcde..ccf39dcf6 100644
 +	return ret;
 +}
 +
-+/**
-+ * drm_atomic_helper_disable_plane copy from drm_atomic_helper_disable_plane
-+ * be designed to support async commit at ioctl DRM_IOCTL_MODE_SETPLANE.
-+ *
-+ * @plane: plane to disable
-+ * @ctx: lock acquire context
-+ *
-+ * Provides a default plane disable handler using the atomic driver interface.
-+ *
-+ * RETURNS:
-+ * Zero on success, error code on failure
-+ */
-+static int __maybe_unused
-+rockchip_atomic_helper_disable_plane(struct drm_plane *plane,
-+				     struct drm_modeset_acquire_ctx *ctx)
++static void vop_plane_destroy(struct drm_plane *plane)
 +{
-+	struct drm_atomic_state *state;
-+	struct drm_plane_state *plane_state;
-+	struct vop_plane_state *vop_plane_state;
-+	int ret = 0;
-+
-+	state = drm_atomic_state_alloc(plane->dev);
-+	if (!state)
-+		return -ENOMEM;
-+
-+	state->acquire_ctx = ctx;
-+	plane_state = drm_atomic_get_plane_state(state, plane);
-+	if (IS_ERR(plane_state)) {
-+		ret = PTR_ERR(plane_state);
-+		goto fail;
-+	}
-+	vop_plane_state = to_vop_plane_state(plane_state);
-+
-+	if ((plane_state->crtc && plane_state->crtc->cursor == plane) ||
-+	    vop_plane_state->async_commit)
-+		plane_state->state->legacy_cursor_update = true;
++	drm_plane_cleanup(plane);
++}
  
 -	if (state->state)
 -		crtc_state = drm_atomic_get_existing_crtc_state(state->state,
 -								state->crtc);
 -	else /* Special case for asynchronous cursor updates. */
 -		crtc_state = plane->crtc->state;
-+	ret = __drm_atomic_helper_disable_plane(plane, plane_state);
-+	if (ret != 0)
-+		goto fail;
- 
--	return drm_atomic_helper_check_plane_state(plane->state, crtc_state,
--						   min_scale, max_scale,
--						   true, true);
-+	ret = drm_atomic_commit(state);
-+fail:
-+	drm_atomic_state_put(state);
-+	return ret;
- }
- 
--static void vop_plane_atomic_async_update(struct drm_plane *plane,
--					  struct drm_plane_state *new_state)
-+static void vop_plane_destroy(struct drm_plane *plane)
- {
--	struct vop *vop = to_vop(plane->state->crtc);
--	struct drm_framebuffer *old_fb = plane->state->fb;
-+	drm_plane_cleanup(plane);
-+}
- 
--	plane->state->crtc_x = new_state->crtc_x;
--	plane->state->crtc_y = new_state->crtc_y;
--	plane->state->crtc_h = new_state->crtc_h;
--	plane->state->crtc_w = new_state->crtc_w;
--	plane->state->src_x = new_state->src_x;
--	plane->state->src_y = new_state->src_y;
--	plane->state->src_h = new_state->src_h;
--	plane->state->src_w = new_state->src_w;
--	swap(plane->state->fb, new_state->fb);
 +static void vop_atomic_plane_reset(struct drm_plane *plane)
 +{
 +	struct vop_plane_state *vop_plane_state =
@@ -25478,15 +25609,46 @@ index af98bfcde..ccf39dcf6 100644
 +	if (!vop_plane_state)
 +		return;
  
+-	return drm_atomic_helper_check_plane_state(plane->state, crtc_state,
+-						   min_scale, max_scale,
+-						   true, true);
++	__drm_atomic_helper_plane_reset(plane, &vop_plane_state->base);
++	win->state.zpos = win->zpos;
++	vop_plane_state->global_alpha = 0xff;
+ }
+ 
+-static void vop_plane_atomic_async_update(struct drm_plane *plane,
+-					  struct drm_plane_state *new_state)
++static struct drm_plane_state *
++vop_atomic_plane_duplicate_state(struct drm_plane *plane)
+ {
+-	struct vop *vop = to_vop(plane->state->crtc);
+-	struct drm_framebuffer *old_fb = plane->state->fb;
++	struct vop_plane_state *old_vop_plane_state;
++	struct vop_plane_state *vop_plane_state;
+ 
+-	plane->state->crtc_x = new_state->crtc_x;
+-	plane->state->crtc_y = new_state->crtc_y;
+-	plane->state->crtc_h = new_state->crtc_h;
+-	plane->state->crtc_w = new_state->crtc_w;
+-	plane->state->src_x = new_state->src_x;
+-	plane->state->src_y = new_state->src_y;
+-	plane->state->src_h = new_state->src_h;
+-	plane->state->src_w = new_state->src_w;
+-	swap(plane->state->fb, new_state->fb);
++	if (WARN_ON(!plane->state))
++		return NULL;
+ 
 -	if (vop->is_enabled) {
 -		vop_plane_atomic_update(plane, plane->state);
 -		spin_lock(&vop->reg_lock);
 -		vop_cfg_done(vop);
 -		spin_unlock(&vop->reg_lock);
-+	__drm_atomic_helper_plane_reset(plane, &vop_plane_state->base);
-+	win->state.zpos = win->zpos;
-+	vop_plane_state->global_alpha = 0xff;
-+}
++	old_vop_plane_state = to_vop_plane_state(plane->state);
++	vop_plane_state = kmemdup(old_vop_plane_state,
++				  sizeof(*vop_plane_state), GFP_KERNEL);
++	if (!vop_plane_state)
++		return NULL;
  
 -		/*
 -		 * A scanout can still be occurring, so we can't drop the
@@ -25502,21 +25664,6 @@ index af98bfcde..ccf39dcf6 100644
 -			drm_flip_work_queue(&vop->fb_unref_work, old_fb);
 -			set_bit(VOP_PENDING_FB_UNREF, &vop->pending);
 -		}
-+static struct drm_plane_state *
-+vop_atomic_plane_duplicate_state(struct drm_plane *plane)
-+{
-+	struct vop_plane_state *old_vop_plane_state;
-+	struct vop_plane_state *vop_plane_state;
-+
-+	if (WARN_ON(!plane->state))
-+		return NULL;
-+
-+	old_vop_plane_state = to_vop_plane_state(plane->state);
-+	vop_plane_state = kmemdup(old_vop_plane_state,
-+				  sizeof(*vop_plane_state), GFP_KERNEL);
-+	if (!vop_plane_state)
-+		return NULL;
-+
 +	__drm_atomic_helper_plane_duplicate_state(plane,
 +						  &vop_plane_state->base);
 +
@@ -25641,13 +25788,12 @@ index af98bfcde..ccf39dcf6 100644
  };
  
  static int vop_crtc_enable_vblank(struct drm_crtc *crtc)
-@@ -1118,278 +2298,1434 @@ static int vop_crtc_enable_vblank(struct drm_crtc *crtc)
- 	if (WARN_ON(!vop->is_enabled))
- 		return -EPERM;
+@@ -1128,276 +2300,1432 @@ static int vop_crtc_enable_vblank(struct drm_crtc *crtc)
  
--	spin_lock_irqsave(&vop->irq_lock, flags);
-+	spin_lock_irqsave(&vop->irq_lock, flags);
-+
+ 	spin_lock_irqsave(&vop->irq_lock, flags);
+ 
+-	VOP_INTR_SET_TYPE(vop, clear, FS_INTR, 1);
+-	VOP_INTR_SET_TYPE(vop, enable, FS_INTR, 1);
 +	if (VOP_MAJOR(vop->version) == 3 && VOP_MINOR(vop->version) >= 7) {
 +		VOP_INTR_SET_TYPE(vop, clear, FS_FIELD_INTR, 1);
 +		VOP_INTR_SET_TYPE(vop, enable, FS_FIELD_INTR, 1);
@@ -26769,9 +26915,7 @@ index af98bfcde..ccf39dcf6 100644
 +
 +		if (!win_data->phy)
 +			continue;
- 
--	VOP_INTR_SET_TYPE(vop, clear, FS_INTR, 1);
--	VOP_INTR_SET_TYPE(vop, enable, FS_INTR, 1);
++
 +		for (j = 0; j < vop->num_wins; j++) {
 +			win = &vop->win[j];
  
@@ -27258,7 +27402,8 @@ index af98bfcde..ccf39dcf6 100644
  	}
  
 -	VOP_REG_SET(vop, common, out_mode, s->output_mode);
--
++	VOP_CTRL_SET(vop, afbdc_en, s->afbdc_en);
+ 
 -	VOP_REG_SET(vop, modeset, htotal_pw, (htotal << 16) | hsync_len);
 -	val = hact_st << 16;
 -	val |= hact_end;
@@ -27272,13 +27417,12 @@ index af98bfcde..ccf39dcf6 100644
 -	VOP_REG_SET(vop, modeset, vpost_st_end, val);
 -
 -	VOP_REG_SET(vop, intr, line_flag_num[0], vact_end);
-+	VOP_CTRL_SET(vop, afbdc_en, s->afbdc_en);
- 
--	clk_set_rate(vop->dclk, adjusted_mode->clock * 1000);
 +	VOP_CTRL_SET(vop, dsp_layer_sel, s->dsp_layer_sel);
 +	if (vop_data->feature & VOP_FEATURE_OVERSCAN)
 +		vop_post_config(crtc);
  
+-	clk_set_rate(vop->dclk, adjusted_mode->clock * 1000);
+-
 -	VOP_REG_SET(vop, common, standby, 0);
 -	mutex_unlock(&vop->vop_lock);
 +	spin_unlock(&vop->reg_lock);
@@ -27294,7 +27438,7 @@ index af98bfcde..ccf39dcf6 100644
  }
  
  static void vop_wait_for_irq_handler(struct vop *vop)
-@@ -1413,72 +3749,66 @@ static void vop_wait_for_irq_handler(struct vop *vop)
+@@ -1421,72 +3749,66 @@ static void vop_wait_for_irq_handler(struct vop *vop)
  	synchronize_irq(vop->irq);
  }
  
@@ -27414,7 +27558,7 @@ index af98bfcde..ccf39dcf6 100644
  
  	/*
  	 * There is a (rather unlikely) possiblity that a vblank interrupt
-@@ -1496,13 +3826,11 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
+@@ -1504,13 +3826,11 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
  		crtc->state->event = NULL;
  	}
  	spin_unlock_irq(&crtc->dev->event_lock);
@@ -27430,7 +27574,7 @@ index af98bfcde..ccf39dcf6 100644
  			continue;
  
  		drm_framebuffer_get(old_plane_state->fb);
-@@ -1515,7 +3843,6 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
+@@ -1523,7 +3843,6 @@ static void vop_crtc_atomic_flush(struct drm_crtc *crtc,
  static const struct drm_crtc_helper_funcs vop_crtc_helper_funcs = {
  	.mode_fixup = vop_crtc_mode_fixup,
  	.atomic_check = vop_crtc_atomic_check,
@@ -27438,7 +27582,7 @@ index af98bfcde..ccf39dcf6 100644
  	.atomic_flush = vop_crtc_atomic_flush,
  	.atomic_enable = vop_crtc_atomic_enable,
  	.atomic_disable = vop_crtc_atomic_disable,
-@@ -1526,14 +3853,33 @@ static void vop_crtc_destroy(struct drm_crtc *crtc)
+@@ -1534,15 +3853,33 @@ static void vop_crtc_destroy(struct drm_crtc *crtc)
  	drm_crtc_cleanup(crtc);
  }
  
@@ -27466,18 +27610,19 @@ index af98bfcde..ccf39dcf6 100644
 +	s->top_margin = 100;
 +	s->bottom_margin = 100;
 +}
-+
+ 
+-	rockchip_state = kmemdup(to_rockchip_crtc_state(crtc->state),
+-				 sizeof(*rockchip_state), GFP_KERNEL);
 +static struct drm_crtc_state *vop_crtc_duplicate_state(struct drm_crtc *crtc)
 +{
 +	struct rockchip_crtc_state *rockchip_state, *old_state;
- 
--	rockchip_state = kzalloc(sizeof(*rockchip_state), GFP_KERNEL);
++
 +	old_state = to_rockchip_crtc_state(crtc->state);
 +	rockchip_state = kmemdup(old_state, sizeof(*old_state), GFP_KERNEL);
  	if (!rockchip_state)
  		return NULL;
  
-@@ -1550,17 +3896,6 @@ static void vop_crtc_destroy_state(struct drm_crtc *crtc,
+@@ -1559,20 +3896,6 @@ static void vop_crtc_destroy_state(struct drm_crtc *crtc,
  	kfree(s);
  }
  
@@ -27489,13 +27634,16 @@ index af98bfcde..ccf39dcf6 100644
 -	if (crtc->state)
 -		vop_crtc_destroy_state(crtc, crtc->state);
 -
--	__drm_atomic_helper_crtc_reset(crtc, &crtc_state->base);
+-	if (crtc_state)
+-		__drm_atomic_helper_crtc_reset(crtc, &crtc_state->base);
+-	else
+-		__drm_atomic_helper_crtc_reset(crtc, NULL);
 -}
 -
  #ifdef CONFIG_DRM_ANALOGIX_DP
  static struct drm_connector *vop_get_edp_connector(struct vop *vop)
  {
-@@ -1611,33 +3946,131 @@ vop_crtc_verify_crc_source(struct drm_crtc *crtc, const char *source_name,
+@@ -1623,33 +3946,131 @@ vop_crtc_verify_crc_source(struct drm_crtc *crtc, const char *source_name,
  	return 0;
  }
  
@@ -27640,7 +27788,7 @@ index af98bfcde..ccf39dcf6 100644
  };
  
  static void vop_fb_unref_worker(struct drm_flip_work *work, void *val)
-@@ -1645,22 +4078,23 @@ static void vop_fb_unref_worker(struct drm_flip_work *work, void *val)
+@@ -1657,22 +4078,23 @@ static void vop_fb_unref_worker(struct drm_flip_work *work, void *val)
  	struct vop *vop = container_of(work, struct vop, fb_unref_work);
  	struct drm_framebuffer *fb = val;
  
@@ -27668,7 +27816,7 @@ index af98bfcde..ccf39dcf6 100644
  
  	if (test_and_clear_bit(VOP_PENDING_FB_UNREF, &vop->pending))
  		drm_flip_work_commit(&vop->fb_unref_work, system_unbound_wq);
-@@ -1669,8 +4103,9 @@ static void vop_handle_vblank(struct vop *vop)
+@@ -1681,8 +4103,9 @@ static void vop_handle_vblank(struct vop *vop)
  static irqreturn_t vop_isr(int irq, void *data)
  {
  	struct vop *vop = data;
@@ -27679,7 +27827,7 @@ index af98bfcde..ccf39dcf6 100644
  	int ret = IRQ_NONE;
  
  	/*
-@@ -1689,14 +4124,14 @@ static irqreturn_t vop_isr(int irq, void *data)
+@@ -1701,14 +4124,14 @@ static irqreturn_t vop_isr(int irq, void *data)
  	 * interrupt register has interrupt status, enable and clear bits, we
  	 * must hold irq_lock to avoid a race with enable/disable_vblank().
  	*/
@@ -27696,7 +27844,7 @@ index af98bfcde..ccf39dcf6 100644
  
  	/* This is expected for vop iommu irqs, since the irq is shared */
  	if (!active_irqs)
-@@ -1714,17 +4149,41 @@ static irqreturn_t vop_isr(int irq, void *data)
+@@ -1726,17 +4149,41 @@ static irqreturn_t vop_isr(int irq, void *data)
  		ret = IRQ_HANDLED;
  	}
  
@@ -27742,7 +27890,7 @@ index af98bfcde..ccf39dcf6 100644
  
  out_disable:
  	vop_core_clks_disable(vop);
-@@ -1733,27 +4192,254 @@ static irqreturn_t vop_isr(int irq, void *data)
+@@ -1745,27 +4192,254 @@ static irqreturn_t vop_isr(int irq, void *data)
  	return ret;
  }
  
@@ -28004,7 +28152,7 @@ index af98bfcde..ccf39dcf6 100644
  	int i;
  
  	/*
-@@ -1761,29 +4447,19 @@ static int vop_create_crtc(struct vop *vop)
+@@ -1773,29 +4447,19 @@ static int vop_create_crtc(struct vop *vop)
  	 * to pass them to drm_crtc_init_with_planes, which sets the
  	 * "possible_crtcs" to the newly initialized crtc.
  	 */
@@ -28041,7 +28189,7 @@ index af98bfcde..ccf39dcf6 100644
  		if (plane->type == DRM_PLANE_TYPE_PRIMARY)
  			primary = plane;
  		else if (plane->type == DRM_PLANE_TYPE_CURSOR)
-@@ -1796,37 +4472,23 @@ static int vop_create_crtc(struct vop *vop)
+@@ -1808,37 +4472,23 @@ static int vop_create_crtc(struct vop *vop)
  		goto err_cleanup_planes;
  
  	drm_crtc_helper_add(crtc, &vop_crtc_helper_funcs);
@@ -28085,7 +28233,7 @@ index af98bfcde..ccf39dcf6 100644
  	}
  
  	port = of_get_child_by_name(dev->of_node, "port");
-@@ -1843,15 +4505,60 @@ static int vop_create_crtc(struct vop *vop)
+@@ -1855,15 +4505,60 @@ static int vop_create_crtc(struct vop *vop)
  	init_completion(&vop->dsp_hold_completion);
  	init_completion(&vop->line_flag_completion);
  	crtc->port = port;
@@ -28151,7 +28299,7 @@ index af98bfcde..ccf39dcf6 100644
  err_cleanup_crtc:
  	drm_crtc_cleanup(crtc);
  err_cleanup_planes:
-@@ -1863,12 +4570,10 @@ static int vop_create_crtc(struct vop *vop)
+@@ -1875,12 +4570,10 @@ static int vop_create_crtc(struct vop *vop)
  
  static void vop_destroy_crtc(struct vop *vop)
  {
@@ -28165,7 +28313,7 @@ index af98bfcde..ccf39dcf6 100644
  	of_node_put(crtc->port);
  
  	/*
-@@ -1891,137 +4596,129 @@ static void vop_destroy_crtc(struct vop *vop)
+@@ -1903,137 +4596,129 @@ static void vop_destroy_crtc(struct vop *vop)
  	drm_flip_work_cleanup(&vop->fb_unref_work);
  }
  
@@ -28408,7 +28556,7 @@ index af98bfcde..ccf39dcf6 100644
  }
  
  /**
-@@ -2080,46 +4777,97 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
+@@ -2092,46 +4777,97 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
  	struct drm_device *drm_dev = data;
  	struct vop *vop;
  	struct resource *res;
@@ -28519,7 +28667,7 @@ index af98bfcde..ccf39dcf6 100644
  	irq = platform_get_irq(pdev, 0);
  	if (irq < 0) {
  		DRM_DEV_ERROR(dev, "cannot find irq for vop\n");
-@@ -2131,53 +4879,51 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
+@@ -2143,53 +4879,51 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
  	spin_lock_init(&vop->irq_lock);
  	mutex_init(&vop->vop_lock);
  
@@ -35183,28 +35331,19 @@ index 6e9fa5815..ffd49a862 100644
  
  #endif /* _ROCKCHIP_VOP_REG_H */
 diff --git a/drivers/i2c/busses/i2c-rk3x.c b/drivers/i2c/busses/i2c-rk3x.c
-index 13c14eb17..17766c207 100644
+index 6abcf975a..d55768231 100644
 --- a/drivers/i2c/busses/i2c-rk3x.c
 +++ b/drivers/i2c/busses/i2c-rk3x.c
-@@ -6,6 +6,7 @@
-  * based on the patches by Rockchip Inc.
-  */
- 
-+#include <linux/acpi.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/i2c.h>
-@@ -23,6 +24,9 @@
+@@ -23,6 +23,8 @@
  #include <linux/mfd/syscon.h>
  #include <linux/regmap.h>
  #include <linux/math64.h>
 +#include <linux/reboot.h>
 +#include <linux/delay.h>
-+#include <linux/soc/rockchip/rockchip_thunderboot_service.h>
  
  
  /* Register Map */
-@@ -35,6 +39,7 @@
+@@ -35,6 +37,7 @@
  #define REG_IEN        0x18 /* interrupt enable */
  #define REG_IPD        0x1c /* interrupt pending */
  #define REG_FCNT       0x20 /* finished count */
@@ -35212,7 +35351,7 @@ index 13c14eb17..17766c207 100644
  
  /* Data buffer offsets */
  #define TXBUFFER_BASE 0x100
-@@ -62,6 +67,15 @@ enum {
+@@ -62,6 +65,15 @@ enum {
  #define REG_CON_STA_CFG(cfg) ((cfg) << 12)
  #define REG_CON_STO_CFG(cfg) ((cfg) << 14)
  
@@ -35228,7 +35367,7 @@ index 13c14eb17..17766c207 100644
  /* REG_MRXADDR bits */
  #define REG_MRXADDR_VALID(x) BIT(24 + (x)) /* [x*8+7:x*8] of MRX[R]ADDR valid */
  
-@@ -73,14 +87,21 @@ enum {
+@@ -73,7 +85,14 @@ enum {
  #define REG_INT_START     BIT(4) /* START condition generated */
  #define REG_INT_STOP      BIT(5) /* STOP condition generated */
  #define REG_INT_NAKRCV    BIT(6) /* NACK received */
@@ -35244,24 +35383,7 @@ index 13c14eb17..17766c207 100644
  
  /* Constants */
  #define WAIT_TIMEOUT      1000 /* ms */
- #define DEFAULT_SCL_RATE  (100 * 1000) /* Hz */
- 
- /**
-- * struct i2c_spec_values - I2C specification values for various modes
-+ * struct i2c_spec_values:
-  * @min_hold_start_ns: min hold time (repeated) START condition
-  * @min_low_ns: min LOW period of the SCL clock
-  * @min_high_ns: min HIGH period of the SCL cloc
-@@ -136,7 +157,7 @@ static const struct i2c_spec_values fast_mode_plus_spec = {
- };
- 
- /**
-- * struct rk3x_i2c_calced_timings - calculated V1 timings
-+ * struct rk3x_i2c_calced_timings:
-  * @div_low: Divider output for low
-  * @div_high: Divider output for high
-  * @tuning: Used to adjust setup/hold data time,
-@@ -152,14 +173,13 @@ struct rk3x_i2c_calced_timings {
+@@ -152,7 +171,6 @@ struct rk3x_i2c_calced_timings {
  
  enum rk3x_i2c_state {
  	STATE_IDLE,
@@ -35269,33 +35391,33 @@ index 13c14eb17..17766c207 100644
  	STATE_READ,
  	STATE_WRITE,
  	STATE_STOP
- };
- 
- /**
-- * struct rk3x_i2c_soc_data - SOC-specific data
-+ * struct rk3x_i2c_soc_data:
-  * @grf_offset: offset inside the grf regmap for setting the i2c type
-  * @calc_timings: Callback function for i2c timing information calculated
-  */
-@@ -189,6 +209,9 @@ struct rk3x_i2c_soc_data {
+@@ -178,7 +196,6 @@ struct rk3x_i2c_soc_data {
+  * @clk: function clk for rk3399 or function & Bus clks for others
+  * @pclk: Bus clk for rk3399
+  * @clk_rate_nb: i2c clk rate change notify
+- * @irq: irq number
+  * @t: I2C known timing information
+  * @lock: spinlock for the i2c bus
+  * @wait: the waitqueue to wait for i2c transfer
+@@ -190,6 +207,8 @@ struct rk3x_i2c_soc_data {
   * @state: state of i2c transfer
   * @processed: byte length which has been send or received
   * @error: error code for i2c transfer
 + * @i2c_restart_nb: make sure the i2c transfer to be finished
 + * @system_restarting: true if system is restarting
-+ * @tb_cl: client for rockchip thunder boot service
   */
  struct rk3x_i2c {
  	struct i2c_adapter adap;
-@@ -200,6 +223,7 @@ struct rk3x_i2c {
+@@ -201,7 +220,7 @@ struct rk3x_i2c {
  	struct clk *clk;
  	struct clk *pclk;
  	struct notifier_block clk_rate_nb;
+-	int irq;
 +	bool autostop_supported;
  
  	/* Settings */
  	struct i2c_timings t;
-@@ -219,8 +243,22 @@ struct rk3x_i2c {
+@@ -221,8 +240,21 @@ struct rk3x_i2c {
  	enum rk3x_i2c_state state;
  	unsigned int processed;
  	int error;
@@ -35303,7 +35425,6 @@ index 13c14eb17..17766c207 100644
 +
 +	struct notifier_block i2c_restart_nb;
 +	bool system_restarting;
-+	struct rk_tb_client tb_cl;
  };
  
 +static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c);
@@ -35318,10 +35439,11 @@ index 13c14eb17..17766c207 100644
  static inline void i2c_writel(struct rk3x_i2c *i2c, u32 value,
  			      unsigned int offset)
  {
-@@ -238,15 +276,75 @@ static inline void rk3x_i2c_clean_ipd(struct rk3x_i2c *i2c)
+@@ -240,6 +272,53 @@ static inline void rk3x_i2c_clean_ipd(struct rk3x_i2c *i2c)
  	i2c_writel(i2c, REG_INT_ALL, REG_IPD);
  }
  
++
 +static inline void rk3x_i2c_disable_irq(struct rk3x_i2c *i2c)
 +{
 +	i2c_writel(i2c, IEN_ALL_DISABLE, REG_IEN);
@@ -35369,17 +35491,16 @@ index 13c14eb17..17766c207 100644
 +}
 +
  /**
-- * rk3x_i2c_start - Generate a START condition, which triggers a REG_INT_START interrupt.
-- * @i2c: target controller data
-+ * Generate a START condition, which triggers a REG_INT_START interrupt.
-  */
+  * rk3x_i2c_start - Generate a START condition, which triggers a REG_INT_START interrupt.
+  * @i2c: target controller data
+@@ -247,8 +326,22 @@ static inline void rk3x_i2c_clean_ipd(struct rk3x_i2c *i2c)
  static void rk3x_i2c_start(struct rk3x_i2c *i2c)
  {
  	u32 val = i2c_readl(i2c, REG_CON) & REG_CON_TUNING_MASK;
+-
+-	i2c_writel(i2c, REG_INT_START, REG_IEN);
 +	bool auto_stop = rk3x_i2c_auto_stop(i2c);
 +	int length = 0;
- 
--	i2c_writel(i2c, REG_INT_START, REG_IEN);
 +	/* enable appropriate interrupts */
 +	if (i2c->mode == REG_CON_MOD_TX) {
 +		if (!auto_stop) {
@@ -35397,7 +35518,7 @@ index 13c14eb17..17766c207 100644
  
  	/* enable adapter with correct mode, send START condition */
  	val |= REG_CON_EN | REG_CON_MOD(i2c->mode) | REG_CON_START;
-@@ -256,11 +354,17 @@ static void rk3x_i2c_start(struct rk3x_i2c *i2c)
+@@ -258,6 +351,12 @@ static void rk3x_i2c_start(struct rk3x_i2c *i2c)
  		val |= REG_CON_ACTACK;
  
  	i2c_writel(i2c, val, REG_CON);
@@ -35410,14 +35531,7 @@ index 13c14eb17..17766c207 100644
  }
  
  /**
-- * rk3x_i2c_stop - Generate a STOP condition, which triggers a REG_INT_STOP interrupt.
-- * @i2c: target controller data
-+ * Generate a STOP condition, which triggers a REG_INT_STOP interrupt.
-+ *
-  * @error: Error code to return in rk3x_i2c_xfer
-  */
- static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
-@@ -279,6 +383,7 @@ static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
+@@ -281,6 +380,7 @@ static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
  
  		ctrl = i2c_readl(i2c, REG_CON);
  		ctrl |= REG_CON_STOP;
@@ -35425,7 +35539,7 @@ index 13c14eb17..17766c207 100644
  		i2c_writel(i2c, ctrl, REG_CON);
  	} else {
  		/* Signal rk3x_i2c_xfer to start the next message. */
-@@ -294,13 +399,12 @@ static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
+@@ -296,7 +396,7 @@ static void rk3x_i2c_stop(struct rk3x_i2c *i2c, int error)
  		i2c_writel(i2c, ctrl, REG_CON);
  
  		/* signal that we are finished with the current msg */
@@ -35434,14 +35548,7 @@ index 13c14eb17..17766c207 100644
  	}
  }
  
- /**
-- * rk3x_i2c_prepare_read - Setup a read according to i2c->msg
-- * @i2c: target controller data
-+ * Setup a read according to i2c->msg
-  */
- static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
- {
-@@ -324,6 +428,8 @@ static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
+@@ -326,6 +426,8 @@ static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
  	if (i2c->processed != 0) {
  		con &= ~REG_CON_MOD_MASK;
  		con |= REG_CON_MOD(REG_CON_MOD_RX);
@@ -35450,20 +35557,16 @@ index 13c14eb17..17766c207 100644
  	}
  
  	i2c_writel(i2c, con, REG_CON);
-@@ -331,10 +437,9 @@ static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
- }
- 
- /**
-- * rk3x_i2c_fill_transmit_buf - Fill the transmit buffer with data from i2c->msg
-- * @i2c: target controller data
-+ * Fill the transmit buffer with data from i2c->msg
+@@ -336,7 +438,7 @@ static void rk3x_i2c_prepare_read(struct rk3x_i2c *i2c)
+  * rk3x_i2c_fill_transmit_buf - Fill the transmit buffer with data from i2c->msg
+  * @i2c: target controller data
   */
 -static void rk3x_i2c_fill_transmit_buf(struct rk3x_i2c *i2c)
 +static int rk3x_i2c_fill_transmit_buf(struct rk3x_i2c *i2c, bool sendend)
  {
  	unsigned int i, j;
  	u32 cnt = 0;
-@@ -362,45 +467,20 @@ static void rk3x_i2c_fill_transmit_buf(struct rk3x_i2c *i2c)
+@@ -364,40 +466,15 @@ static void rk3x_i2c_fill_transmit_buf(struct rk3x_i2c *i2c)
  			break;
  	}
  
@@ -35508,17 +35611,12 @@ index 13c14eb17..17766c207 100644
  static void rk3x_i2c_handle_write(struct rk3x_i2c *i2c, unsigned int ipd)
  {
  	if (!(ipd & REG_INT_MBTF)) {
- 		rk3x_i2c_stop(i2c, -EIO);
--		dev_err(i2c->dev, "unexpected irq in WRITE: 0x%x\n", ipd);
-+		dev_warn_ratelimited(i2c->dev, "unexpected irq in WRITE: 0x%x\n", ipd);
- 		rk3x_i2c_clean_ipd(i2c);
- 		return;
- 	}
-@@ -408,27 +488,21 @@ static void rk3x_i2c_handle_write(struct rk3x_i2c *i2c, unsigned int ipd)
+@@ -409,28 +486,22 @@ static void rk3x_i2c_handle_write(struct rk3x_i2c *i2c, unsigned int ipd)
+ 
  	/* ack interrupt */
  	i2c_writel(i2c, REG_INT_MBTF, REG_IPD);
- 
 +	rk3x_i2c_auto_stop(i2c);
+ 
  	/* are we finished? */
  	if (i2c->processed == i2c->msg->len)
  		rk3x_i2c_stop(i2c, i2c->error);
@@ -35545,7 +35643,7 @@ index 13c14eb17..17766c207 100644
  	/* Can only handle a maximum of 32 bytes at a time */
  	if (len > 32)
  		len = 32;
-@@ -441,7 +515,21 @@ static void rk3x_i2c_handle_read(struct rk3x_i2c *i2c, unsigned int ipd)
+@@ -443,7 +514,21 @@ static void rk3x_i2c_handle_read(struct rk3x_i2c *i2c, unsigned int ipd)
  		byte = (val >> ((i % 4) * 8)) & 0xff;
  		i2c->msg->buf[i2c->processed++] = byte;
  	}
@@ -35557,8 +35655,8 @@ index 13c14eb17..17766c207 100644
 +	if (!(ipd & REG_INT_MBRF))
 +		return;
 +
-+	/* ack interrupt (read also produces a spurious START flag, clear it too) */
-+	i2c_writel(i2c, REG_INT_MBRF | REG_INT_START, REG_IPD);
++	/* ack interrupt */
++	i2c_writel(i2c, REG_INT_MBRF, REG_IPD);
 +
 +	/* read the data from receive buffer */
 +	rk3x_i2c_read(i2c);
@@ -35567,13 +35665,7 @@ index 13c14eb17..17766c207 100644
  	/* are we finished? */
  	if (i2c->processed == i2c->msg->len)
  		rk3x_i2c_stop(i2c, i2c->error);
-@@ -455,24 +543,36 @@ static void rk3x_i2c_handle_stop(struct rk3x_i2c *i2c, unsigned int ipd)
- 
- 	if (!(ipd & REG_INT_STOP)) {
- 		rk3x_i2c_stop(i2c, -EIO);
--		dev_err(i2c->dev, "unexpected irq in STOP: 0x%x\n", ipd);
-+		dev_warn_ratelimited(i2c->dev, "unexpected irq in STOP: 0x%x\n", ipd);
- 		rk3x_i2c_clean_ipd(i2c);
+@@ -462,19 +547,31 @@ static void rk3x_i2c_handle_stop(struct rk3x_i2c *i2c, unsigned int ipd)
  		return;
  	}
  
@@ -35606,7 +35698,7 @@ index 13c14eb17..17766c207 100644
  }
  
  static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
-@@ -484,7 +584,9 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
+@@ -486,7 +583,9 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
  
  	ipd = i2c_readl(i2c, REG_IPD);
  	if (i2c->state == STATE_IDLE) {
@@ -35617,7 +35709,7 @@ index 13c14eb17..17766c207 100644
  		rk3x_i2c_clean_ipd(i2c);
  		goto out;
  	}
-@@ -504,8 +606,15 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
+@@ -506,8 +605,15 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
  
  		ipd &= ~REG_INT_NAKRCV;
  
@@ -35635,7 +35727,7 @@ index 13c14eb17..17766c207 100644
  	}
  
  	/* is there anything left to handle? */
-@@ -513,9 +622,6 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
+@@ -515,9 +621,6 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
  		goto out;
  
  	switch (i2c->state) {
@@ -35645,73 +35737,7 @@ index 13c14eb17..17766c207 100644
  	case STATE_WRITE:
  		rk3x_i2c_handle_write(i2c, ipd);
  		break;
-@@ -535,10 +641,11 @@ static irqreturn_t rk3x_i2c_irq(int irqno, void *dev_id)
- }
- 
- /**
-- * rk3x_i2c_get_spec - Get timing values of I2C specification
-+ * Get timing values of I2C specification
-+ *
-  * @speed: Desired SCL frequency
-  *
-- * Return: Matched i2c_spec_values.
-+ * Returns: Matched i2c spec values.
-  */
- static const struct i2c_spec_values *rk3x_i2c_get_spec(unsigned int speed)
- {
-@@ -551,12 +658,13 @@ static const struct i2c_spec_values *rk3x_i2c_get_spec(unsigned int speed)
- }
- 
- /**
-- * rk3x_i2c_v0_calc_timings - Calculate divider values for desired SCL frequency
-+ * Calculate divider values for desired SCL frequency
-+ *
-  * @clk_rate: I2C input clock rate
-  * @t: Known I2C timing information
-  * @t_calc: Caculated rk3x private timings that would be written into regs
-  *
-- * Return: %0 on success, -%EINVAL if the goal SCL rate is too slow. In that case
-+ * Returns: 0 on success, -EINVAL if the goal SCL rate is too slow. In that case
-  * a best-effort divider value is returned in divs. If the target rate is
-  * too high, we silently use the highest possible rate.
-  */
-@@ -711,12 +819,13 @@ static int rk3x_i2c_v0_calc_timings(unsigned long clk_rate,
- }
- 
- /**
-- * rk3x_i2c_v1_calc_timings - Calculate timing values for desired SCL frequency
-+ * Calculate timing values for desired SCL frequency
-+ *
-  * @clk_rate: I2C input clock rate
-  * @t: Known I2C timing information
-  * @t_calc: Caculated rk3x private timings that would be written into regs
-  *
-- * Return: %0 on success, -%EINVAL if the goal SCL rate is too slow. In that case
-+ * Returns: 0 on success, -EINVAL if the goal SCL rate is too slow. In that case
-  * a best-effort divider value is returned in divs. If the target rate is
-  * too high, we silently use the highest possible rate.
-  * The following formulas are v1's method to calculate timings.
-@@ -960,14 +1069,14 @@ static int rk3x_i2c_clk_notifier_cb(struct notifier_block *nb, unsigned long
- }
- 
- /**
-- * rk3x_i2c_setup - Setup I2C registers for an I2C operation specified by msgs, num.
-- * @i2c: target controller data
-- * @msgs: I2C msgs to process
-- * @num: Number of msgs
-+ * Setup I2C registers for an I2C operation specified by msgs, num.
-  *
-  * Must be called with i2c->lock held.
-  *
-- * Return: Number of I2C msgs processed or negative in case of error
-+ * @msgs: I2C msgs to process
-+ * @num: Number of msgs
-+ *
-+ * returns: Number of I2C msgs processed or negative in case of error
-  */
- static int rk3x_i2c_setup(struct rk3x_i2c *i2c, struct i2c_msg *msgs, int num)
- {
-@@ -1032,18 +1141,19 @@ static int rk3x_i2c_setup(struct rk3x_i2c *i2c, struct i2c_msg *msgs, int num)
+@@ -1034,11 +1137,12 @@ static int rk3x_i2c_setup(struct rk3x_i2c *i2c, struct i2c_msg *msgs, int num)
  
  	i2c->addr = msgs[0].addr;
  	i2c->busy = true;
@@ -35725,16 +35751,7 @@ index 13c14eb17..17766c207 100644
  
  	return ret;
  }
- 
--static int rk3x_i2c_wait_xfer_poll(struct rk3x_i2c *i2c)
-+static int rk3x_i2c_wait_xfer_poll(struct rk3x_i2c *i2c, unsigned long xfer_time)
- {
--	ktime_t timeout = ktime_add_ms(ktime_get(), WAIT_TIMEOUT);
-+	ktime_t timeout = ktime_add_ms(ktime_get(), xfer_time);
- 
- 	while (READ_ONCE(i2c->busy) &&
- 	       ktime_compare(ktime_get(), timeout) < 0) {
-@@ -1063,6 +1173,9 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
+@@ -1065,6 +1169,9 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
  	int ret = 0;
  	int i;
  
