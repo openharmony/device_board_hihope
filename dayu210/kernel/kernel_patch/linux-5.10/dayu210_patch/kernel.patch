@@ -35761,52 +35761,30 @@ index 6abcf975a..d55768231 100644
  	spin_lock_irqsave(&i2c->lock, flags);
  
  	clk_enable(i2c->clk);
-@@ -1075,25 +1188,39 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
- 	 * rk3x_i2c_setup()).
- 	 */
- 	for (i = 0; i < num; i += ret) {
--		ret = rk3x_i2c_setup(i2c, msgs + i, num - i);
-+		unsigned long xfer_time = 100;
-+		int len;
- 
-+		ret = rk3x_i2c_setup(i2c, msgs + i, num - i);
- 		if (ret < 0) {
- 			dev_err(i2c->dev, "rk3x_i2c_setup() failed\n");
- 			break;
- 		}
- 
-+		/*
-+		 * Transfer time in mSec = Total bits / transfer rate + interval time
-+		 * Total bits = 9 bits per byte (including ACK bit) + Start & stop bits
-+		 */
-+		if (ret == 2)
-+			len = msgs[i + 1].len;
-+		else
-+			len = msgs[i].len;
-+		xfer_time += len / 64;
-+		xfer_time += DIV_ROUND_CLOSEST(((len * 9) + 2) * MSEC_PER_SEC,
-+					       i2c->t.bus_freq_hz);
-+
+@@ -1087,20 +1194,15 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
  		if (i + ret >= num)
  			i2c->is_last_msg = true;
  
--		spin_unlock_irqrestore(&i2c->lock, flags);
--
- 		rk3x_i2c_start(i2c);
- 
-+		spin_unlock_irqrestore(&i2c->lock, flags);
++		rk3x_i2c_start(i2c);
 +
+ 		spin_unlock_irqrestore(&i2c->lock, flags);
+ 
  		if (!polling) {
+-			rk3x_i2c_start(i2c);
+-
  			timeout = wait_event_timeout(i2c->wait, !i2c->busy,
--						     msecs_to_jiffies(WAIT_TIMEOUT));
-+						     msecs_to_jiffies(xfer_time));
+ 						     msecs_to_jiffies(WAIT_TIMEOUT));
  		} else {
--			timeout = rk3x_i2c_wait_xfer_poll(i2c);
-+			timeout = rk3x_i2c_wait_xfer_poll(i2c, xfer_time);
+-			disable_irq(i2c->irq);
+-			rk3x_i2c_start(i2c);
+-
+ 			timeout = rk3x_i2c_wait_xfer_poll(i2c);
+-
+-			enable_irq(i2c->irq);
  		}
  
  		spin_lock_irqsave(&i2c->lock, flags);
-@@ -1103,7 +1230,7 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
+@@ -1110,7 +1212,7 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
  				i2c_readl(i2c, REG_IPD), i2c->state);
  
  			/* Force a STOP condition without interrupt */
@@ -35815,7 +35793,7 @@ index 6abcf975a..d55768231 100644
  			val = i2c_readl(i2c, REG_CON) & REG_CON_TUNING_MASK;
  			val |= REG_CON_EN | REG_CON_STOP;
  			i2c_writel(i2c, val, REG_CON);
-@@ -1120,6 +1247,9 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
+@@ -1127,6 +1229,9 @@ static int rk3x_i2c_xfer_common(struct i2c_adapter *adap,
  		}
  	}
  
@@ -35825,7 +35803,7 @@ index 6abcf975a..d55768231 100644
  	clk_disable(i2c->pclk);
  	clk_disable(i2c->clk);
  
-@@ -1140,12 +1270,120 @@ static int rk3x_i2c_xfer_polling(struct i2c_adapter *adap,
+@@ -1147,12 +1252,81 @@ static int rk3x_i2c_xfer_polling(struct i2c_adapter *adap,
  	return rk3x_i2c_xfer_common(adap, msgs, num, true);
  }
  
@@ -35876,45 +35854,6 @@ index 6abcf975a..d55768231 100644
 +	return version;
 +}
 +
-+static int rk3x_i2c_of_get_bus_id(struct device *dev, struct rk3x_i2c *priv)
-+{
-+	int bus_id = -1;
-+
-+	if (IS_ENABLED(CONFIG_OF) && dev->of_node)
-+		bus_id = of_alias_get_id(dev->of_node, "i2c");
-+
-+	return bus_id;
-+}
-+
-+#ifdef CONFIG_ACPI
-+static int rk3x_i2c_acpi_get_bus_id(struct device *dev, struct rk3x_i2c *priv)
-+{
-+	struct acpi_device *adev;
-+	unsigned long bus_id = -1;
-+	const char *uid;
-+	int ret;
-+
-+	adev = ACPI_COMPANION(dev);
-+	if (!adev)
-+		return -ENXIO;
-+
-+	uid = acpi_device_uid(adev);
-+	if (!uid || !(*uid)) {
-+		dev_err(dev, "Cannot retrieve UID\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = kstrtoul(uid, 0, &bus_id);
-+
-+	return !ret ? bus_id : -ERANGE;
-+}
-+#else
-+static int rk3x_i2c_acpi_get_bus_id(struct device *dev, struct rk3x_i2c *priv)
-+{
-+	return -ENOENT;
-+}
-+#endif /* CONFIG_ACPI */
-+
 +static __maybe_unused int rk3x_i2c_suspend_noirq(struct device *dev)
 +{
 +	struct rk3x_i2c *i2c = dev_get_drvdata(dev);
@@ -35947,7 +35886,7 @@ index 6abcf975a..d55768231 100644
  	return 0;
  }
  
-@@ -1161,7 +1399,12 @@ static const struct i2c_algorithm rk3x_i2c_algorithm = {
+@@ -1168,7 +1342,12 @@ static const struct i2c_algorithm rk3x_i2c_algorithm = {
  };
  
  static const struct rk3x_i2c_soc_data rv1108_soc_data = {
@@ -35961,7 +35900,7 @@ index 6abcf975a..d55768231 100644
  	.calc_timings = rk3x_i2c_v1_calc_timings,
  };
  
-@@ -1195,6 +1438,10 @@ static const struct of_device_id rk3x_i2c_match[] = {
+@@ -1202,6 +1381,10 @@ static const struct of_device_id rk3x_i2c_match[] = {
  		.compatible = "rockchip,rv1108-i2c",
  		.data = &rv1108_soc_data
  	},
@@ -35972,59 +35911,15 @@ index 6abcf975a..d55768231 100644
  	{
  		.compatible = "rockchip,rk3066-i2c",
  		.data = &rk3066_soc_data
-@@ -1219,13 +1466,19 @@ static const struct of_device_id rk3x_i2c_match[] = {
- };
- MODULE_DEVICE_TABLE(of, rk3x_i2c_match);
- 
-+static void rk3x_i2c_tb_cb(void *data)
-+{
-+	unsigned int irq = (unsigned long)data;
-+
-+	enable_irq(irq);
-+}
-+
- static int rk3x_i2c_probe(struct platform_device *pdev)
- {
-+	struct fwnode_handle *fw = dev_fwnode(&pdev->dev);
- 	struct device_node *np = pdev->dev.of_node;
--	const struct of_device_id *match;
+@@ -1232,7 +1415,6 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match;
  	struct rk3x_i2c *i2c;
  	int ret = 0;
 -	int bus_nr;
  	u32 value;
  	int irq;
  	unsigned long clk_rate;
-@@ -1234,8 +1487,16 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
- 	if (!i2c)
- 		return -ENOMEM;
- 
--	match = of_match_node(rk3x_i2c_match, np);
--	i2c->soc_data = match->data;
-+	i2c->soc_data = (struct rk3x_i2c_soc_data *)device_get_match_data(&pdev->dev);
-+
-+	ret = rk3x_i2c_acpi_get_bus_id(&pdev->dev, i2c);
-+	if (ret < 0) {
-+		ret = rk3x_i2c_of_get_bus_id(&pdev->dev, i2c);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	i2c->adap.nr = ret;
- 
- 	/* use common interface to get I2C timing properties */
- 	i2c_parse_fw_timings(&pdev->dev, &i2c->t, true);
-@@ -1244,22 +1505,28 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
- 	i2c->adap.owner = THIS_MODULE;
- 	i2c->adap.algo = &rk3x_i2c_algorithm;
- 	i2c->adap.retries = 3;
--	i2c->adap.dev.of_node = np;
-+	i2c->adap.dev.of_node = pdev->dev.of_node;
- 	i2c->adap.algo_data = i2c;
- 	i2c->adap.dev.parent = &pdev->dev;
-+	i2c->adap.dev.fwnode = fw;
- 
- 	i2c->dev = &pdev->dev;
- 
+@@ -1260,13 +1442,18 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
  	spin_lock_init(&i2c->lock);
  	init_waitqueue_head(&i2c->wait);
  
@@ -36046,7 +35941,7 @@ index 6abcf975a..d55768231 100644
  	/*
  	 * Switch to new interface if the SoC also offers the old one.
  	 * The control bit is located in the GRF register space.
-@@ -1268,24 +1535,27 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
+@@ -1275,24 +1462,34 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
  		struct regmap *grf;
  
  		grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
@@ -36069,7 +35964,14 @@ index 6abcf975a..d55768231 100644
 -			dev_err(i2c->dev, "Could not write to GRF: %d\n", ret);
 -			return ret;
 +		if (!IS_ERR(grf)) {
-+			int bus_nr = i2c->adap.nr;
++			int bus_nr;
++
++			/* Try to set the I2C adapter number from dt */
++			bus_nr = of_alias_get_id(np, "i2c");
++			if (bus_nr < 0) {
++				dev_err(&pdev->dev, "rk3x-i2c needs i2cX alias");
++				return -EINVAL;
++			}
 +
 +			if (i2c->soc_data == &rv1108_soc_data && bus_nr == 2)
 +				/* rv1108 i2c2 set grf offset-0x408, bit-10 */
@@ -36092,97 +35994,26 @@ index 6abcf975a..d55768231 100644
  		}
  	}
  
-@@ -1294,6 +1564,13 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
- 	if (irq < 0)
- 		return irq;
- 
-+	if (IS_ENABLED(CONFIG_ROCKCHIP_THUNDER_BOOT_SERVICE) &&
-+	    device_property_read_bool(&pdev->dev, "rockchip,amp-shared")) {
-+		i2c->tb_cl.data = (void *)(unsigned long)irq;
-+		i2c->tb_cl.cb = rk3x_i2c_tb_cb;
-+		irq_set_status_flags(irq, IRQ_NOAUTOEN);
-+	}
-+
- 	ret = devm_request_irq(&pdev->dev, irq, rk3x_i2c_irq,
- 			       0, dev_name(&pdev->dev), i2c);
- 	if (ret < 0) {
-@@ -1301,24 +1578,29 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
+@@ -1308,8 +1505,6 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
  		return ret;
  	}
  
-+	if (IS_ENABLED(CONFIG_ROCKCHIP_THUNDER_BOOT_SERVICE) && i2c->tb_cl.cb)
-+		rk_tb_client_register_cb(&i2c->tb_cl);
-+
+-	i2c->irq = irq;
+-
  	platform_set_drvdata(pdev, i2c);
  
--	if (i2c->soc_data->calc_timings == rk3x_i2c_v0_calc_timings) {
--		/* Only one clock to use for bus clock and peripheral clock */
--		i2c->clk = devm_clk_get(&pdev->dev, NULL);
--		i2c->pclk = i2c->clk;
--	} else {
--		i2c->clk = devm_clk_get(&pdev->dev, "i2c");
--		i2c->pclk = devm_clk_get(&pdev->dev, "pclk");
--	}
-+	if (!has_acpi_companion(&pdev->dev)) {
-+		if (i2c->soc_data->calc_timings == rk3x_i2c_v0_calc_timings) {
-+			/* Only one clock to use for bus clock and peripheral clock */
-+			i2c->clk = devm_clk_get(&pdev->dev, NULL);
-+			i2c->pclk = i2c->clk;
-+		} else {
-+			i2c->clk = devm_clk_get(&pdev->dev, "i2c");
-+			i2c->pclk = devm_clk_get(&pdev->dev, "pclk");
-+		}
- 
--	if (IS_ERR(i2c->clk))
--		return dev_err_probe(&pdev->dev, PTR_ERR(i2c->clk),
--				     "Can't get bus clk\n");
-+		if (IS_ERR(i2c->clk))
-+			return dev_err_probe(&pdev->dev, PTR_ERR(i2c->clk),
-+					     "Can't get bus clk\n");
- 
--	if (IS_ERR(i2c->pclk))
--		return dev_err_probe(&pdev->dev, PTR_ERR(i2c->pclk),
--				     "Can't get periph clk\n");
-+		if (IS_ERR(i2c->pclk))
-+			return dev_err_probe(&pdev->dev, PTR_ERR(i2c->pclk),
-+					     "Can't get periph clk\n");
-+	}
- 
- 	ret = clk_prepare(i2c->clk);
- 	if (ret < 0) {
-@@ -1331,17 +1613,25 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
- 		goto err_clk;
- 	}
- 
--	i2c->clk_rate_nb.notifier_call = rk3x_i2c_clk_notifier_cb;
--	ret = clk_notifier_register(i2c->clk, &i2c->clk_rate_nb);
--	if (ret != 0) {
--		dev_err(&pdev->dev, "Unable to register clock notifier\n");
--		goto err_pclk;
-+	if (i2c->clk) {
-+		i2c->clk_rate_nb.notifier_call = rk3x_i2c_clk_notifier_cb;
-+		ret = clk_notifier_register(i2c->clk, &i2c->clk_rate_nb);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev, "Unable to register clock notifier\n");
-+			goto err_pclk;
-+		}
- 	}
- 
+ 	if (i2c->soc_data->calc_timings == rk3x_i2c_v0_calc_timings) {
+@@ -1350,6 +1545,9 @@ static int rk3x_i2c_probe(struct platform_device *pdev)
  	clk_rate = clk_get_rate(i2c->clk);
-+	if (!clk_rate)
-+		device_property_read_u32(&pdev->dev, "i2c,clk-rate", (u32 *)&clk_rate);
-+
  	rk3x_i2c_adapt_div(i2c, clk_rate);
  
--	ret = i2c_add_adapter(&i2c->adap);
 +	if (rk3x_i2c_get_version(i2c) >= RK_I2C_VERSION5)
 +		i2c->autostop_supported = true;
 +
-+	ret = i2c_add_numbered_adapter(&i2c->adap);
+ 	ret = i2c_add_adapter(&i2c->adap);
  	if (ret < 0)
  		goto err_clk_notifier;
- 
-@@ -1363,13 +1653,17 @@ static int rk3x_i2c_remove(struct platform_device *pdev)
+@@ -1372,13 +1570,17 @@ static int rk3x_i2c_remove(struct platform_device *pdev)
  	i2c_del_adapter(&i2c->adap);
  
  	clk_notifier_unregister(i2c->clk, &i2c->clk_rate_nb);
@@ -36201,7 +36032,7 @@ index 6abcf975a..d55768231 100644
  
  static struct platform_driver rk3x_i2c_driver = {
  	.probe   = rk3x_i2c_probe,
-@@ -1381,7 +1675,25 @@ static struct platform_driver rk3x_i2c_driver = {
+@@ -1390,7 +1592,21 @@ static struct platform_driver rk3x_i2c_driver = {
  	},
  };
  
@@ -36210,11 +36041,7 @@ index 6abcf975a..d55768231 100644
 +{
 +	return platform_driver_register(&rk3x_i2c_driver);
 +}
-+#ifdef CONFIG_INITCALL_ASYNC
 +subsys_initcall_sync(rk3x_i2c_driver_init);
-+#else
-+subsys_initcall(rk3x_i2c_driver_init);
-+#endif
 +
 +static void __exit rk3x_i2c_driver_exit(void)
 +{
@@ -36228,7 +36055,7 @@ index 6abcf975a..d55768231 100644
  MODULE_DESCRIPTION("Rockchip RK3xxx I2C Bus driver");
  MODULE_AUTHOR("Max Schwarz <max.schwarz@online.de>");
 diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
-index 34fecf97a..d041b7fa5 100644
+index e8a89e18c..3a9fc1c88 100644
 --- a/drivers/i2c/i2c-core-base.c
 +++ b/drivers/i2c/i2c-core-base.c
 @@ -61,6 +61,7 @@
@@ -36333,7 +36160,7 @@ index 34fecf97a..d041b7fa5 100644
  	unsigned	cmd;
  	void		*arg;
 diff --git a/drivers/iio/adc/rockchip_saradc.c b/drivers/iio/adc/rockchip_saradc.c
-index 12584f163..03cc336bf 100644
+index deb58e232..fd85bad21 100644
 --- a/drivers/iio/adc/rockchip_saradc.c
 +++ b/drivers/iio/adc/rockchip_saradc.c
 @@ -35,12 +35,31 @@
@@ -36628,7 +36455,7 @@ index 12584f163..03cc336bf 100644
  	},
  	{},
  };
-@@ -278,6 +434,75 @@ static irqreturn_t rockchip_saradc_trigger_handler(int irq, void *p)
+@@ -280,6 +436,75 @@ static irqreturn_t rockchip_saradc_trigger_handler(int irq, void *p)
  	return IRQ_HANDLED;
  }
  
@@ -36704,7 +36531,7 @@ index 12584f163..03cc336bf 100644
  static int rockchip_saradc_probe(struct platform_device *pdev)
  {
  	struct rockchip_saradc *info = NULL;
-@@ -390,6 +615,13 @@ static int rockchip_saradc_probe(struct platform_device *pdev)
+@@ -392,6 +617,13 @@ static int rockchip_saradc_probe(struct platform_device *pdev)
  		return ret;
  	}
  
@@ -36718,7 +36545,7 @@ index 12584f163..03cc336bf 100644
  	ret = clk_prepare_enable(info->pclk);
  	if (ret < 0) {
  		dev_err(&pdev->dev, "failed to enable pclk\n");
-@@ -430,6 +662,30 @@ static int rockchip_saradc_probe(struct platform_device *pdev)
+@@ -432,6 +664,30 @@ static int rockchip_saradc_probe(struct platform_device *pdev)
  	if (ret)
  		return ret;
  
@@ -36749,7 +36576,7 @@ index 12584f163..03cc336bf 100644
  	return devm_iio_device_register(&pdev->dev, indio_dev);
  }
  
-@@ -439,10 +695,16 @@ static int rockchip_saradc_suspend(struct device *dev)
+@@ -441,10 +697,16 @@ static int rockchip_saradc_suspend(struct device *dev)
  	struct iio_dev *indio_dev = dev_get_drvdata(dev);
  	struct rockchip_saradc *info = iio_priv(indio_dev);
  
@@ -36766,7 +36593,7 @@ index 12584f163..03cc336bf 100644
  	return 0;
  }
  
-@@ -464,6 +726,8 @@ static int rockchip_saradc_resume(struct device *dev)
+@@ -466,6 +728,8 @@ static int rockchip_saradc_resume(struct device *dev)
  	if (ret)
  		clk_disable_unprepare(info->pclk);
  
@@ -36801,7 +36628,7 @@ index 362e8a019..1f3e8132a 100644
  	  Select this option to enable power key driver for RK805.
  
 diff --git a/drivers/input/misc/rk805-pwrkey.c b/drivers/input/misc/rk805-pwrkey.c
-index 76873aa00..769821763 100644
+index 34ed66bdc..97f8fbf26 100644
 --- a/drivers/input/misc/rk805-pwrkey.c
 +++ b/drivers/input/misc/rk805-pwrkey.c
 @@ -13,6 +13,7 @@
@@ -36810,9 +36637,9 @@ index 76873aa00..769821763 100644
  #include <linux/module.h>
 +#include <linux/of.h>
  #include <linux/platform_device.h>
+ #include "hdf_hid_adapter.h"
  
- static irqreturn_t pwrkey_fall_irq(int irq, void *_pwr)
-@@ -39,8 +40,15 @@ static int rk805_pwrkey_probe(struct platform_device *pdev)
+@@ -59,8 +60,15 @@ static int rk805_pwrkey_probe(struct platform_device *pdev)
  {
  	struct input_dev *pwr;
  	int fall_irq, rise_irq;
@@ -36829,10 +36656,10 @@ index 76873aa00..769821763 100644
  	if (!pwr) {
  		dev_err(&pdev->dev, "Can't allocate power button\n");
 diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-index 04878caf6..fe1256b01 100644
+index 7dfd23262..6a5222bdb 100644
 --- a/drivers/iommu/Kconfig
 +++ b/drivers/iommu/Kconfig
-@@ -160,7 +160,8 @@ config OMAP_IOMMU_DEBUG
+@@ -161,7 +161,8 @@ config OMAP_IOMMU_DEBUG
  	  Say N unless you know you need this.
  
  config ROCKCHIP_IOMMU
@@ -37373,7 +37200,7 @@ index 4600e97ac..cf32b592a 100644
  MODULE_AUTHOR("Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>");
  MODULE_LICENSE("GPL");
 diff --git a/drivers/iommu/rockchip-iommu.c b/drivers/iommu/rockchip-iommu.c
-index e5d86b717..b359fcf2c 100644
+index 12551dc11..d5b22b576 100644
 --- a/drivers/iommu/rockchip-iommu.c
 +++ b/drivers/iommu/rockchip-iommu.c
 @@ -19,6 +19,7 @@
@@ -37449,19 +37276,22 @@ index e5d86b717..b359fcf2c 100644
  };
  
  struct rk_iommu {
-@@ -104,15 +134,21 @@ struct rk_iommu {
+@@ -104,18 +134,30 @@ struct rk_iommu {
  	struct clk_bulk_data *clocks;
  	int num_clocks;
  	bool reset_disabled;
 +	bool skip_read; /* rk3126/rk3128 can't read vop iommu registers */
 +	bool dlr_disable; /* avoid access iommu when runtime ops called */
 +	bool cmd_retry;
++	bool master_handle_irq;
  	struct iommu_device iommu;
  	struct list_head node; /* entry in rk_iommu_domain.iommus */
  	struct iommu_domain *domain; /* domain to which iommu is attached */
  	struct iommu_group *group;
 +	u32 version;
 +	bool shootdown_entire;
++	bool iommu_enabled;
++	bool need_res_map;
  };
  
  struct rk_iommudata {
@@ -37471,7 +37301,13 @@ index e5d86b717..b359fcf2c 100644
  };
  
  static struct device *dma_dev;
-@@ -174,11 +210,32 @@ static struct rk_iommu_domain *to_rk_domain(struct iommu_domain *dom)
++static struct rk_iommu *rk_iommu_from_dev(struct device *dev);
++static char reserve_range[PAGE_SIZE] __aligned(PAGE_SIZE);
++static phys_addr_t res_page;
+ 
+ static inline void rk_table_flush(struct rk_iommu_domain *dom, dma_addr_t dma,
+ 				  unsigned int count)
+@@ -174,11 +216,32 @@ static struct rk_iommu_domain *to_rk_domain(struct iommu_domain *dom)
  #define RK_DTE_PT_ADDRESS_MASK    0xfffff000
  #define RK_DTE_PT_VALID           BIT(0)
  
@@ -37504,7 +37340,7 @@ index e5d86b717..b359fcf2c 100644
  static inline bool rk_dte_is_pt_valid(u32 dte)
  {
  	return dte & RK_DTE_PT_VALID;
-@@ -189,6 +246,15 @@ static inline u32 rk_mk_dte(dma_addr_t pt_dma)
+@@ -189,6 +252,15 @@ static inline u32 rk_mk_dte(dma_addr_t pt_dma)
  	return (pt_dma & RK_DTE_PT_ADDRESS_MASK) | RK_DTE_PT_VALID;
  }
  
@@ -37520,7 +37356,7 @@ index e5d86b717..b359fcf2c 100644
  /*
   * Each PTE has a Page address, some flags and a valid bit:
   * +---------------------+---+-------+-+
-@@ -215,11 +281,37 @@ static inline u32 rk_mk_dte(dma_addr_t pt_dma)
+@@ -215,29 +287,84 @@ static inline u32 rk_mk_dte(dma_addr_t pt_dma)
  #define RK_PTE_PAGE_READABLE      BIT(1)
  #define RK_PTE_PAGE_VALID         BIT(0)
  
@@ -37538,6 +37374,8 @@ index e5d86b717..b359fcf2c 100644
 +#define RK_PTE_PAGE_FLAGS_MASK_V2    0x0000000e
 +#define RK_PTE_PAGE_READABLE_V2      BIT(1)
 +#define RK_PTE_PAGE_WRITABLE_V2      BIT(2)
++
++#define RK_PTE_PAGE_REPRESENT	BIT(3)
 +
  static inline phys_addr_t rk_pte_page_address(u32 pte)
  {
@@ -37558,7 +37396,22 @@ index e5d86b717..b359fcf2c 100644
  static inline bool rk_pte_is_page_valid(u32 pte)
  {
  	return pte & RK_PTE_PAGE_VALID;
-@@ -235,6 +327,20 @@ static u32 rk_mk_pte(phys_addr_t page, int prot)
+ }
+ 
++static inline bool rk_pte_is_page_represent(u32 pte)
++{
++	return pte & RK_PTE_PAGE_REPRESENT;
++}
++
+ /* TODO: set cache flags per prot IOMMU_CACHE */
+ static u32 rk_mk_pte(phys_addr_t page, int prot)
+ {
+ 	u32 flags = 0;
+ 	flags |= (prot & IOMMU_READ) ? RK_PTE_PAGE_READABLE : 0;
+ 	flags |= (prot & IOMMU_WRITE) ? RK_PTE_PAGE_WRITABLE : 0;
++	flags |= (prot & IOMMU_PRIV) ? RK_PTE_PAGE_REPRESENT : 0;
++
+ 	page &= RK_PTE_PAGE_ADDRESS_MASK;
  	return page | flags | RK_PTE_PAGE_VALID;
  }
  
@@ -37568,6 +37421,12 @@ index e5d86b717..b359fcf2c 100644
 +
 +	flags |= (prot & IOMMU_READ) ? RK_PTE_PAGE_READABLE_V2 : 0;
 +	flags |= (prot & IOMMU_WRITE) ? RK_PTE_PAGE_WRITABLE_V2 : 0;
++	/* If BIT(3) set, don't break iommu_map if BIT(0) set.
++	 * Means we can reupdate a page that already presented. We can use
++	 * this bit to reupdate a pre-mapped 4G range.
++	 */
++	flags |= (prot & IOMMU_PRIV) ? RK_PTE_PAGE_REPRESENT : 0;
++
 +	page = (page & PAGE_DESC_LO_MASK) |
 +	       ((page & PAGE_DESC_HI_MASK1) >> PAGE_DESC_HI_SHIFT1) |
 +	       (page & PAGE_DESC_HI_MASK2) >> PAGE_DESC_HI_SHIFT2;
@@ -37578,8 +37437,12 @@ index e5d86b717..b359fcf2c 100644
 +
  static u32 rk_mk_pte_invalid(u32 pte)
  {
- 	return pte & ~RK_PTE_PAGE_VALID;
-@@ -350,6 +456,10 @@ static int rk_iommu_enable_stall(struct rk_iommu *iommu)
+-	return pte & ~RK_PTE_PAGE_VALID;
++	return pte & ~(RK_PTE_PAGE_VALID | RK_PTE_PAGE_REPRESENT);
+ }
+ 
+ /*
+@@ -350,6 +477,10 @@ static int rk_iommu_enable_stall(struct rk_iommu *iommu)
  {
  	int ret, i;
  	bool val;
@@ -37590,7 +37453,7 @@ index e5d86b717..b359fcf2c 100644
  
  	if (rk_iommu_is_stall_active(iommu))
  		return 0;
-@@ -358,15 +468,22 @@ static int rk_iommu_enable_stall(struct rk_iommu *iommu)
+@@ -358,15 +489,22 @@ static int rk_iommu_enable_stall(struct rk_iommu *iommu)
  	if (!rk_iommu_is_paging_enabled(iommu))
  		return 0;
  
@@ -37615,7 +37478,7 @@ index e5d86b717..b359fcf2c 100644
  
  	return ret;
  }
-@@ -375,19 +492,30 @@ static int rk_iommu_disable_stall(struct rk_iommu *iommu)
+@@ -375,19 +513,30 @@ static int rk_iommu_disable_stall(struct rk_iommu *iommu)
  {
  	int ret, i;
  	bool val;
@@ -37648,7 +37511,7 @@ index e5d86b717..b359fcf2c 100644
  
  	return ret;
  }
-@@ -396,19 +524,30 @@ static int rk_iommu_enable_paging(struct rk_iommu *iommu)
+@@ -396,19 +545,30 @@ static int rk_iommu_enable_paging(struct rk_iommu *iommu)
  {
  	int ret, i;
  	bool val;
@@ -37681,7 +37544,7 @@ index e5d86b717..b359fcf2c 100644
  
  	return ret;
  }
-@@ -417,19 +556,30 @@ static int rk_iommu_disable_paging(struct rk_iommu *iommu)
+@@ -417,51 +577,84 @@ static int rk_iommu_disable_paging(struct rk_iommu *iommu)
  {
  	int ret, i;
  	bool val;
@@ -37714,7 +37577,14 @@ index e5d86b717..b359fcf2c 100644
  
  	return ret;
  }
-@@ -439,25 +589,40 @@ static int rk_iommu_force_reset(struct rk_iommu *iommu)
+ 
++static u32 rk_iommu_read_dte_addr(void __iomem *base)
++{
++	return rk_iommu_read(base, RK_MMU_DTE_ADDR);
++}
++
+ static int rk_iommu_force_reset(struct rk_iommu *iommu)
+ {
  	int ret, i;
  	u32 dte_addr;
  	bool val;
@@ -37737,13 +37607,16 @@ index e5d86b717..b359fcf2c 100644
  	for (i = 0; i < iommu->num_mmu; i++) {
  		rk_iommu_write(iommu->bases[i], RK_MMU_DTE_ADDR, DTE_ADDR_DUMMY);
  
+-		dte_addr = rk_iommu_read(iommu->bases[i], RK_MMU_DTE_ADDR);
+-		if (dte_addr != (DTE_ADDR_DUMMY & RK_DTE_PT_ADDRESS_MASK)) {
 +		if (iommu->version >= 0x2)
 +			address_mask = RK_DTE_PT_ADDRESS_MASK_V2;
 +		else
 +			address_mask = RK_DTE_PT_ADDRESS_MASK;
- 		dte_addr = rk_iommu_read(iommu->bases[i], RK_MMU_DTE_ADDR);
--		if (dte_addr != (DTE_ADDR_DUMMY & RK_DTE_PT_ADDRESS_MASK)) {
-+		if (dte_addr != (DTE_ADDR_DUMMY & address_mask)) {
++		ret = readx_poll_timeout(rk_iommu_read_dte_addr, iommu->bases[i], dte_addr,
++					 dte_addr == (DTE_ADDR_DUMMY & address_mask),
++					 RK_MMU_POLL_PERIOD_US, RK_MMU_POLL_TIMEOUT_US);
++		if (ret) {
  			dev_err(iommu->dev, "Error during raw reset. MMU_DTE_ADDR is not functioning\n");
  			return -EFAULT;
  		}
@@ -37755,8 +37628,14 @@ index e5d86b717..b359fcf2c 100644
 +		return 0;
  
  	ret = readx_poll_timeout(rk_iommu_is_reset_done, iommu, val,
- 				 val, RK_MMU_FORCE_RESET_TIMEOUT_US,
-@@ -490,6 +655,10 @@ static void log_iova(struct rk_iommu *iommu, int index, dma_addr_t iova)
+-				 val, RK_MMU_FORCE_RESET_TIMEOUT_US,
+-				 RK_MMU_POLL_TIMEOUT_US);
++				 val, RK_MMU_POLL_TIMEOUT_US,
++				 RK_MMU_FORCE_RESET_TIMEOUT_US);
+ 	if (ret) {
+ 		dev_err(iommu->dev, "FORCE_RESET command timed out\n");
+ 		return ret;
+@@ -490,6 +683,10 @@ static void log_iova(struct rk_iommu *iommu, int index, dma_addr_t iova)
  
  	mmu_dte_addr = rk_iommu_read(base, RK_MMU_DTE_ADDR);
  	mmu_dte_addr_phys = (phys_addr_t)mmu_dte_addr;
@@ -37767,7 +37646,7 @@ index e5d86b717..b359fcf2c 100644
  
  	dte_addr_phys = mmu_dte_addr_phys + (4 * dte_index);
  	dte_addr = phys_to_virt(dte_addr_phys);
-@@ -498,14 +667,20 @@ static void log_iova(struct rk_iommu *iommu, int index, dma_addr_t iova)
+@@ -498,14 +695,20 @@ static void log_iova(struct rk_iommu *iommu, int index, dma_addr_t iova)
  	if (!rk_dte_is_pt_valid(dte))
  		goto print_it;
  
@@ -37790,22 +37669,57 @@ index e5d86b717..b359fcf2c 100644
  	page_flags = pte & RK_PTE_PAGE_FLAGS_MASK;
  
  print_it:
-@@ -522,6 +697,7 @@ static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
- 	struct rk_iommu *iommu = dev_id;
+@@ -517,21 +720,14 @@ static void log_iova(struct rk_iommu *iommu, int index, dma_addr_t iova)
+ 		rk_pte_is_page_valid(pte), &page_addr_phys, page_flags);
+ }
+ 
+-static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
++static int rk_pagefault_done(struct rk_iommu *iommu)
+ {
+-	struct rk_iommu *iommu = dev_id;
  	u32 status;
  	u32 int_status;
-+	u32 int_mask;
  	dma_addr_t iova;
++	int i;
++	u32 int_mask;
  	irqreturn_t ret = IRQ_NONE;
- 	int i, err;
-@@ -561,12 +737,20 @@ static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
- 			 */
- 			if (iommu->domain)
- 				report_iommu_fault(iommu->domain, iommu->dev, iova,
+-	int i, err;
+-
+-	err = pm_runtime_get_if_in_use(iommu->dev);
+-	if (!err || WARN_ON_ONCE(err < 0))
+-		return ret;
+-
+-	if (WARN_ON(clk_bulk_enable(iommu->num_clocks, iommu->clocks)))
+-		goto out;
+ 
+ 	for (i = 0; i < iommu->num_mmu; i++) {
+ 		int_status = rk_iommu_read(iommu->bases[i], RK_MMU_INT_STATUS);
+@@ -554,19 +750,29 @@ static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
+ 
+ 			log_iova(iommu, i, iova);
+ 
+-			/*
+-			 * Report page fault to any installed handlers.
+-			 * Ignore the return code, though, since we always zap cache
+-			 * and clear the page fault anyway.
+-			 */
+-			if (iommu->domain)
+-				report_iommu_fault(iommu->domain, iommu->dev, iova,
 -						   flags);
+-			else
+-				dev_err(iommu->dev, "Page fault while iommu not attached to domain?\n");
++			if (!iommu->master_handle_irq) {
++				/*
++				 * Report page fault to any installed handlers.
++				 * Ignore the return code, though, since we always zap cache
++				 * and clear the page fault anyway.
++				 */
++				if (iommu->domain)
++					report_iommu_fault(iommu->domain, iommu->dev, iova,
 +						   status);
- 			else
- 				dev_err(iommu->dev, "Page fault while iommu not attached to domain?\n");
++				else
++					dev_err(iommu->dev, "Page fault while iommu not attached to domain?\n");
++			}
  
  			rk_iommu_base_command(iommu->bases[i], RK_MMU_CMD_ZAP_CACHE);
 -			rk_iommu_base_command(iommu->bases[i], RK_MMU_CMD_PAGE_FAULT_DONE);
@@ -37821,7 +37735,54 @@ index e5d86b717..b359fcf2c 100644
  		}
  
  		if (int_status & RK_MMU_IRQ_BUS_ERROR)
-@@ -614,6 +798,34 @@ static phys_addr_t rk_iommu_iova_to_phys(struct iommu_domain *domain,
+@@ -579,6 +785,46 @@ static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
+ 		rk_iommu_write(iommu->bases[i], RK_MMU_INT_CLEAR, int_status);
+ 	}
+ 
++	return ret;
++}
++
++int rockchip_pagefault_done(struct device *master_dev)
++{
++	struct rk_iommu *iommu = rk_iommu_from_dev(master_dev);
++
++	return rk_pagefault_done(iommu);
++}
++EXPORT_SYMBOL_GPL(rockchip_pagefault_done);
++
++void __iomem *rockchip_get_iommu_base(struct device *master_dev, int idx)
++{
++	struct rk_iommu *iommu = rk_iommu_from_dev(master_dev);
++
++	return iommu->bases[idx];
++}
++EXPORT_SYMBOL_GPL(rockchip_get_iommu_base);
++
++static irqreturn_t rk_iommu_irq(int irq, void *dev_id)
++{
++	struct rk_iommu *iommu = dev_id;
++	irqreturn_t ret = IRQ_NONE;
++	int err;
++
++	err = pm_runtime_get_if_in_use(iommu->dev);
++	if (WARN_ON_ONCE(err <= 0))
++		return ret;
++
++	if (WARN_ON(clk_bulk_enable(iommu->num_clocks, iommu->clocks)))
++		goto out;
++
++	/* Master must call rockchip_pagefault_done to handle pagefault */
++	if (iommu->master_handle_irq) {
++		if (iommu->domain)
++			ret = report_iommu_fault(iommu->domain, iommu->dev, -1, 0x0);
++	} else {
++		ret = rk_pagefault_done(iommu);
++	}
++
+ 	clk_bulk_disable(iommu->num_clocks, iommu->clocks);
+ 
+ out:
+@@ -614,6 +860,34 @@ static phys_addr_t rk_iommu_iova_to_phys(struct iommu_domain *domain,
  	return phys;
  }
  
@@ -37856,7 +37817,7 @@ index e5d86b717..b359fcf2c 100644
  static void rk_iommu_zap_iova(struct rk_iommu_domain *rk_domain,
  			      dma_addr_t iova, size_t size)
  {
-@@ -690,6 +902,44 @@ static u32 *rk_dte_get_page_table(struct rk_iommu_domain *rk_domain,
+@@ -690,12 +964,51 @@ static u32 *rk_dte_get_page_table(struct rk_iommu_domain *rk_domain,
  	return (u32 *)phys_to_virt(pt_phys);
  }
  
@@ -37900,8 +37861,77 @@ index e5d86b717..b359fcf2c 100644
 +
  static size_t rk_iommu_unmap_iova(struct rk_iommu_domain *rk_domain,
  				  u32 *pte_addr, dma_addr_t pte_dma,
- 				  size_t size)
-@@ -741,7 +991,9 @@ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
+-				  size_t size)
++				  size_t size, struct rk_iommu *iommu)
+ {
+ 	unsigned int pte_count;
+ 	unsigned int pte_total = size / SPAGE_SIZE;
++	int prot = IOMMU_READ | IOMMU_WRITE | IOMMU_PRIV;
+ 
+ 	assert_spin_locked(&rk_domain->dt_lock);
+ 
+@@ -704,7 +1017,15 @@ static size_t rk_iommu_unmap_iova(struct rk_iommu_domain *rk_domain,
+ 		if (!rk_pte_is_page_valid(pte))
+ 			break;
+ 
+-		pte_addr[pte_count] = rk_mk_pte_invalid(pte);
++		if (iommu && iommu->need_res_map) {
++			if (iommu->version >= 0x2)
++				pte_addr[pte_count] = rk_mk_pte_v2(res_page,
++								   prot);
++			else
++				pte_addr[pte_count] = rk_mk_pte(res_page, prot);
++		} else {
++			pte_addr[pte_count] = rk_mk_pte_invalid(pte);
++		}
+ 	}
+ 
+ 	rk_table_flush(rk_domain, pte_dma, pte_count);
+@@ -712,6 +1033,23 @@ static size_t rk_iommu_unmap_iova(struct rk_iommu_domain *rk_domain,
+ 	return pte_count * SPAGE_SIZE;
+ }
+ 
++static struct rk_iommu *rk_iommu_get(struct rk_iommu_domain *rk_domain)
++{
++	unsigned long flags;
++	struct list_head *pos;
++	struct rk_iommu *iommu = NULL;
++
++	spin_lock_irqsave(&rk_domain->iommus_lock, flags);
++	list_for_each(pos, &rk_domain->iommus) {
++		iommu = list_entry(pos, struct rk_iommu, node);
++		if (iommu->need_res_map)
++			break;
++	}
++	spin_unlock_irqrestore(&rk_domain->iommus_lock, flags);
++
++	return iommu;
++}
++
+ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
+ 			     dma_addr_t pte_dma, dma_addr_t iova,
+ 			     phys_addr_t paddr, size_t size, int prot)
+@@ -725,12 +1063,15 @@ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
+ 	for (pte_count = 0; pte_count < pte_total; pte_count++) {
+ 		u32 pte = pte_addr[pte_count];
+ 
+-		if (rk_pte_is_page_valid(pte))
++		if (rk_pte_is_page_valid(pte) && !rk_pte_is_page_represent(pte))
+ 			goto unwind;
+ 
+-		pte_addr[pte_count] = rk_mk_pte(paddr, prot);
+-
+-		paddr += SPAGE_SIZE;
++		if (prot & IOMMU_PRIV) {
++			pte_addr[pte_count] = rk_mk_pte(res_page, prot);
++		} else {
++			pte_addr[pte_count] = rk_mk_pte(paddr, prot);
++			paddr += SPAGE_SIZE;
++		}
+ 	}
+ 
+ 	rk_table_flush(rk_domain, pte_dma, pte_total);
+@@ -741,13 +1082,15 @@ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
  	 * We only zap the first and last iova, since only they could have
  	 * dte or pte shared with an existing mapping.
  	 */
@@ -37912,7 +37942,14 @@ index e5d86b717..b359fcf2c 100644
  
  	return 0;
  unwind:
-@@ -757,6 +1009,53 @@ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
+ 	/* Unmap the range of iovas that we just mapped */
+ 	rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma,
+-			    pte_count * SPAGE_SIZE);
++			    pte_count * SPAGE_SIZE, NULL);
+ 
+ 	iova += pte_count * SPAGE_SIZE;
+ 	page_phys = rk_pte_page_address(pte_addr[pte_count]);
+@@ -757,6 +1100,56 @@ static int rk_iommu_map_iova(struct rk_iommu_domain *rk_domain, u32 *pte_addr,
  	return -EADDRINUSE;
  }
  
@@ -37929,12 +37966,15 @@ index e5d86b717..b359fcf2c 100644
 +	for (pte_count = 0; pte_count < pte_total; pte_count++) {
 +		u32 pte = pte_addr[pte_count];
 +
-+		if (rk_pte_is_page_valid(pte))
++		if (rk_pte_is_page_valid(pte) && !rk_pte_is_page_represent(pte))
 +			goto unwind;
 +
-+		pte_addr[pte_count] = rk_mk_pte_v2(paddr, prot);
-+
-+		paddr += SPAGE_SIZE;
++		if (prot & IOMMU_PRIV) {
++			pte_addr[pte_count] = rk_mk_pte_v2(res_page, prot);
++		} else {
++			pte_addr[pte_count] = rk_mk_pte_v2(paddr, prot);
++			paddr += SPAGE_SIZE;
++		}
 +	}
 +
 +	rk_table_flush(rk_domain, pte_dma, pte_total);
@@ -37953,7 +37993,7 @@ index e5d86b717..b359fcf2c 100644
 +unwind:
 +	/* Unmap the range of iovas that we just mapped */
 +	rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma,
-+			    pte_count * SPAGE_SIZE);
++			    pte_count * SPAGE_SIZE, NULL);
 +
 +	iova += pte_count * SPAGE_SIZE;
 +	page_phys = rk_pte_page_address_v2(pte_addr[pte_count]);
@@ -37966,7 +38006,7 @@ index e5d86b717..b359fcf2c 100644
  static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
  			phys_addr_t paddr, size_t size, int prot, gfp_t gfp)
  {
-@@ -764,7 +1063,7 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
+@@ -764,7 +1157,7 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
  	unsigned long flags;
  	dma_addr_t pte_dma, iova = (dma_addr_t)_iova;
  	u32 *page_table, *pte_addr;
@@ -37975,7 +38015,7 @@ index e5d86b717..b359fcf2c 100644
  	int ret;
  
  	spin_lock_irqsave(&rk_domain->dt_lock, flags);
-@@ -782,10 +1081,10 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
+@@ -782,10 +1175,10 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
  		return PTR_ERR(page_table);
  	}
  
@@ -37988,7 +38028,7 @@ index e5d86b717..b359fcf2c 100644
  	ret = rk_iommu_map_iova(rk_domain, pte_addr, pte_dma, iova,
  				paddr, size, prot);
  
-@@ -794,6 +1093,43 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
+@@ -794,6 +1187,43 @@ static int rk_iommu_map(struct iommu_domain *domain, unsigned long _iova,
  	return ret;
  }
  
@@ -38032,7 +38072,25 @@ index e5d86b717..b359fcf2c 100644
  static size_t rk_iommu_unmap(struct iommu_domain *domain, unsigned long _iova,
  			     size_t size, struct iommu_iotlb_gather *gather)
  {
-@@ -834,6 +1170,77 @@ static size_t rk_iommu_unmap(struct iommu_domain *domain, unsigned long _iova,
+@@ -804,6 +1234,7 @@ static size_t rk_iommu_unmap(struct iommu_domain *domain, unsigned long _iova,
+ 	u32 dte;
+ 	u32 *pte_addr;
+ 	size_t unmap_size;
++	struct rk_iommu *iommu = rk_iommu_get(rk_domain);
+ 
+ 	spin_lock_irqsave(&rk_domain->dt_lock, flags);
+ 
+@@ -824,7 +1255,8 @@ static size_t rk_iommu_unmap(struct iommu_domain *domain, unsigned long _iova,
+ 	pt_phys = rk_dte_pt_address(dte);
+ 	pte_addr = (u32 *)phys_to_virt(pt_phys) + rk_iova_pte_index(iova);
+ 	pte_dma = pt_phys + rk_iova_pte_index(iova) * sizeof(u32);
+-	unmap_size = rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma, size);
++	unmap_size = rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma, size,
++					 iommu);
+ 
+ 	spin_unlock_irqrestore(&rk_domain->dt_lock, flags);
+ 
+@@ -834,6 +1266,79 @@ static size_t rk_iommu_unmap(struct iommu_domain *domain, unsigned long _iova,
  	return unmap_size;
  }
  
@@ -38046,6 +38104,7 @@ index e5d86b717..b359fcf2c 100644
 +	u32 dte;
 +	u32 *pte_addr;
 +	size_t unmap_size;
++	struct rk_iommu *iommu = rk_iommu_get(rk_domain);
 +
 +	spin_lock_irqsave(&rk_domain->dt_lock, flags);
 +
@@ -38066,7 +38125,8 @@ index e5d86b717..b359fcf2c 100644
 +	pt_phys = rk_dte_pt_address_v2(dte);
 +	pte_addr = (u32 *)phys_to_virt(pt_phys) + rk_iova_pte_index(iova);
 +	pte_dma = pt_phys + rk_iova_pte_index(iova) * sizeof(u32);
-+	unmap_size = rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma, size);
++	unmap_size = rk_iommu_unmap_iova(rk_domain, pte_addr, pte_dma, size,
++					 iommu);
 +
 +	spin_unlock_irqrestore(&rk_domain->dt_lock, flags);
 +
@@ -38110,10 +38170,14 @@ index e5d86b717..b359fcf2c 100644
  static struct rk_iommu *rk_iommu_from_dev(struct device *dev)
  {
  	struct rk_iommudata *data = dev_iommu_priv_get(dev);
-@@ -858,12 +1265,28 @@ static void rk_iommu_disable(struct rk_iommu *iommu)
+@@ -856,7 +1361,23 @@ static void rk_iommu_disable(struct rk_iommu *iommu)
+ 	}
+ 	rk_iommu_disable_stall(iommu);
  	clk_bulk_disable(iommu->num_clocks, iommu->clocks);
- }
- 
++
++	iommu->iommu_enabled = false;
++}
++
 +int rockchip_iommu_disable(struct device *dev)
 +{
 +	struct rk_iommu *iommu;
@@ -38125,12 +38189,12 @@ index e5d86b717..b359fcf2c 100644
 +	rk_iommu_disable(iommu);
 +
 +	return 0;
-+}
+ }
 +EXPORT_SYMBOL(rockchip_iommu_disable);
-+
+ 
  /* Must be called with iommu powered on and attached */
  static int rk_iommu_enable(struct rk_iommu *iommu)
- {
+@@ -864,6 +1385,8 @@ static int rk_iommu_enable(struct rk_iommu *iommu)
  	struct iommu_domain *domain = iommu->domain;
  	struct rk_iommu_domain *rk_domain = to_rk_domain(domain);
  	int ret, i;
@@ -38139,7 +38203,7 @@ index e5d86b717..b359fcf2c 100644
  
  	ret = clk_bulk_enable(iommu->num_clocks, iommu->clocks);
  	if (ret)
-@@ -878,10 +1301,21 @@ static int rk_iommu_enable(struct rk_iommu *iommu)
+@@ -878,10 +1401,21 @@ static int rk_iommu_enable(struct rk_iommu *iommu)
  		goto out_disable_stall;
  
  	for (i = 0; i < iommu->num_mmu; i++) {
@@ -38163,7 +38227,14 @@ index e5d86b717..b359fcf2c 100644
  	}
  
  	ret = rk_iommu_enable_paging(iommu);
-@@ -893,6 +1327,18 @@ static int rk_iommu_enable(struct rk_iommu *iommu)
+@@ -890,9 +1424,37 @@ static int rk_iommu_enable(struct rk_iommu *iommu)
+ 	rk_iommu_disable_stall(iommu);
+ out_disable_clocks:
+ 	clk_bulk_disable(iommu->num_clocks, iommu->clocks);
++
++	if (!ret)
++		iommu->iommu_enabled = true;
++
  	return ret;
  }
  
@@ -38179,10 +38250,22 @@ index e5d86b717..b359fcf2c 100644
 +}
 +EXPORT_SYMBOL(rockchip_iommu_enable);
 +
++bool rockchip_iommu_is_enabled(struct device *dev)
++{
++	struct rk_iommu *iommu;
++
++	iommu = rk_iommu_from_dev(dev);
++	if (!iommu)
++		return false;
++
++	return iommu->iommu_enabled;
++}
++EXPORT_SYMBOL(rockchip_iommu_is_enabled);
++
  static void rk_iommu_detach_device(struct iommu_domain *domain,
  				   struct device *dev)
  {
-@@ -908,8 +1354,7 @@ static void rk_iommu_detach_device(struct iommu_domain *domain,
+@@ -908,8 +1470,7 @@ static void rk_iommu_detach_device(struct iommu_domain *domain,
  
  	dev_dbg(dev, "Detaching from iommu domain\n");
  
@@ -38192,7 +38275,7 @@ index e5d86b717..b359fcf2c 100644
  		return;
  
  	iommu->domain = NULL;
-@@ -944,19 +1389,20 @@ static int rk_iommu_attach_device(struct iommu_domain *domain,
+@@ -944,19 +1505,20 @@ static int rk_iommu_attach_device(struct iommu_domain *domain,
  
  	dev_dbg(dev, "Attaching to iommu domain\n");
  
@@ -38217,7 +38300,7 @@ index e5d86b717..b359fcf2c 100644
  	ret = pm_runtime_get_if_in_use(iommu->dev);
  	if (!ret || WARN_ON_ONCE(ret < 0))
  		return 0;
-@@ -1054,6 +1500,35 @@ static void rk_iommu_domain_free(struct iommu_domain *domain)
+@@ -1054,6 +1616,35 @@ static void rk_iommu_domain_free(struct iommu_domain *domain)
  	kfree(rk_domain);
  }
  
@@ -38253,7 +38336,7 @@ index e5d86b717..b359fcf2c 100644
  static struct iommu_device *rk_iommu_probe_device(struct device *dev)
  {
  	struct rk_iommudata *data;
-@@ -1068,6 +1543,16 @@ static struct iommu_device *rk_iommu_probe_device(struct device *dev)
+@@ -1068,6 +1659,16 @@ static struct iommu_device *rk_iommu_probe_device(struct device *dev)
  	data->link = device_link_add(dev, iommu->dev,
  				     DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
  
@@ -38270,7 +38353,7 @@ index e5d86b717..b359fcf2c 100644
  	return &iommu->iommu;
  }
  
-@@ -1087,6 +1572,14 @@ static struct iommu_group *rk_iommu_device_group(struct device *dev)
+@@ -1087,6 +1688,14 @@ static struct iommu_group *rk_iommu_device_group(struct device *dev)
  	return iommu_group_ref_get(iommu->group);
  }
  
@@ -38285,7 +38368,7 @@ index e5d86b717..b359fcf2c 100644
  static int rk_iommu_of_xlate(struct device *dev,
  			     struct of_phandle_args *args)
  {
-@@ -1100,6 +1593,10 @@ static int rk_iommu_of_xlate(struct device *dev,
+@@ -1100,6 +1709,10 @@ static int rk_iommu_of_xlate(struct device *dev,
  	iommu_dev = of_find_device_by_node(args->np);
  
  	data->iommu = platform_get_drvdata(iommu_dev);
@@ -38296,7 +38379,7 @@ index e5d86b717..b359fcf2c 100644
  	dev_iommu_priv_set(dev, data);
  
  	platform_device_put(iommu_dev);
-@@ -1107,21 +1604,90 @@ static int rk_iommu_of_xlate(struct device *dev,
+@@ -1107,21 +1720,90 @@ static int rk_iommu_of_xlate(struct device *dev,
  	return 0;
  }
  
@@ -38344,11 +38427,11 @@ index e5d86b717..b359fcf2c 100644
  	.release_device = rk_iommu_release_device,
  	.iova_to_phys = rk_iommu_iova_to_phys,
 +	.is_attach_deferred = rk_iommu_is_attach_deferred,
- 	.device_group = rk_iommu_device_group,
- 	.pgsize_bitmap = RK_IOMMU_PGSIZE_BITMAP,
- 	.of_xlate = rk_iommu_of_xlate,
- };
- 
++	.device_group = rk_iommu_device_group,
++	.pgsize_bitmap = RK_IOMMU_PGSIZE_BITMAP,
++	.of_xlate = rk_iommu_of_xlate,
++};
++
 +static struct iommu_ops rk_iommu_ops_v2 = {
 +	.domain_alloc = rk_iommu_domain_alloc,
 +	.domain_free = rk_iommu_domain_free_v2,
@@ -38361,11 +38444,11 @@ index e5d86b717..b359fcf2c 100644
 +	.release_device = rk_iommu_release_device,
 +	.iova_to_phys = rk_iommu_iova_to_phys_v2,
 +	.is_attach_deferred = rk_iommu_is_attach_deferred,
-+	.device_group = rk_iommu_device_group,
-+	.pgsize_bitmap = RK_IOMMU_PGSIZE_BITMAP,
-+	.of_xlate = rk_iommu_of_xlate,
-+};
-+
+ 	.device_group = rk_iommu_device_group,
+ 	.pgsize_bitmap = RK_IOMMU_PGSIZE_BITMAP,
+ 	.of_xlate = rk_iommu_of_xlate,
+ };
+ 
 +static const struct rockchip_iommu_data iommu_data_v1 = {
 +	.version = 0x1,
 +};
@@ -38388,7 +38471,7 @@ index e5d86b717..b359fcf2c 100644
  static int rk_iommu_probe(struct platform_device *pdev)
  {
  	struct device *dev = &pdev->dev;
-@@ -1129,11 +1695,21 @@ static int rk_iommu_probe(struct platform_device *pdev)
+@@ -1129,11 +1811,21 @@ static int rk_iommu_probe(struct platform_device *pdev)
  	struct resource *res;
  	int num_res = pdev->num_resources;
  	int err, i;
@@ -38410,7 +38493,7 @@ index e5d86b717..b359fcf2c 100644
  	platform_set_drvdata(pdev, iommu);
  	iommu->dev = dev;
  	iommu->num_mmu = 0;
-@@ -1161,26 +1737,30 @@ static int rk_iommu_probe(struct platform_device *pdev)
+@@ -1161,26 +1853,34 @@ static int rk_iommu_probe(struct platform_device *pdev)
  
  	iommu->reset_disabled = device_property_read_bool(dev,
  					"rockchip,disable-mmu-reset");
@@ -38429,11 +38512,15 @@ index e5d86b717..b359fcf2c 100644
 +					"rockchip,disable-device-link-resume");
 +	iommu->shootdown_entire = device_property_read_bool(dev,
 +					"rockchip,shootdown-entire");
-+
++	iommu->master_handle_irq = device_property_read_bool(dev,
++					"rockchip,master-handle-irq");
 +	if (of_machine_is_compatible("rockchip,rv1126") ||
 +	    of_machine_is_compatible("rockchip,rv1109"))
 +		iommu->cmd_retry = device_property_read_bool(dev,
 +					"rockchip,enable-cmd-retry");
++
++	iommu->need_res_map = device_property_read_bool(dev,
++					"rockchip,reserve-map");
  
  	/*
  	 * iommu clocks should be present for all new devices and devicetrees
@@ -38452,7 +38539,7 @@ index e5d86b717..b359fcf2c 100644
  
  	err = clk_bulk_prepare(iommu->num_clocks, iommu->clocks);
  	if (err)
-@@ -1196,7 +1776,10 @@ static int rk_iommu_probe(struct platform_device *pdev)
+@@ -1196,7 +1896,10 @@ static int rk_iommu_probe(struct platform_device *pdev)
  	if (err)
  		goto err_put_group;
  
@@ -38464,7 +38551,7 @@ index e5d86b717..b359fcf2c 100644
  	iommu_device_set_fwnode(&iommu->iommu, &dev->of_node->fwnode);
  
  	err = iommu_device_register(&iommu->iommu);
-@@ -1211,10 +1794,16 @@ static int rk_iommu_probe(struct platform_device *pdev)
+@@ -1211,10 +1914,16 @@ static int rk_iommu_probe(struct platform_device *pdev)
  	if (!dma_dev)
  		dma_dev = &pdev->dev;
  
@@ -38482,15 +38569,21 @@ index e5d86b717..b359fcf2c 100644
  	for (i = 0; i < iommu->num_irq; i++) {
  		int irq = platform_get_irq(pdev, i);
  
-@@ -1229,6 +1818,7 @@ static int rk_iommu_probe(struct platform_device *pdev)
- 		}
+@@ -1229,6 +1938,13 @@ static int rk_iommu_probe(struct platform_device *pdev)
+ 			goto err_pm_disable;
  	}
  
 +skip_request_irq:
++	if (!res_page && iommu->need_res_map) {
++		res_page = __pa_symbol(reserve_range);
++
++		pr_info("%s,%d, res_page = 0x%pa\n", __func__, __LINE__, &res_page);
++	}
++
  	return 0;
- err_remove_sysfs:
- 	iommu_device_sysfs_remove(&iommu->iommu);
-@@ -1260,6 +1850,9 @@ static int __maybe_unused rk_iommu_suspend(struct device *dev)
+ err_pm_disable:
+ 	pm_runtime_disable(dev);
+@@ -1262,6 +1978,9 @@ static int __maybe_unused rk_iommu_suspend(struct device *dev)
  	if (!iommu->domain)
  		return 0;
  
@@ -38500,7 +38593,7 @@ index e5d86b717..b359fcf2c 100644
  	rk_iommu_disable(iommu);
  	return 0;
  }
-@@ -1271,6 +1864,9 @@ static int __maybe_unused rk_iommu_resume(struct device *dev)
+@@ -1273,6 +1992,9 @@ static int __maybe_unused rk_iommu_resume(struct device *dev)
  	if (!iommu->domain)
  		return 0;
  
@@ -38510,7 +38603,7 @@ index e5d86b717..b359fcf2c 100644
  	return rk_iommu_enable(iommu);
  }
  
-@@ -1280,11 +1876,6 @@ static const struct dev_pm_ops rk_iommu_pm_ops = {
+@@ -1282,11 +2004,6 @@ static const struct dev_pm_ops rk_iommu_pm_ops = {
  				pm_runtime_force_resume)
  };
  
@@ -38522,7 +38615,7 @@ index e5d86b717..b359fcf2c 100644
  static struct platform_driver rk_iommu_driver = {
  	.probe = rk_iommu_probe,
  	.shutdown = rk_iommu_shutdown,
-@@ -1301,3 +1892,8 @@ static int __init rk_iommu_init(void)
+@@ -1303,3 +2020,8 @@ static int __init rk_iommu_init(void)
  	return platform_driver_register(&rk_iommu_driver);
  }
  subsys_initcall(rk_iommu_init);
@@ -38532,10 +38625,108 @@ index e5d86b717..b359fcf2c 100644
 +MODULE_ALIAS("platform:rockchip-iommu");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/irqchip/irq-gic-v3-its.c b/drivers/irqchip/irq-gic-v3-its.c
-index d8cb5bcd6..ed18e141e 100644
+index 03cbd3c0c..d3c6732c7 100644
 --- a/drivers/irqchip/irq-gic-v3-its.c
 +++ b/drivers/irqchip/irq-gic-v3-its.c
-@@ -2167,6 +2167,8 @@ static struct page *its_allocate_prop_table(gfp_t gfp_flags)
+@@ -267,23 +267,13 @@ static void vpe_to_cpuid_unlock(struct its_vpe *vpe, unsigned long flags)
+ 	raw_spin_unlock_irqrestore(&vpe->vpe_lock, flags);
+ }
+ 
+-static struct irq_chip its_vpe_irq_chip;
+-
+ static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
+ {
+-	struct its_vpe *vpe = NULL;
++	struct its_vlpi_map *map = get_vlpi_map(d);
+ 	int cpu;
+ 
+-	if (d->chip == &its_vpe_irq_chip) {
+-		vpe = irq_data_get_irq_chip_data(d);
+-	} else {
+-		struct its_vlpi_map *map = get_vlpi_map(d);
+-		if (map)
+-			vpe = map->vpe;
+-	}
+-
+-	if (vpe) {
+-		cpu = vpe_to_cpuid_lock(vpe, flags);
++	if (map) {
++		cpu = vpe_to_cpuid_lock(map->vpe, flags);
+ 	} else {
+ 		/* Physical LPIs are already locked via the irq_desc lock */
+ 		struct its_device *its_dev = irq_data_get_irq_chip_data(d);
+@@ -297,18 +287,10 @@ static int irq_to_cpuid_lock(struct irq_data *d, unsigned long *flags)
+ 
+ static void irq_to_cpuid_unlock(struct irq_data *d, unsigned long flags)
+ {
+-	struct its_vpe *vpe = NULL;
+-
+-	if (d->chip == &its_vpe_irq_chip) {
+-		vpe = irq_data_get_irq_chip_data(d);
+-	} else {
+-		struct its_vlpi_map *map = get_vlpi_map(d);
+-		if (map)
+-			vpe = map->vpe;
+-	}
++	struct its_vlpi_map *map = get_vlpi_map(d);
+ 
+-	if (vpe)
+-		vpe_to_cpuid_unlock(vpe, flags);
++	if (map)
++		vpe_to_cpuid_unlock(map->vpe, flags);
+ }
+ 
+ static struct its_collection *valid_col(struct its_collection *col)
+@@ -1440,28 +1422,13 @@ static void wait_for_syncr(void __iomem *rdbase)
+ 		cpu_relax();
+ }
+ 
+-static void __direct_lpi_inv(struct irq_data *d, u64 val)
+-{
+-	void __iomem *rdbase;
+-	unsigned long flags;
+-	int cpu;
+-
+-	/* Target the redistributor this LPI is currently routed to */
+-	cpu = irq_to_cpuid_lock(d, &flags);
+-	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
+-
+-	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
+-	gic_write_lpir(val, rdbase + GICR_INVLPIR);
+-	wait_for_syncr(rdbase);
+-
+-	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
+-	irq_to_cpuid_unlock(d, flags);
+-}
+-
+ static void direct_lpi_inv(struct irq_data *d)
+ {
+ 	struct its_vlpi_map *map = get_vlpi_map(d);
++	void __iomem *rdbase;
++	unsigned long flags;
+ 	u64 val;
++	int cpu;
+ 
+ 	if (map) {
+ 		struct its_device *its_dev = irq_data_get_irq_chip_data(d);
+@@ -1475,7 +1442,15 @@ static void direct_lpi_inv(struct irq_data *d)
+ 		val = d->hwirq;
+ 	}
+ 
+-	__direct_lpi_inv(d, val);
++	/* Target the redistributor this LPI is currently routed to */
++	cpu = irq_to_cpuid_lock(d, &flags);
++	raw_spin_lock(&gic_data_rdist_cpu(cpu)->rd_lock);
++	rdbase = per_cpu_ptr(gic_rdists->rdist, cpu)->rd_base;
++	gic_write_lpir(val, rdbase + GICR_INVLPIR);
++
++	wait_for_syncr(rdbase);
++	raw_spin_unlock(&gic_data_rdist_cpu(cpu)->rd_lock);
++	irq_to_cpuid_unlock(d, flags);
+ }
+ 
+ static void lpi_update_config(struct irq_data *d, u8 clr, u8 set)
+@@ -2192,6 +2167,8 @@ static struct page *its_allocate_prop_table(gfp_t gfp_flags)
  {
  	struct page *prop_page;
  
@@ -38544,7 +38735,7 @@ index d8cb5bcd6..ed18e141e 100644
  	prop_page = alloc_pages(gfp_flags, get_order(LPI_PROPBASE_SZ));
  	if (!prop_page)
  		return NULL;
-@@ -2290,6 +2292,7 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
+@@ -2315,6 +2292,7 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
  	u32 alloc_pages, psz;
  	struct page *page;
  	void *base;
@@ -38552,7 +38743,7 @@ index d8cb5bcd6..ed18e141e 100644
  
  	psz = baser->psz;
  	alloc_pages = (PAGE_ORDER_TO_SIZE(order) / psz);
-@@ -2301,7 +2304,10 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
+@@ -2326,7 +2304,10 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
  		order = get_order(GITS_BASER_PAGES_MAX * psz);
  	}
  
@@ -38564,7 +38755,7 @@ index d8cb5bcd6..ed18e141e 100644
  	if (!page)
  		return -ENOMEM;
  
-@@ -2348,6 +2354,16 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
+@@ -2373,6 +2354,16 @@ static int its_setup_baser(struct its_node *its, struct its_baser *baser,
  	its_write_baser(its, baser, val);
  	tmp = baser->val;
  
@@ -38581,7 +38772,7 @@ index d8cb5bcd6..ed18e141e 100644
  	if ((val ^ tmp) & GITS_BASER_SHAREABILITY_MASK) {
  		/*
  		 * Shareability didn't stick. Just use
-@@ -2930,6 +2946,8 @@ static struct page *its_allocate_pending_table(gfp_t gfp_flags)
+@@ -2955,6 +2946,8 @@ static struct page *its_allocate_pending_table(gfp_t gfp_flags)
  {
  	struct page *pend_page;
  
@@ -38590,7 +38781,7 @@ index d8cb5bcd6..ed18e141e 100644
  	pend_page = alloc_pages(gfp_flags | __GFP_ZERO,
  				get_order(LPI_PENDBASE_SZ));
  	if (!pend_page)
-@@ -3077,6 +3095,12 @@ static void its_cpu_init_lpis(void)
+@@ -3102,6 +3095,12 @@ static void its_cpu_init_lpis(void)
  	gicr_write_propbaser(val, rbase + GICR_PROPBASER);
  	tmp = gicr_read_propbaser(rbase + GICR_PROPBASER);
  
@@ -38603,7 +38794,7 @@ index d8cb5bcd6..ed18e141e 100644
  	if ((tmp ^ val) & GICR_PROPBASER_SHAREABILITY_MASK) {
  		if (!(tmp & GICR_PROPBASER_SHAREABILITY_MASK)) {
  			/*
-@@ -3101,6 +3125,12 @@ static void its_cpu_init_lpis(void)
+@@ -3126,6 +3125,12 @@ static void its_cpu_init_lpis(void)
  	gicr_write_pendbaser(val, rbase + GICR_PENDBASER);
  	tmp = gicr_read_pendbaser(rbase + GICR_PENDBASER);
  
@@ -38616,7 +38807,7 @@ index d8cb5bcd6..ed18e141e 100644
  	if (!(tmp & GICR_PENDBASER_SHAREABILITY_MASK)) {
  		/*
  		 * The HW reports non-shareable, we must remove the
-@@ -3263,7 +3293,11 @@ static bool its_alloc_table_entry(struct its_node *its,
+@@ -3288,7 +3293,11 @@ static bool its_alloc_table_entry(struct its_node *its,
  
  	/* Allocate memory for 2nd level table */
  	if (!table[idx]) {
@@ -38629,7 +38820,7 @@ index d8cb5bcd6..ed18e141e 100644
  					get_order(baser->psz));
  		if (!page)
  			return false;
-@@ -3352,6 +3386,7 @@ static struct its_device *its_create_device(struct its_node *its, u32 dev_id,
+@@ -3377,6 +3386,7 @@ static struct its_device *its_create_device(struct its_node *its, u32 dev_id,
  	int nr_lpis;
  	int nr_ites;
  	int sz;
@@ -38637,7 +38828,7 @@ index d8cb5bcd6..ed18e141e 100644
  
  	if (!its_alloc_device_table(its, dev_id))
  		return NULL;
-@@ -3367,7 +3402,10 @@ static struct its_device *its_create_device(struct its_node *its, u32 dev_id,
+@@ -3392,7 +3402,10 @@ static struct its_device *its_create_device(struct its_node *its, u32 dev_id,
  	nr_ites = max(2, nvecs);
  	sz = nr_ites * (FIELD_GET(GITS_TYPER_ITT_ENTRY_SIZE, its->typer) + 1);
  	sz = max(sz, ITS_ITT_ALIGN) + ITS_ITT_ALIGN - 1;
@@ -38649,7 +38840,7 @@ index d8cb5bcd6..ed18e141e 100644
  	if (alloc_lpis) {
  		lpi_map = its_lpi_alloc(nvecs, &lpi_base, &nr_lpis);
  		if (lpi_map)
-@@ -3841,8 +3879,6 @@ static void its_vpe_schedule(struct its_vpe *vpe)
+@@ -3887,8 +3900,6 @@ static void its_vpe_schedule(struct its_vpe *vpe)
  	val |= vpe->idai ? GICR_VPENDBASER_IDAI : 0;
  	val |= GICR_VPENDBASER_Valid;
  	gicr_write_vpendbaser(val, vlpi_base + GICR_VPENDBASER);
@@ -38658,7 +38849,7 @@ index d8cb5bcd6..ed18e141e 100644
  }
  
  static void its_vpe_deschedule(struct its_vpe *vpe)
-@@ -3890,6 +3926,10 @@ static int its_vpe_set_vcpu_affinity(struct irq_data *d, void *vcpu_info)
+@@ -3936,6 +3947,10 @@ static int its_vpe_set_vcpu_affinity(struct irq_data *d, void *vcpu_info)
  		its_vpe_deschedule(vpe);
  		return 0;
  
@@ -38669,7 +38860,29 @@ index d8cb5bcd6..ed18e141e 100644
  	case INVALL_VPE:
  		its_vpe_invall(vpe);
  		return 0;
-@@ -4051,8 +4091,6 @@ static void its_vpe_4_1_schedule(struct its_vpe *vpe,
+@@ -3962,10 +3977,18 @@ static void its_vpe_send_inv(struct irq_data *d)
+ {
+ 	struct its_vpe *vpe = irq_data_get_irq_chip_data(d);
+ 
+-	if (gic_rdists->has_direct_lpi)
+-		__direct_lpi_inv(d, d->parent_data->hwirq);
+-	else
++	if (gic_rdists->has_direct_lpi) {
++		void __iomem *rdbase;
++
++		/* Target the redistributor this VPE is currently known on */
++		raw_spin_lock(&gic_data_rdist_cpu(vpe->col_idx)->rd_lock);
++		rdbase = per_cpu_ptr(gic_rdists->rdist, vpe->col_idx)->rd_base;
++		gic_write_lpir(d->parent_data->hwirq, rdbase + GICR_INVLPIR);
++		wait_for_syncr(rdbase);
++		raw_spin_unlock(&gic_data_rdist_cpu(vpe->col_idx)->rd_lock);
++	} else {
+ 		its_vpe_send_cmd(vpe, its_send_inv);
++	}
+ }
+ 
+ static void its_vpe_mask_irq(struct irq_data *d)
+@@ -4089,8 +4112,6 @@ static void its_vpe_4_1_schedule(struct its_vpe *vpe,
  	val |= FIELD_PREP(GICR_VPENDBASER_4_1_VPEID, vpe->vpe_id);
  
  	gicr_write_vpendbaser(val, vlpi_base + GICR_VPENDBASER);
@@ -38678,7 +38891,7 @@ index d8cb5bcd6..ed18e141e 100644
  }
  
  static void its_vpe_4_1_deschedule(struct its_vpe *vpe,
-@@ -4127,6 +4165,10 @@ static int its_vpe_4_1_set_vcpu_affinity(struct irq_data *d, void *vcpu_info)
+@@ -4165,6 +4186,10 @@ static int its_vpe_4_1_set_vcpu_affinity(struct irq_data *d, void *vcpu_info)
  		its_vpe_4_1_deschedule(vpe, info);
  		return 0;
  
@@ -38689,16 +38902,23 @@ index d8cb5bcd6..ed18e141e 100644
  	case INVALL_VPE:
  		its_vpe_4_1_invall(vpe);
  		return 0;
-@@ -4489,7 +4531,7 @@ static int its_vpe_irq_domain_alloc(struct irq_domain *domain, unsigned int virq
+@@ -4524,8 +4549,13 @@ static int its_vpe_irq_domain_alloc(struct irq_domain *domain, unsigned int virq
+ 		set_bit(i, bitmap);
+ 	}
  
- 	if (err) {
- 		if (i > 0)
--			its_vpe_irq_domain_free(domain, virq, i);
+-	if (err)
+-		its_vpe_irq_domain_free(domain, virq, i);
++	if (err) {
++		if (i > 0)
 +			its_vpe_irq_domain_free(domain, virq, i - 1);
++
++		its_lpi_free(bitmap, base, nr_ids);
++		its_free_prop_table(vprop_page);
++	}
  
- 		its_lpi_free(bitmap, base, nr_ids);
- 		its_free_prop_table(vprop_page);
-@@ -4945,6 +4987,7 @@ static int __init its_probe_one(struct resource *res,
+ 	return err;
+ }
+@@ -4977,6 +5007,7 @@ static int __init its_probe_one(struct resource *res,
  	u64 baser, tmp, typer;
  	struct page *page;
  	int err;
@@ -38706,7 +38926,7 @@ index d8cb5bcd6..ed18e141e 100644
  
  	its_base = ioremap(res->start, SZ_64K);
  	if (!its_base) {
-@@ -5013,7 +5056,10 @@ static int __init its_probe_one(struct resource *res,
+@@ -5045,7 +5076,10 @@ static int __init its_probe_one(struct resource *res,
  
  	its->numa_node = numa_node;
  
@@ -38718,7 +38938,7 @@ index d8cb5bcd6..ed18e141e 100644
  				get_order(ITS_CMD_QUEUE_SZ));
  	if (!page) {
  		err = -ENOMEM;
-@@ -5044,6 +5090,12 @@ static int __init its_probe_one(struct resource *res,
+@@ -5076,6 +5110,12 @@ static int __init its_probe_one(struct resource *res,
  	gits_write_cbaser(baser, its->base + GITS_CBASER);
  	tmp = gits_read_cbaser(its->base + GITS_CBASER);
  
@@ -38732,7 +38952,7 @@ index d8cb5bcd6..ed18e141e 100644
  		if (!(tmp & GITS_CBASER_SHAREABILITY_MASK)) {
  			/*
 diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
-index 4c8f18f0c..bafdbb18e 100644
+index c1f8c1be8..e3a9b27e0 100644
 --- a/drivers/irqchip/irq-gic-v3.c
 +++ b/drivers/irqchip/irq-gic-v3.c
 @@ -18,6 +18,8 @@
@@ -38744,7 +38964,7 @@ index 4c8f18f0c..bafdbb18e 100644
  
  #include <linux/irqchip.h>
  #include <linux/irqchip/arm-gic-common.h>
-@@ -42,20 +44,7 @@ struct redist_region {
+@@ -43,20 +45,7 @@ struct redist_region {
  	void __iomem		*redist_base;
  	phys_addr_t		phys_base;
  	bool			single_redist;
@@ -38765,7 +38985,7 @@ index 4c8f18f0c..bafdbb18e 100644
  };
  
  static struct gic_chip_data gic_data __read_mostly;
-@@ -725,6 +714,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
+@@ -726,6 +715,7 @@ static asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs
  
  	if (handle_domain_irq(gic_data.domain, irqnr, regs)) {
  		WARN_ONCE(true, "Unexpected interrupt received!\n");
@@ -38773,7 +38993,7 @@ index 4c8f18f0c..bafdbb18e 100644
  		gic_deactivate_unhandled(irqnr);
  	}
  }
-@@ -915,22 +905,6 @@ static int __gic_update_rdist_properties(struct redist_region *region,
+@@ -916,22 +906,6 @@ static int __gic_update_rdist_properties(struct redist_region *region,
  {
  	u64 typer = gic_read_typer(ptr + GICR_TYPER);
  
@@ -38796,7 +39016,7 @@ index 4c8f18f0c..bafdbb18e 100644
  	gic_data.rdists.has_vlpis &= !!(typer & GICR_TYPER_VLPIS);
  
  	/* RVPEID implies some form of DirectLPI, no matter what the doc says... :-/ */
-@@ -1324,6 +1298,22 @@ static void gic_cpu_pm_init(void)
+@@ -1325,6 +1299,22 @@ static void gic_cpu_pm_init(void)
  #else
  static inline void gic_cpu_pm_init(void) { }
  #endif /* CONFIG_CPU_PM */
@@ -38819,7 +39039,7 @@ index 4c8f18f0c..bafdbb18e 100644
  
  static struct irq_chip gic_chip = {
  	.name			= "GICv3",
-@@ -1787,6 +1777,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
+@@ -1807,6 +1797,7 @@ static int __init gic_init_bases(void __iomem *dist_base,
  	gic_cpu_init();
  	gic_smp_init();
  	gic_cpu_pm_init();
@@ -38905,7 +39125,7 @@ index 62b6cdc8c..df76a5ca5 100644
  
  obj-$(CONFIG_VIDEO_AM437X_VPFE)		+= am437x/
 diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-index 282f3d238..5f3f90123 100644
+index c03e7f3e7..b3a568fdb 100644
 --- a/drivers/media/usb/uvc/uvc_driver.c
 +++ b/drivers/media/usb/uvc/uvc_driver.c
 @@ -12,6 +12,7 @@
@@ -38916,7 +39136,7 @@ index 282f3d238..5f3f90123 100644
  #include <linux/videodev2.h>
  #include <linux/vmalloc.h>
  #include <linux/wait.h>
-@@ -2341,7 +2342,11 @@ static int uvc_probe(struct usb_interface *intf,
+@@ -2346,7 +2347,11 @@ static int uvc_probe(struct usb_interface *intf,
  	}
  
  	uvc_trace(UVC_TRACE_PROBE, "UVC device initialized.\n");
@@ -40231,7 +40451,7 @@ index d109b9f14..fd755d98a 100644
  MODULE_LICENSE("GPL");
  MODULE_AUTHOR("Chris Zhong <zyw@rock-chips.com>");
 diff --git a/drivers/mmc/core/block.c b/drivers/mmc/core/block.c
-index 6622e3262..99cf93f58 100644
+index 2c9f157ac..b5419c9ea 100644
 --- a/drivers/mmc/core/block.c
 +++ b/drivers/mmc/core/block.c
 @@ -47,10 +47,13 @@
@@ -40248,15 +40468,15 @@ index 6622e3262..99cf93f58 100644
  #include "host.h"
  #include "bus.h"
  #include "mmc_ops.h"
-@@ -541,7 +544,6 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
+@@ -556,7 +559,6 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
  		return mmc_sanitize(card);
  
  	mmc_wait_for_req(card->host, &mrq);
 -	memcpy(&idata->ic.response, cmd.resp, sizeof(cmd.resp));
  
- 	if (cmd.error) {
- 		dev_err(mmc_dev(card->host), "%s: cmd error %d\n",
-@@ -591,6 +593,8 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
+ 	if (prev_idata) {
+ 		memcpy(&prev_idata->ic.response, sbc.resp, sizeof(sbc.resp));
+@@ -615,6 +617,8 @@ static int __mmc_blk_ioctl_cmd(struct mmc_card *card, struct mmc_blk_data *md,
  	if (idata->ic.postsleep_min_us)
  		usleep_range(idata->ic.postsleep_min_us, idata->ic.postsleep_max_us);
  
@@ -40265,7 +40485,7 @@ index 6622e3262..99cf93f58 100644
  	if (idata->rpmb || (cmd.flags & MMC_RSP_R1B) == MMC_RSP_R1B) {
  		/*
  		 * Ensure RPMB/R1B command has completed by polling CMD13
-@@ -961,6 +965,11 @@ static int mmc_blk_reset(struct mmc_blk_data *md, struct mmc_host *host,
+@@ -989,6 +993,11 @@ static int mmc_blk_reset(struct mmc_blk_data *md, struct mmc_host *host,
  		struct mmc_blk_data *main_md =
  			dev_get_drvdata(&host->card->dev);
  		int part_err;
@@ -40277,7 +40497,7 @@ index 6622e3262..99cf93f58 100644
  
  		main_md->part_curr = main_md->part_type;
  		part_err = mmc_blk_part_switch(host->card, md->part_type);
-@@ -1271,6 +1280,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
+@@ -1316,6 +1325,8 @@ static void mmc_blk_data_prep(struct mmc_queue *mq, struct mmc_queue_req *mqrq,
  
  	memset(brq, 0, sizeof(struct mmc_blk_request));
  
@@ -40286,7 +40506,7 @@ index 6622e3262..99cf93f58 100644
  	brq->mrq.data = &brq->data;
  	brq->mrq.tag = req->tag;
  
-@@ -1804,6 +1815,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
+@@ -1851,6 +1862,7 @@ static void mmc_blk_mq_rw_recovery(struct mmc_queue *mq, struct request *req)
  	    err && mmc_blk_reset(md, card->host, type)) {
  		pr_err("%s: recovery failed!\n", req->rq_disk->disk_name);
  		mqrq->retries = MMC_NO_RETRIES;
@@ -40294,7 +40514,7 @@ index 6622e3262..99cf93f58 100644
  		return;
  	}
  
-@@ -2897,6 +2909,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
+@@ -2947,6 +2959,9 @@ static void mmc_blk_remove_debugfs(struct mmc_card *card,
  
  #endif /* CONFIG_DEBUG_FS */
  
@@ -40304,7 +40524,7 @@ index 6622e3262..99cf93f58 100644
  static int mmc_blk_probe(struct mmc_card *card)
  {
  	struct mmc_blk_data *md, *part_md;
-@@ -2932,6 +2947,11 @@ static int mmc_blk_probe(struct mmc_card *card)
+@@ -2982,6 +2997,11 @@ static int mmc_blk_probe(struct mmc_card *card)
  
  	dev_set_drvdata(&card->dev, md);
  
@@ -40316,7 +40536,7 @@ index 6622e3262..99cf93f58 100644
  	if (mmc_add_disk(md))
  		goto out;
  
-@@ -2968,6 +2988,12 @@ static void mmc_blk_remove(struct mmc_card *card)
+@@ -3018,6 +3038,12 @@ static void mmc_blk_remove(struct mmc_card *card)
  	struct mmc_blk_data *md = dev_get_drvdata(&card->dev);
  
  	mmc_blk_remove_debugfs(card, md);
@@ -40341,7 +40561,7 @@ index 31153f656..0ce5d97d4 100644
 +
  #endif
 diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 8f2465394..34b406fd7 100644
+index d5ca59bd1..5c80a496b 100644
 --- a/drivers/mmc/core/core.c
 +++ b/drivers/mmc/core/core.c
 @@ -37,6 +37,7 @@
@@ -40361,7 +40581,7 @@ index 8f2465394..34b406fd7 100644
  /*
   * Enabling software CRCs on the data blocks can be a significant (30%)
   * performance cost, and for other reasons may not always be desired.
-@@ -916,6 +915,7 @@ void mmc_set_clock(struct mmc_host *host, unsigned int hz)
+@@ -921,6 +920,7 @@ void mmc_set_clock(struct mmc_host *host, unsigned int hz)
  	host->ios.clock = hz;
  	mmc_set_ios(host);
  }
@@ -40369,7 +40589,7 @@ index 8f2465394..34b406fd7 100644
  
  int mmc_execute_tuning(struct mmc_card *card)
  {
-@@ -995,7 +995,10 @@ void mmc_set_initial_state(struct mmc_host *host)
+@@ -1000,7 +1000,10 @@ void mmc_set_initial_state(struct mmc_host *host)
  		host->ops->hs400_enhanced_strobe(host, &host->ios);
  
  	mmc_set_ios(host);
@@ -40380,7 +40600,7 @@ index 8f2465394..34b406fd7 100644
  
  /**
   * mmc_vdd_to_ocrbitnum - Convert a voltage to the OCR bit number
-@@ -1265,6 +1268,7 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
+@@ -1270,6 +1273,7 @@ void mmc_set_timing(struct mmc_host *host, unsigned int timing)
  	host->ios.timing = timing;
  	mmc_set_ios(host);
  }
@@ -40388,7 +40608,7 @@ index 8f2465394..34b406fd7 100644
  
  /*
   * Select appropriate driver type for host.
-@@ -2068,6 +2072,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
+@@ -2073,6 +2077,7 @@ int mmc_set_blocklen(struct mmc_card *card, unsigned int blocklen)
  }
  EXPORT_SYMBOL(mmc_set_blocklen);
  
@@ -40396,7 +40616,7 @@ index 8f2465394..34b406fd7 100644
  static void mmc_hw_reset_for_init(struct mmc_host *host)
  {
  	mmc_pwrseq_reset(host);
-@@ -2076,6 +2081,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
+@@ -2081,6 +2086,7 @@ static void mmc_hw_reset_for_init(struct mmc_host *host)
  		return;
  	host->ops->hw_reset(host);
  }
@@ -40404,7 +40624,7 @@ index 8f2465394..34b406fd7 100644
  
  /**
   * mmc_hw_reset - reset the card in hardware
-@@ -2148,7 +2154,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
+@@ -2153,7 +2159,9 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
  	 * Some eMMCs (with VCCQ always on) may not be reset after power up, so
  	 * do a hardware reset if possible.
  	 */
@@ -40844,7 +41064,7 @@ index 87807ef01..6da97f26f 100644
  
  out:
 diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
-index ebad70e44..2715e5031 100644
+index b6bb7f7fa..8902a3047 100644
 --- a/drivers/mmc/core/mmc_ops.c
 +++ b/drivers/mmc/core/mmc_ops.c
 @@ -145,24 +145,26 @@ int mmc_go_idle(struct mmc_host *host)
@@ -40913,7 +41133,7 @@ index ebad70e44..2715e5031 100644
  	}
  
  	if (rocr && !mmc_host_is_spi(host))
-@@ -989,9 +1003,10 @@ int mmc_flush_cache(struct mmc_card *card)
+@@ -990,9 +1004,10 @@ int mmc_flush_cache(struct mmc_card *card)
  	int err = 0;
  
  	if (mmc_cache_enabled(card->host)) {
@@ -41046,10 +41266,10 @@ index 868b121ce..e7f2eebd8 100644
  	return err;
  }
 diff --git a/drivers/mmc/core/sdio.c b/drivers/mmc/core/sdio.c
-index 99a4ce68d..108b0f2ae 100644
+index 85c2947ed..c060e1d9a 100644
 --- a/drivers/mmc/core/sdio.c
 +++ b/drivers/mmc/core/sdio.c
-@@ -1308,3 +1308,49 @@ int mmc_attach_sdio(struct mmc_host *host)
+@@ -1314,3 +1314,49 @@ int mmc_attach_sdio(struct mmc_host *host)
  	return err;
  }
  
@@ -41100,7 +41320,7 @@ index 99a4ce68d..108b0f2ae 100644
 +}
 +EXPORT_SYMBOL(sdio_reset_comm);
 diff --git a/drivers/mmc/core/slot-gpio.c b/drivers/mmc/core/slot-gpio.c
-index 05e907451..298877a50 100644
+index 681653d09..27378e943 100644
 --- a/drivers/mmc/core/slot-gpio.c
 +++ b/drivers/mmc/core/slot-gpio.c
 @@ -14,6 +14,8 @@
@@ -41125,10 +41345,10 @@ index 05e907451..298877a50 100644
  	host->trigger_card_event = true;
  	mmc_detect_change(host, msecs_to_jiffies(ctx->cd_debounce_delay_ms));
 diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 82e1fbd6b..c73238181 100644
+index 8fe4a0fd6..0b35aa7d3 100644
 --- a/drivers/mmc/host/Kconfig
 +++ b/drivers/mmc/host/Kconfig
-@@ -544,6 +544,7 @@ config MMC_SDHCI_MSM
+@@ -545,6 +545,7 @@ config MMC_SDHCI_MSM
  	depends on MMC_SDHCI_PLTFM
  	select MMC_SDHCI_IO_ACCESSORS
  	select MMC_CQHCI
@@ -42282,7 +42502,7 @@ index b3365b34c..fad503820 100644
  	{ .compatible = "snps,dwmac-3.610"},
  	{ .compatible = "snps,dwmac-3.70a"},
 diff --git a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
-index e7fbc9b30..4a6f95200 100644
+index d0d47d91b..e6351d772 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/dwmac-rk.c
 @@ -11,6 +11,7 @@
@@ -43240,15 +43460,15 @@ index e7fbc9b30..4a6f95200 100644
  {
  	struct regulator *ldo = bsp_priv->regulator;
  	int ret;
-@@ -1226,6 +1955,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1223,6 +1952,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	of_get_phy_mode(dev->of_node, &bsp_priv->phy_iface);
  	bsp_priv->ops = ops;
 +	bsp_priv->bus_id = plat->bus_id;
  
- 	bsp_priv->regulator = devm_regulator_get_optional(dev, "phy");
+ 	bsp_priv->regulator = devm_regulator_get(dev, "phy");
  	if (IS_ERR(bsp_priv->regulator)) {
-@@ -1252,7 +1982,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1246,7 +1976,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	ret = of_property_read_u32(dev->of_node, "tx_delay", &value);
  	if (ret) {
@@ -43257,7 +43477,7 @@ index e7fbc9b30..4a6f95200 100644
  		dev_err(dev, "Can not read property: tx_delay.");
  		dev_err(dev, "set tx_delay to 0x%x\n",
  			bsp_priv->tx_delay);
-@@ -1263,7 +1993,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1257,7 +1987,7 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	ret = of_property_read_u32(dev->of_node, "rx_delay", &value);
  	if (ret) {
@@ -43266,7 +43486,7 @@ index e7fbc9b30..4a6f95200 100644
  		dev_err(dev, "Can not read property: rx_delay.");
  		dev_err(dev, "set rx_delay to 0x%x\n",
  			bsp_priv->rx_delay);
-@@ -1274,6 +2004,20 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
+@@ -1268,6 +1998,20 @@ static struct rk_priv_data *rk_gmac_setup(struct platform_device *pdev,
  
  	bsp_priv->grf = syscon_regmap_lookup_by_phandle(dev->of_node,
  							"rockchip,grf");
@@ -43287,7 +43507,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	if (plat->phy_node) {
  		bsp_priv->integrated_phy = of_property_read_bool(plat->phy_node,
-@@ -1307,30 +2051,45 @@ static int rk_gmac_powerup(struct rk_priv_data *bsp_priv)
+@@ -1301,30 +2045,45 @@ static int rk_gmac_powerup(struct rk_priv_data *bsp_priv)
  	switch (bsp_priv->phy_iface) {
  	case PHY_INTERFACE_MODE_RGMII:
  		dev_info(dev, "init for RGMII\n");
@@ -43340,7 +43560,7 @@ index e7fbc9b30..4a6f95200 100644
  	if (ret) {
  		gmac_clk_enable(bsp_priv, false);
  		return ret;
-@@ -1351,7 +2110,7 @@ static void rk_gmac_powerdown(struct rk_priv_data *gmac)
+@@ -1345,7 +2104,7 @@ static void rk_gmac_powerdown(struct rk_priv_data *gmac)
  
  	pm_runtime_put_sync(&gmac->pdev->dev);
  
@@ -43349,7 +43569,7 @@ index e7fbc9b30..4a6f95200 100644
  	gmac_clk_enable(gmac, false);
  }
  
-@@ -1365,16 +2124,96 @@ static void rk_fix_speed(void *priv, unsigned int speed)
+@@ -1359,16 +2118,96 @@ static void rk_fix_speed(void *priv, unsigned int speed)
  	case PHY_INTERFACE_MODE_RGMII_ID:
  	case PHY_INTERFACE_MODE_RGMII_RXID:
  	case PHY_INTERFACE_MODE_RGMII_TXID:
@@ -43448,7 +43668,7 @@ index e7fbc9b30..4a6f95200 100644
  static int rk_gmac_probe(struct platform_device *pdev)
  {
  	struct plat_stmmacenet_data *plat_dat;
-@@ -1396,8 +2235,11 @@ static int rk_gmac_probe(struct platform_device *pdev)
+@@ -1390,8 +2229,11 @@ static int rk_gmac_probe(struct platform_device *pdev)
  	if (IS_ERR(plat_dat))
  		return PTR_ERR(plat_dat);
  
@@ -43461,7 +43681,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	plat_dat->bsp_priv = rk_gmac_setup(pdev, plat_dat, data);
  	if (IS_ERR(plat_dat->bsp_priv)) {
-@@ -1417,6 +2259,10 @@ static int rk_gmac_probe(struct platform_device *pdev)
+@@ -1411,6 +2253,10 @@ static int rk_gmac_probe(struct platform_device *pdev)
  	if (ret)
  		goto err_gmac_powerdown;
  
@@ -43472,7 +43692,7 @@ index e7fbc9b30..4a6f95200 100644
  	return 0;
  
  err_gmac_powerdown:
-@@ -1433,6 +2279,7 @@ static int rk_gmac_remove(struct platform_device *pdev)
+@@ -1427,6 +2273,7 @@ static int rk_gmac_remove(struct platform_device *pdev)
  	int ret = stmmac_dvr_remove(&pdev->dev);
  
  	rk_gmac_powerdown(bsp_priv);
@@ -43480,7 +43700,7 @@ index e7fbc9b30..4a6f95200 100644
  
  	return ret;
  }
-@@ -1470,14 +2317,19 @@ static SIMPLE_DEV_PM_OPS(rk_gmac_pm_ops, rk_gmac_suspend, rk_gmac_resume);
+@@ -1464,14 +2311,19 @@ static SIMPLE_DEV_PM_OPS(rk_gmac_pm_ops, rk_gmac_suspend, rk_gmac_resume);
  
  static const struct of_device_id rk_gmac_dwmac_match[] = {
  	{ .compatible = "rockchip,px30-gmac",	.data = &px30_ops   },
@@ -43571,6 +43791,136 @@ index 71e50751e..e40e312c0 100644
  }
  
  void dwmac4_set_rx_tail_ptr(void __iomem *ioaddr, u32 tail_ptr, u32 chan)
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2.h b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2.h
+index 4426cb923..857706b8b 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2.h
++++ b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2.h
+@@ -223,6 +223,7 @@
+ #define XGMAC_PPSCMD_START		0x2
+ #define XGMAC_PPSCMD_STOP		0x5
+ #define XGMAC_PPSENx(x)			BIT(4 + (x) * 8)
++#define XGMAC_PPSEN0			BIT(4)
+ #define XGMAC_PPSx_TARGET_TIME_SEC(x)	(0x00000d80 + (x) * 0x10)
+ #define XGMAC_PPSx_TARGET_TIME_NSEC(x)	(0x00000d84 + (x) * 0x10)
+ #define XGMAC_TRGTBUSY0			BIT(31)
+diff --git a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
+index 9a5dc5fde..ad4df9bdd 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
++++ b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_core.c
+@@ -788,44 +788,6 @@ static const struct dwxgmac3_error_desc dwxgmac3_dma_errors[32]= {
+ 	{ false, "UNKNOWN", "Unknown Error" }, /* 31 */
+ };
+ 
+-#define DPP_RX_ERR "Read Rx Descriptor Parity checker Error"
+-#define DPP_TX_ERR "Read Tx Descriptor Parity checker Error"
+-
+-static const struct dwxgmac3_error_desc dwxgmac3_dma_dpp_errors[32] = {
+-	{ true, "TDPES0", DPP_TX_ERR },
+-	{ true, "TDPES1", DPP_TX_ERR },
+-	{ true, "TDPES2", DPP_TX_ERR },
+-	{ true, "TDPES3", DPP_TX_ERR },
+-	{ true, "TDPES4", DPP_TX_ERR },
+-	{ true, "TDPES5", DPP_TX_ERR },
+-	{ true, "TDPES6", DPP_TX_ERR },
+-	{ true, "TDPES7", DPP_TX_ERR },
+-	{ true, "TDPES8", DPP_TX_ERR },
+-	{ true, "TDPES9", DPP_TX_ERR },
+-	{ true, "TDPES10", DPP_TX_ERR },
+-	{ true, "TDPES11", DPP_TX_ERR },
+-	{ true, "TDPES12", DPP_TX_ERR },
+-	{ true, "TDPES13", DPP_TX_ERR },
+-	{ true, "TDPES14", DPP_TX_ERR },
+-	{ true, "TDPES15", DPP_TX_ERR },
+-	{ true, "RDPES0", DPP_RX_ERR },
+-	{ true, "RDPES1", DPP_RX_ERR },
+-	{ true, "RDPES2", DPP_RX_ERR },
+-	{ true, "RDPES3", DPP_RX_ERR },
+-	{ true, "RDPES4", DPP_RX_ERR },
+-	{ true, "RDPES5", DPP_RX_ERR },
+-	{ true, "RDPES6", DPP_RX_ERR },
+-	{ true, "RDPES7", DPP_RX_ERR },
+-	{ true, "RDPES8", DPP_RX_ERR },
+-	{ true, "RDPES9", DPP_RX_ERR },
+-	{ true, "RDPES10", DPP_RX_ERR },
+-	{ true, "RDPES11", DPP_RX_ERR },
+-	{ true, "RDPES12", DPP_RX_ERR },
+-	{ true, "RDPES13", DPP_RX_ERR },
+-	{ true, "RDPES14", DPP_RX_ERR },
+-	{ true, "RDPES15", DPP_RX_ERR },
+-};
+-
+ static void dwxgmac3_handle_dma_err(struct net_device *ndev,
+ 				    void __iomem *ioaddr, bool correctable,
+ 				    struct stmmac_safety_stats *stats)
+@@ -837,13 +799,6 @@ static void dwxgmac3_handle_dma_err(struct net_device *ndev,
+ 
+ 	dwxgmac3_log_error(ndev, value, correctable, "DMA",
+ 			   dwxgmac3_dma_errors, STAT_OFF(dma_errors), stats);
+-
+-	value = readl(ioaddr + XGMAC_DMA_DPP_INT_STATUS);
+-	writel(value, ioaddr + XGMAC_DMA_DPP_INT_STATUS);
+-
+-	dwxgmac3_log_error(ndev, value, false, "DMA_DPP",
+-			   dwxgmac3_dma_dpp_errors,
+-			   STAT_OFF(dma_dpp_errors), stats);
+ }
+ 
+ static int dwxgmac3_safety_feat_config(void __iomem *ioaddr, unsigned int asp)
+@@ -880,12 +835,6 @@ static int dwxgmac3_safety_feat_config(void __iomem *ioaddr, unsigned int asp)
+ 	value |= XGMAC_TMOUTEN; /* FSM Timeout Feature */
+ 	writel(value, ioaddr + XGMAC_MAC_FSM_CONTROL);
+ 
+-	/* 5. Enable Data Path Parity Protection */
+-	value = readl(ioaddr + XGMAC_MTL_DPP_CONTROL);
+-	/* already enabled by default, explicit enable it again */
+-	value &= ~XGMAC_DPP_DISABLE;
+-	writel(value, ioaddr + XGMAC_MTL_DPP_CONTROL);
+-
+ 	return 0;
+ }
+ 
+@@ -919,11 +868,7 @@ static int dwxgmac3_safety_feat_irq_status(struct net_device *ndev,
+ 		ret |= !corr;
+ 	}
+ 
+-	/* DMA_DPP_Interrupt_Status is indicated by MCSIS bit in
+-	 * DMA_Safety_Interrupt_Status, so we handle DMA Data Path
+-	 * Parity Errors here
+-	 */
+-	err = dma & (XGMAC_DEUIS | XGMAC_DECIS | XGMAC_MCSIS);
++	err = dma & (XGMAC_DEUIS | XGMAC_DECIS);
+ 	corr = dma & XGMAC_DECIS;
+ 	if (err) {
+ 		dwxgmac3_handle_dma_err(ndev, ioaddr, corr, stats);
+@@ -939,7 +884,6 @@ static const struct dwxgmac3_error {
+ 	{ dwxgmac3_mac_errors },
+ 	{ dwxgmac3_mtl_errors },
+ 	{ dwxgmac3_dma_errors },
+-	{ dwxgmac3_dma_dpp_errors },
+ };
+ 
+ static int dwxgmac3_safety_feat_dump(struct stmmac_safety_stats *stats,
+@@ -1188,19 +1132,7 @@ static int dwxgmac2_flex_pps_config(void __iomem *ioaddr, int index,
+ 
+ 	val |= XGMAC_PPSCMDx(index, XGMAC_PPSCMD_START);
+ 	val |= XGMAC_TRGTMODSELx(index, XGMAC_PPSCMD_START);
+-
+-	/* XGMAC Core has 4 PPS outputs at most.
+-	 *
+-	 * Prior XGMAC Core 3.20, Fixed mode or Flexible mode are selectable for
+-	 * PPS0 only via PPSEN0. PPS{1,2,3} are in Flexible mode by default,
+-	 * and can not be switched to Fixed mode, since PPSEN{1,2,3} are
+-	 * read-only reserved to 0.
+-	 * But we always set PPSEN{1,2,3} do not make things worse ;-)
+-	 *
+-	 * From XGMAC Core 3.20 and later, PPSEN{0,1,2,3} are writable and must
+-	 * be set, or the PPS outputs stay in Fixed PPS mode by default.
+-	 */
+-	val |= XGMAC_PPSENx(index);
++	val |= XGMAC_PPSEN0;
+ 
+ 	writel(cfg->start.tv_sec, ioaddr + XGMAC_PPSx_TARGET_TIME_SEC(index));
+ 
 diff --git a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_dma.c b/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_dma.c
 index a5583d706..77308c5c5 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/dwxgmac2_dma.c
