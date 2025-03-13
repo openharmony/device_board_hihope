@@ -43970,7 +43970,7 @@ index 8b7ec2457..b0b84244e 100644
  	stmmac_do_void_callback(__priv, dma, rx_watchdog, __args)
  #define stmmac_set_tx_ring_len(__priv, __args...) \
 diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
-index 1ec000d4c..376a88abb 100644
+index b1e7d5377..67cef742d 100644
 --- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 +++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
 @@ -236,7 +236,7 @@ static void stmmac_clk_csr_set(struct stmmac_priv *priv)
@@ -44029,7 +44029,7 @@ index 1ec000d4c..376a88abb 100644
  	return 0;
  }
  
-@@ -1345,13 +1356,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
+@@ -1346,13 +1357,17 @@ static int stmmac_init_rx_buffers(struct stmmac_priv *priv, struct dma_desc *p,
  {
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	struct stmmac_rx_buffer *buf = &rx_q->buf_pool[i];
@@ -44049,7 +44049,7 @@ index 1ec000d4c..376a88abb 100644
  		if (!buf->sec_page)
  			return -ENOMEM;
  
-@@ -2343,6 +2358,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
+@@ -2344,6 +2359,9 @@ static void stmmac_check_ether_addr(struct stmmac_priv *priv)
  {
  	if (!is_valid_ether_addr(priv->dev->dev_addr)) {
  		stmmac_get_umac_addr(priv, priv->hw, priv->dev->dev_addr, 0);
@@ -44059,7 +44059,7 @@ index 1ec000d4c..376a88abb 100644
  		if (!is_valid_ether_addr(priv->dev->dev_addr))
  			eth_hw_addr_random(priv->dev);
  		dev_info(priv->device, "device MAC address %pM\n",
-@@ -2694,7 +2712,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2695,7 +2713,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
  /**
   * stmmac_hw_setup - setup mac in a usable state.
   *  @dev : pointer to the device structure.
@@ -44068,7 +44068,7 @@ index 1ec000d4c..376a88abb 100644
   *  Description:
   *  this is the main function to setup the HW in a usable state because the
   *  dma engine is reset, the core registers are configured (e.g. AXI,
-@@ -2704,7 +2722,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
+@@ -2705,7 +2723,7 @@ static void stmmac_safety_feat_configuration(struct stmmac_priv *priv)
   *  0 on success and an appropriate (-)ve integer as defined in errno.h
   *  file on failure.
   */
@@ -44077,7 +44077,7 @@ index 1ec000d4c..376a88abb 100644
  {
  	struct stmmac_priv *priv = netdev_priv(dev);
  	u32 rx_cnt = priv->plat->rx_queues_to_use;
-@@ -2760,22 +2778,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
+@@ -2761,22 +2779,14 @@ static int stmmac_hw_setup(struct net_device *dev, bool ptp_register)
  
  	stmmac_mmc_setup(priv);
  
@@ -44106,7 +44106,7 @@ index 1ec000d4c..376a88abb 100644
  	priv->eee_tw_timer = STMMAC_DEFAULT_TWT_LS;
  
  	/* Convert the timer from msec to usec */
-@@ -3690,6 +3700,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3702,6 +3712,10 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  	struct stmmac_rx_queue *rx_q = &priv->rx_queue[queue];
  	int len, dirty = stmmac_rx_dirty(priv, queue);
  	unsigned int entry = rx_q->dirty_rx;
@@ -44117,7 +44117,7 @@ index 1ec000d4c..376a88abb 100644
  
  	len = DIV_ROUND_UP(priv->dma_buf_sz, PAGE_SIZE) * PAGE_SIZE;
  
-@@ -3704,13 +3718,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
+@@ -3716,13 +3730,13 @@ static inline void stmmac_rx_refill(struct stmmac_priv *priv, u32 queue)
  			p = rx_q->dma_rx + entry;
  
  		if (!buf->page) {
@@ -44133,7 +44133,7 @@ index 1ec000d4c..376a88abb 100644
  			if (!buf->sec_page)
  				break;
  
-@@ -5072,7 +5086,7 @@ int stmmac_dvr_probe(struct device *device,
+@@ -5088,7 +5102,7 @@ int stmmac_dvr_probe(struct device *device,
  		dev_info(priv->device, "TSO feature enabled\n");
  	}
  
@@ -44142,7 +44142,7 @@ index 1ec000d4c..376a88abb 100644
  		ndev->hw_features |= NETIF_F_GRO;
  		priv->sph = true;
  		dev_info(priv->device, "SPH feature enabled\n");
-@@ -5444,7 +5458,7 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5455,7 +5469,7 @@ static int __init stmmac_cmdline_opt(char *str)
  	char *opt;
  
  	if (!str || !*str)
@@ -44151,7 +44151,7 @@ index 1ec000d4c..376a88abb 100644
  	while ((opt = strsep(&str, ",")) != NULL) {
  		if (!strncmp(opt, "debug:", 6)) {
  			if (kstrtoint(opt + 6, 0, &debug))
-@@ -5475,11 +5489,11 @@ static int __init stmmac_cmdline_opt(char *str)
+@@ -5486,11 +5500,11 @@ static int __init stmmac_cmdline_opt(char *str)
  				goto err;
  		}
  	}
@@ -45978,18 +45978,49 @@ index 0d6df73bb..2645157f3 100644
  		regulator_disable(rockchip->vpcie12v);
  	if (!IS_ERR(rockchip->vpcie3v3))
 diff --git a/drivers/pci/controller/pcie-rockchip.c b/drivers/pci/controller/pcie-rockchip.c
-index 990a00e08..92cced721 100644
+index 1aa84035a..92cced721 100644
 --- a/drivers/pci/controller/pcie-rockchip.c
 +++ b/drivers/pci/controller/pcie-rockchip.c
-@@ -14,6 +14,7 @@
+@@ -14,7 +14,7 @@
  #include <linux/clk.h>
  #include <linux/delay.h>
  #include <linux/gpio/consumer.h>
+-#include <linux/iopoll.h>
 +#include <linux/module.h>
  #include <linux/of_pci.h>
  #include <linux/phy/phy.h>
  #include <linux/platform_device.h>
-@@ -421,3 +422,7 @@ void rockchip_pcie_cfg_configuration_accesses(
+@@ -154,12 +154,6 @@ int rockchip_pcie_parse_dt(struct rockchip_pcie *rockchip)
+ }
+ EXPORT_SYMBOL_GPL(rockchip_pcie_parse_dt);
+ 
+-#define rockchip_pcie_read_addr(addr) rockchip_pcie_read(rockchip, addr)
+-/* 100 ms max wait time for PHY PLLs to lock */
+-#define RK_PHY_PLL_LOCK_TIMEOUT_US 100000
+-/* Sleep should be less than 20ms */
+-#define RK_PHY_PLL_LOCK_SLEEP_US 1000
+-
+ int rockchip_pcie_init_port(struct rockchip_pcie *rockchip)
+ {
+ 	struct device *dev = rockchip->dev;
+@@ -261,16 +255,6 @@ int rockchip_pcie_init_port(struct rockchip_pcie *rockchip)
+ 		}
+ 	}
+ 
+-	err = readx_poll_timeout(rockchip_pcie_read_addr,
+-				 PCIE_CLIENT_SIDE_BAND_STATUS,
+-				 regs, !(regs & PCIE_CLIENT_PHY_ST),
+-				 RK_PHY_PLL_LOCK_SLEEP_US,
+-				 RK_PHY_PLL_LOCK_TIMEOUT_US);
+-	if (err) {
+-		dev_err(dev, "PHY PLLs could not lock, %d\n", err);
+-		goto err_power_off_phy;
+-	}
+-
+ 	/*
+ 	 * Please don't reorder the deassert sequence of the following
+ 	 * four reset pins.
+@@ -438,3 +422,7 @@ void rockchip_pcie_cfg_configuration_accesses(
  	rockchip_pcie_write(rockchip, 0x0, PCIE_CORE_OB_REGION_DESC1);
  }
  EXPORT_SYMBOL_GPL(rockchip_pcie_cfg_configuration_accesses);
@@ -45998,7 +46029,7 @@ index 990a00e08..92cced721 100644
 +MODULE_DESCRIPTION("Rockchip AXI PCIe driver");
 +MODULE_LICENSE("GPL v2");
 diff --git a/drivers/pci/controller/pcie-rockchip.h b/drivers/pci/controller/pcie-rockchip.h
-index c7d0178fc..e34d33264 100644
+index 76a5f96bf..44039bffc 100644
 --- a/drivers/pci/controller/pcie-rockchip.h
 +++ b/drivers/pci/controller/pcie-rockchip.h
 @@ -31,6 +31,7 @@
@@ -46009,15 +46040,15 @@ index c7d0178fc..e34d33264 100644
  #define   PCIE_CLIENT_ARI_ENABLE	  HIWORD_UPDATE_BIT(0x0008)
  #define   PCIE_CLIENT_CONF_LANE_NUM(x)	  HIWORD_UPDATE(0x0030, ENCODE_LANES(x))
  #define   PCIE_CLIENT_MODE_RC		  HIWORD_UPDATE_BIT(0x0040)
-@@ -39,6 +40,7 @@
- #define   PCIE_CLIENT_GEN_SEL_2		  HIWORD_UPDATE_BIT(0x0080)
+@@ -46,6 +47,7 @@
+ #define   PCIE_CLIENT_PHY_ST			BIT(12)
  #define PCIE_CLIENT_DEBUG_OUT_0		(PCIE_CLIENT_BASE + 0x3c)
  #define   PCIE_CLIENT_DEBUG_LTSSM_MASK		GENMASK(5, 0)
 +#define   PCIE_CLIENT_DEBUG_LTSSM_L0		0x10
  #define   PCIE_CLIENT_DEBUG_LTSSM_L1		0x18
  #define   PCIE_CLIENT_DEBUG_LTSSM_L2		0x19
  #define PCIE_CLIENT_BASIC_STATUS1	(PCIE_CLIENT_BASE + 0x48)
-@@ -74,7 +76,20 @@
+@@ -81,7 +83,20 @@
  	PCIE_CLIENT_INT_FATAL_ERR | PCIE_CLIENT_INT_DPA | \
  	PCIE_CLIENT_INT_HOT_RST | PCIE_CLIENT_INT_MSG | \
  	PCIE_CLIENT_INT_LEGACY_DONE | PCIE_CLIENT_INT_LEGACY | \
@@ -46039,7 +46070,7 @@ index c7d0178fc..e34d33264 100644
  
  #define PCIE_CORE_CTRL_MGMT_BASE	0x900000
  #define PCIE_CORE_CTRL			(PCIE_CORE_CTRL_MGMT_BASE + 0x000)
-@@ -185,6 +200,8 @@
+@@ -194,6 +209,8 @@
  #define PCIE_ECAM_ADDR(bus, dev, func, reg) \
  	  (PCIE_ECAM_BUS(bus) | PCIE_ECAM_DEV(dev) | \
  	   PCIE_ECAM_FUNC(func) | PCIE_ECAM_REG(reg))
@@ -46048,7 +46079,7 @@ index c7d0178fc..e34d33264 100644
  #define PCIE_LINK_IS_L2(x) \
  	(((x) & PCIE_CLIENT_DEBUG_LTSSM_MASK) == PCIE_CLIENT_DEBUG_LTSSM_L2)
  #define PCIE_LINK_UP(x) \
-@@ -275,6 +292,9 @@
+@@ -284,6 +301,9 @@
  		(((c) << ((b) * 8 + 5)) & \
  		 ROCKCHIP_PCIE_CORE_EP_FUNC_BAR_CFG_BAR_CTRL_MASK(b))
  
@@ -46058,7 +46089,7 @@ index c7d0178fc..e34d33264 100644
  struct rockchip_pcie {
  	void	__iomem *reg_base;		/* DT axi-base */
  	void	__iomem *apb_base;		/* DT apb-base */
-@@ -306,6 +326,15 @@ struct rockchip_pcie {
+@@ -315,6 +335,15 @@ struct rockchip_pcie {
  	phys_addr_t msg_bus_addr;
  	bool is_rc;
  	struct resource *mem_res;
@@ -46768,10 +46799,10 @@ index 8af8c6c5c..92462fee9 100644
  };
  MODULE_DEVICE_TABLE(of, inno_dsidphy_of_match);
 diff --git a/drivers/phy/rockchip/phy-rockchip-inno-usb2.c b/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
-index cab6a94bf..6b7d0c24a 100644
+index cab6a94bf..976d23163 100644
 --- a/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
 +++ b/drivers/phy/rockchip/phy-rockchip-inno-usb2.c
-@@ -22,15 +22,25 @@
+@@ -22,15 +22,23 @@
  #include <linux/of_platform.h>
  #include <linux/phy/phy.h>
  #include <linux/platform_device.h>
@@ -46779,11 +46810,9 @@ index cab6a94bf..6b7d0c24a 100644
  #include <linux/power_supply.h>
  #include <linux/regmap.h>
 +#include <linux/reset.h>
-+#include <linux/rockchip/cpu.h>
  #include <linux/mfd/syscon.h>
  #include <linux/usb/of.h>
  #include <linux/usb/otg.h>
-+#include <linux/usb/role.h>
 +#include <linux/usb/typec_mux.h>
 +#include <linux/wakelock.h>
  
@@ -46798,7 +46827,7 @@ index cab6a94bf..6b7d0c24a 100644
  
  enum rockchip_usb2phy_port_id {
  	USB2PHY_PORT_OTG,
-@@ -69,6 +79,7 @@ enum usb_chg_state {
+@@ -69,6 +77,7 @@ enum usb_chg_state {
  static const unsigned int rockchip_usb2phy_extcon_cable[] = {
  	EXTCON_USB,
  	EXTCON_USB_HOST,
@@ -46806,7 +46835,7 @@ index cab6a94bf..6b7d0c24a 100644
  	EXTCON_CHG_USB_SDP,
  	EXTCON_CHG_USB_CDP,
  	EXTCON_CHG_USB_DCP,
-@@ -95,7 +106,7 @@ struct usb2phy_reg {
+@@ -95,7 +104,7 @@ struct usb2phy_reg {
   * @rdm_pdwn_en: open dm pull down resistor.
   * @vdm_src_en: open dm voltage source.
   * @vdp_src_en: open dp voltage source.
@@ -46815,7 +46844,7 @@ index cab6a94bf..6b7d0c24a 100644
   */
  struct rockchip_chg_det_reg {
  	struct usb2phy_reg	cp_det;
-@@ -107,49 +118,109 @@ struct rockchip_chg_det_reg {
+@@ -107,41 +116,96 @@ struct rockchip_chg_det_reg {
  	struct usb2phy_reg	rdm_pdwn_en;
  	struct usb2phy_reg	vdm_src_en;
  	struct usb2phy_reg	vdp_src_en;
@@ -46911,22 +46940,18 @@ index cab6a94bf..6b7d0c24a 100644
 + * @phy_tuning: phy default parameters tuning.
 + * @vbus_detect: vbus voltage level detection function.
   * @clkout_ctl: keep on/turn off output clk of phy.
-+ * @ls_filter_con: set linestate filter time.
   * @port_cfgs: usb-phy port configurations.
-+ * @ls_filter_con: set linestate filter time.
   * @chg_det: charger detection registers.
-  */
+@@ -149,6 +213,8 @@ struct rockchip_usb2phy_port_cfg {
  struct rockchip_usb2phy_cfg {
  	unsigned int	reg;
  	unsigned int	num_ports;
 +	int (*phy_tuning)(struct rockchip_usb2phy *rphy);
 +	int (*vbus_detect)(struct rockchip_usb2phy *rphy, bool en);
  	struct usb2phy_reg	clkout_ctl;
-+	struct usb2phy_reg	ls_filter_con;
  	const struct rockchip_usb2phy_port_cfg	port_cfgs[USB2PHY_NUM_PORTS];
  	const struct rockchip_chg_det_reg	chg_det;
- };
-@@ -158,16 +229,32 @@ struct rockchip_usb2phy_cfg {
+@@ -158,16 +224,32 @@ struct rockchip_usb2phy_cfg {
   * struct rockchip_usb2phy_port - usb-phy port data.
   * @phy: generic phy.
   * @port_id: flag for otg port or host port.
@@ -46959,7 +46984,7 @@ index cab6a94bf..6b7d0c24a 100644
   * @port_cfg: port register configuration, assigned by driver data.
   * @event_nb: hold event notification callback.
   * @state: define OTG enumeration states before device reset.
-@@ -176,17 +263,32 @@ struct rockchip_usb2phy_cfg {
+@@ -176,17 +258,32 @@ struct rockchip_usb2phy_cfg {
  struct rockchip_usb2phy_port {
  	struct phy	*phy;
  	unsigned int	port_id;
@@ -46992,19 +47017,17 @@ index cab6a94bf..6b7d0c24a 100644
  	enum usb_otg_state	state;
  	enum usb_dr_mode	mode;
  };
-@@ -196,13 +298,23 @@ struct rockchip_usb2phy_port {
+@@ -196,6 +293,9 @@ struct rockchip_usb2phy_port {
   * @dev: pointer to device.
   * @grf: General Register Files regmap.
   * @usbgrf: USB General Register Files regmap.
-- * @clk: clock struct of phy input clk.
 + * @usbctrl_grf: USB Controller General Register Files regmap.
 + * *phy_base: the base address of USB PHY.
 + * @phy_reset: phy reset control.
-+ * @clks: array of phy input clocks.
+  * @clk: clock struct of phy input clk.
   * @clk480m: clock struct of phy output clk.
   * @clk480m_hw: clock struct of phy output clk management.
-+ * @num_clks: number of phy input clocks.
-  * @chg_state: states involved in USB charger detection.
+@@ -203,6 +303,12 @@ struct rockchip_usb2phy_port {
   * @chg_type: USB charger types.
   * @dcd_retries: The retry count used to track Data contact
   *		 detection process.
@@ -47017,18 +47040,16 @@ index cab6a94bf..6b7d0c24a 100644
   * @edev: extcon device for notification registration
   * @phy_cfg: phy register configuration, assigned by driver data.
   * @ports: phy port instance.
-@@ -211,12 +323,20 @@ struct rockchip_usb2phy {
+@@ -211,12 +317,19 @@ struct rockchip_usb2phy {
  	struct device	*dev;
  	struct regmap	*grf;
  	struct regmap	*usbgrf;
--	struct clk	*clk;
 +	struct regmap	*usbctrl_grf;
 +	void __iomem	*phy_base;
 +	struct reset_control	*phy_reset;
-+	struct clk_bulk_data	*clks;
+ 	struct clk	*clk;
  	struct clk	*clk480m;
  	struct clk_hw	clk480m_hw;
-+	int		num_clks;
  	enum usb_chg_state	chg_state;
  	enum power_supply_type	chg_type;
  	u8			dcd_retries;
@@ -47039,41 +47060,13 @@ index cab6a94bf..6b7d0c24a 100644
  	struct extcon_dev	*edev;
  	const struct rockchip_usb2phy_cfg	*phy_cfg;
  	struct rockchip_usb2phy_port	ports[USB2PHY_NUM_PORTS];
-@@ -254,6 +374,53 @@ static inline bool property_enabled(struct regmap *base,
+@@ -254,6 +367,25 @@ static inline bool property_enabled(struct regmap *base,
  	return tmp == reg->enable;
  }
  
-+static inline void phy_clear_bits(void __iomem *reg, u32 bits)
-+{
-+	u32 tmp = readl(reg);
-+
-+	tmp &= ~bits;
-+	writel(tmp, reg);
-+}
-+
-+static inline void phy_set_bits(void __iomem *reg, u32 bits)
-+{
-+	u32 tmp = readl(reg);
-+
-+	tmp |= bits;
-+	writel(tmp, reg);
-+}
-+
-+static inline void phy_update_bits(void __iomem *reg, u32 mask, u32 val)
-+{
-+	u32 tmp = readl(reg);
-+
-+	tmp &= ~mask;
-+	tmp |= val & mask;
-+	writel(tmp, reg);
-+}
-+
 +static int rockchip_usb2phy_reset(struct rockchip_usb2phy *rphy)
 +{
 +	int ret;
-+
-+	if (!rphy->phy_reset)
-+		return 0;
 +
 +	ret = reset_control_assert(rphy->phy_reset);
 +	if (ret)
@@ -47093,28 +47086,16 @@ index cab6a94bf..6b7d0c24a 100644
  static int rockchip_usb2phy_clk480m_prepare(struct clk_hw *hw)
  {
  	struct rockchip_usb2phy *rphy =
-@@ -319,7 +486,8 @@ static int
+@@ -319,7 +451,7 @@ static int
  rockchip_usb2phy_clk480m_register(struct rockchip_usb2phy *rphy)
  {
  	struct device_node *node = rphy->dev->of_node;
 -	struct clk_init_data init;
 +	struct clk_init_data init = {};
-+	struct clk *refclk = of_clk_get_by_name(node, "phyclk");
  	const char *clk_name;
  	int ret;
  
-@@ -330,8 +498,8 @@ rockchip_usb2phy_clk480m_register(struct rockchip_usb2phy *rphy)
- 	/* optional override of the clockname */
- 	of_property_read_string(node, "clock-output-names", &init.name);
- 
--	if (rphy->clk) {
--		clk_name = __clk_get_name(rphy->clk);
-+	if (!IS_ERR(refclk)) {
-+		clk_name = __clk_get_name(refclk);
- 		init.parent_names = &clk_name;
- 		init.num_parents = 1;
- 	} else {
-@@ -393,6 +561,8 @@ static int rockchip_usb2phy_extcon_register(struct rockchip_usb2phy *rphy)
+@@ -393,6 +525,8 @@ static int rockchip_usb2phy_extcon_register(struct rockchip_usb2phy *rphy)
  			dev_err(rphy->dev, "failed to register extcon device\n");
  			return ret;
  		}
@@ -47123,7 +47104,7 @@ index cab6a94bf..6b7d0c24a 100644
  	}
  
  	rphy->edev = edev;
-@@ -400,47 +570,235 @@ static int rockchip_usb2phy_extcon_register(struct rockchip_usb2phy *rphy)
+@@ -400,6 +534,177 @@ static int rockchip_usb2phy_extcon_register(struct rockchip_usb2phy *rphy)
  	return 0;
  }
  
@@ -47301,9 +47282,7 @@ index cab6a94bf..6b7d0c24a 100644
  static int rockchip_usb2phy_init(struct phy *phy)
  {
  	struct rockchip_usb2phy_port *rport = phy_get_drvdata(phy);
- 	struct rockchip_usb2phy *rphy = dev_get_drvdata(phy->dev.parent);
- 	int ret = 0;
-+	unsigned int ul, ul_mask;
+@@ -408,39 +713,50 @@ static int rockchip_usb2phy_init(struct phy *phy)
  
  	mutex_lock(&rport->mutex);
  
@@ -47343,14 +47322,14 @@ index cab6a94bf..6b7d0c24a 100644
 +				dev_err(rphy->dev,
 +					"failed to enable bvalid irq\n");
  				goto out;
--
 +			}
- 			schedule_delayed_work(&rport->otg_sm_work,
+ 
+-			schedule_delayed_work(&rport->otg_sm_work,
 -					      OTG_SCHEDULE_DELAY * 3);
 -		} else {
 -			/* If OTG works in host only mode, do nothing. */
 -			dev_dbg(&rport->phy->dev, "mode %d\n", rport->mode);
-+					      rport->typec_vbus_det ? 0 : OTG_SCHEDULE_DELAY);
++			schedule_delayed_work(&rport->otg_sm_work, 0);
  		}
  	} else if (rport->port_id == USB2PHY_PORT_HOST) {
 -		/* clear linestate and enable linestate detect irq */
@@ -47359,12 +47338,7 @@ index cab6a94bf..6b7d0c24a 100644
 -		if (ret)
 -			goto out;
 +		if (rport->port_cfg->disfall_en.offset) {
-+			ret = regmap_read(rphy->grf, rport->port_cfg->utmi_ls.offset, &ul);
-+			if (ret < 0)
-+				goto out;
-+			ul_mask = GENMASK(rport->port_cfg->utmi_ls.bitend,
-+					  rport->port_cfg->utmi_ls.bitstart);
-+			rport->host_disconnect = (ul & ul_mask) == 0 ? true : false;
++			rport->host_disconnect = true;
 +			ret = rockchip_usb2phy_enable_host_disc_irq(rphy, rport, true);
 +			if (ret) {
 +				dev_err(rphy->dev, "failed to enable disconnect irq\n");
@@ -47384,7 +47358,7 @@ index cab6a94bf..6b7d0c24a 100644
  
  		schedule_delayed_work(&rport->sm_work, SCHEDULE_DELAY);
  	}
-@@ -459,24 +817,60 @@ static int rockchip_usb2phy_power_on(struct phy *phy)
+@@ -459,24 +775,61 @@ static int rockchip_usb2phy_power_on(struct phy *phy)
  
  	dev_dbg(&rport->phy->dev, "port power on\n");
  
@@ -47398,31 +47372,31 @@ index cab6a94bf..6b7d0c24a 100644
 +			goto exit;
 +		}
 +	}
-+
+ 
 +	mutex_lock(&rport->mutex);
 +
 +	if (!rport->suspended) {
 +		ret = 0;
 +		goto unlock;
 +	}
- 
++
++	
  	ret = clk_prepare_enable(rphy->clk480m);
  	if (ret)
 -		return ret;
 +		goto unlock;
-+
 +	if (rport->sel_pipe_phystatus)
-+		property_enable(rphy->usbctrl_grf,
-+				&rport->port_cfg->pipe_phystatus, true);
++	     property_enable(rphy->usbctrl_grf,
++	          &rport->port_cfg->pipe_phystatus, true);
  
  	ret = property_enable(base, &rport->port_cfg->phy_sus, false);
--	if (ret) {
--		clk_disable_unprepare(rphy->clk480m);
+ 	if (ret) {
+ 		clk_disable_unprepare(rphy->clk480m);
 -		return ret;
 -	}
-+	if (ret)
-+		goto unlock;
-+
+-
++			goto unlock;
++     }
 +	/*
 +	 * For rk3588, it needs to reset phy when exit from
 +	 * suspend mode with common_on_n 1'b1(aka REFCLK_LOGIC,
@@ -47434,13 +47408,13 @@ index cab6a94bf..6b7d0c24a 100644
 +	ret = rockchip_usb2phy_reset(rphy);
 +	if (ret)
 +		goto unlock;
- 
  	/* waiting for the utmi_clk to become stable */
  	usleep_range(1500, 2000);
  
  	rport->suspended = false;
 -	return 0;
 +
++    
 +unlock:
 +	mutex_unlock(&rport->mutex);
 +
@@ -47453,7 +47427,7 @@ index cab6a94bf..6b7d0c24a 100644
  }
  
  static int rockchip_usb2phy_power_off(struct phy *phy)
-@@ -488,103 +882,354 @@ static int rockchip_usb2phy_power_off(struct phy *phy)
+@@ -488,42 +841,258 @@ static int rockchip_usb2phy_power_off(struct phy *phy)
  
  	dev_dbg(&rport->phy->dev, "port power off\n");
  
@@ -47498,7 +47472,7 @@ index cab6a94bf..6b7d0c24a 100644
 +	if (rport->port_id == USB2PHY_PORT_HOST)
  		cancel_delayed_work_sync(&rport->sm_work);
 +	else if (rport->port_id == USB2PHY_PORT_OTG &&
-+		 rport->otg_sm_work.work.func)
++		 rport->bvalid_irq > 0)
 +		flush_delayed_work(&rport->otg_sm_work);
  
  	return 0;
@@ -47540,18 +47514,6 @@ index cab6a94bf..6b7d0c24a 100644
 +
 +	switch (mode) {
 +	case PHY_MODE_USB_OTG:
-+		if (rphy->edev_self && submode) {
-+			if (submode == USB_ROLE_HOST) {
-+				extcon_set_state(rphy->edev, EXTCON_USB_HOST, true);
-+				extcon_set_state(rphy->edev, EXTCON_USB, false);
-+			} else if (submode == USB_ROLE_DEVICE) {
-+				extcon_set_state(rphy->edev, EXTCON_USB_HOST, false);
-+				extcon_set_state(rphy->edev, EXTCON_USB, true);
-+			}
-+
-+			return ret;
-+		}
-+
 +		/*
 +		 * In case of using vbus to detect connect state by u2phy,
 +		 * enable vbus detect on otg mode.
@@ -47562,8 +47524,7 @@ index cab6a94bf..6b7d0c24a 100644
 +		rockchip_set_vbus_power(rport, false);
 +		extcon_set_state_sync(rphy->edev, EXTCON_USB_VBUS_EN, false);
 +		/* For vbus always on, set EXTCON_USB to true. */
-+		if (rport->vbus_always_on)
-+			extcon_set_state(rphy->edev, EXTCON_USB, true);
++		extcon_set_state(rphy->edev, EXTCON_USB, true);
 +		rport->perip_connected = true;
 +		vbus_det_en = true;
 +		break;
@@ -47578,8 +47539,7 @@ index cab6a94bf..6b7d0c24a 100644
 +
 +		extcon_set_state_sync(rphy->edev, EXTCON_USB_VBUS_EN, true);
 +		/* For vbus always on, deinit EXTCON_USB to false. */
-+		if (rport->vbus_always_on)
-+			extcon_set_state(rphy->edev, EXTCON_USB, false);
++		extcon_set_state(rphy->edev, EXTCON_USB, false);
 +		rport->perip_connected = false;
 +		fallthrough;
 +	case PHY_MODE_INVALID:
@@ -47608,36 +47568,21 @@ index cab6a94bf..6b7d0c24a 100644
  	.owner		= THIS_MODULE,
  };
  
--static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
 +/* Show & store the current value of otg mode for otg port */
 +static ssize_t otg_mode_show(struct device *device,
 +			     struct device_attribute *attr,
 +			     char *buf)
- {
--	struct rockchip_usb2phy_port *rport =
--		container_of(work, struct rockchip_usb2phy_port,
--			     otg_sm_work.work);
--	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
--	static unsigned int cable;
--	unsigned long delay;
--	bool vbus_attach, sch_work, notify_charger;
++{
 +	struct rockchip_usb2phy *rphy = dev_get_drvdata(device);
 +	struct rockchip_usb2phy_port *rport = NULL;
 +	unsigned int index;
- 
--	vbus_attach = property_enabled(rphy->grf,
--				       &rport->port_cfg->utmi_bvalid);
++
 +	for (index = 0; index < rphy->phy_cfg->num_ports; index++) {
 +		rport = &rphy->ports[index];
 +		if (rport->port_id == USB2PHY_PORT_OTG)
 +			break;
 +	}
- 
--	sch_work = false;
--	notify_charger = false;
--	delay = OTG_SCHEDULE_DELAY;
--	dev_dbg(&rport->phy->dev, "%s otg sm work\n",
--		usb_otg_state_string(rport->state));
++
 +	if (!rport) {
 +		dev_err(rphy->dev, "Fail to get otg port\n");
 +		return -EINVAL;
@@ -47645,21 +47590,7 @@ index cab6a94bf..6b7d0c24a 100644
 +		dev_err(rphy->dev, "No support otg\n");
 +		return -EINVAL;
 +	}
- 
--	switch (rport->state) {
--	case OTG_STATE_UNDEFINED:
--		rport->state = OTG_STATE_B_IDLE;
--		if (!vbus_attach)
--			rockchip_usb2phy_power_off(rport->phy);
--		fallthrough;
--	case OTG_STATE_B_IDLE:
--		if (extcon_get_state(rphy->edev, EXTCON_USB_HOST) > 0) {
--			dev_dbg(&rport->phy->dev, "usb otg host connect\n");
--			rport->state = OTG_STATE_A_HOST;
--			rockchip_usb2phy_power_on(rport->phy);
--			return;
--		} else if (vbus_attach) {
--			dev_dbg(&rport->phy->dev, "vbus_attach\n");
++
 +	switch (rport->mode) {
 +	case USB_DR_MODE_HOST:
 +		return sprintf(buf, "host\n");
@@ -47762,16 +47693,18 @@ index cab6a94bf..6b7d0c24a 100644
 +	.attrs = usb2_phy_attrs,
 +};
 +
-+static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
-+{
-+	struct rockchip_usb2phy_port *rport =
-+		container_of(work, struct rockchip_usb2phy_port,
-+			     otg_sm_work.work);
-+	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
-+	static unsigned int cable;
-+	unsigned long delay;
+ static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
+ {
+ 	struct rockchip_usb2phy_port *rport =
+@@ -532,59 +1101,80 @@ static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
+ 	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
+ 	static unsigned int cable;
+ 	unsigned long delay;
+-	bool vbus_attach, sch_work, notify_charger;
 +	bool sch_work;
-+
+ 
+-	vbus_attach = property_enabled(rphy->grf,
+-				       &rport->port_cfg->utmi_bvalid);
 +	mutex_lock(&rport->mutex);
 +
 +	if (rport->port_cfg->bvalid_grf_con.enable && rport->typec_vbus_det)
@@ -47783,34 +47716,38 @@ index cab6a94bf..6b7d0c24a 100644
 +	else
 +		rport->vbus_attached =
 +			property_enabled(rphy->grf, &rport->port_cfg->utmi_bvalid);
+ 
+ 	sch_work = false;
+-	notify_charger = false;
+ 	delay = OTG_SCHEDULE_DELAY;
 +
-+	sch_work = false;
-+	delay = OTG_SCHEDULE_DELAY;
-+
-+	dev_dbg(&rport->phy->dev, "%s otg sm work\n",
-+		usb_otg_state_string(rport->state));
-+
-+	switch (rport->state) {
-+	case OTG_STATE_UNDEFINED:
-+		rport->state = OTG_STATE_B_IDLE;
+ 	dev_dbg(&rport->phy->dev, "%s otg sm work\n",
+ 		usb_otg_state_string(rport->state));
+ 
+ 	switch (rport->state) {
+ 	case OTG_STATE_UNDEFINED:
+ 		rport->state = OTG_STATE_B_IDLE;
+-		if (!vbus_attach)
 +		if (!rport->vbus_attached) {
 +			mutex_unlock(&rport->mutex);
-+			rockchip_usb2phy_power_off(rport->phy);
+ 			rockchip_usb2phy_power_off(rport->phy);
 +			mutex_lock(&rport->mutex);
 +		}
-+		fallthrough;
-+	case OTG_STATE_B_IDLE:
+ 		fallthrough;
+ 	case OTG_STATE_B_IDLE:
+-		if (extcon_get_state(rphy->edev, EXTCON_USB_HOST) > 0) {
 +		if (extcon_get_state(rphy->edev, EXTCON_USB_HOST) > 0 ||
 +		    extcon_get_state(rphy->edev, EXTCON_USB_VBUS_EN) > 0) {
-+			dev_dbg(&rport->phy->dev, "usb otg host connect\n");
-+			rport->state = OTG_STATE_A_HOST;
+ 			dev_dbg(&rport->phy->dev, "usb otg host connect\n");
+ 			rport->state = OTG_STATE_A_HOST;
 +			rphy->chg_state = USB_CHG_STATE_UNDEFINED;
 +			rphy->chg_type = POWER_SUPPLY_TYPE_UNKNOWN;
 +			mutex_unlock(&rport->mutex);
-+			rockchip_usb2phy_power_on(rport->phy);
-+			return;
+ 			rockchip_usb2phy_power_on(rport->phy);
+ 			return;
+-		} else if (vbus_attach) {
 +		} else if (rport->vbus_attached) {
-+			dev_dbg(&rport->phy->dev, "vbus_attach\n");
+ 			dev_dbg(&rport->phy->dev, "vbus_attach\n");
  			switch (rphy->chg_state) {
  			case USB_CHG_STATE_UNDEFINED:
 +				mutex_unlock(&rport->mutex);
@@ -47854,7 +47791,7 @@ index cab6a94bf..6b7d0c24a 100644
  					break;
  				default:
  					break;
-@@ -594,48 +1239,81 @@ static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
+@@ -594,32 +1184,34 @@ static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
  				break;
  			}
  		} else {
@@ -47905,9 +47842,9 @@ index cab6a94bf..6b7d0c24a 100644
 +			delay = OTG_SCHEDULE_DELAY;
 +			wake_unlock(&rport->wakelock);
  		}
--		sch_work = true;
+ 		sch_work = true;
  		break;
- 	case OTG_STATE_A_HOST:
+@@ -627,15 +1219,47 @@ static void rockchip_usb2phy_otg_sm_work(struct work_struct *work)
  		if (extcon_get_state(rphy->edev, EXTCON_USB_HOST) == 0) {
  			dev_dbg(&rport->phy->dev, "usb otg host disconnect\n");
  			rport->state = OTG_STATE_B_IDLE;
@@ -47922,8 +47859,8 @@ index cab6a94bf..6b7d0c24a 100644
 -		break;
 +		mutex_unlock(&rport->mutex);
 +		return;
- 	}
- 
++	}
++
 +	if (extcon_get_state(rphy->edev, cable) != rport->vbus_attached) {
 +		extcon_set_state_sync(rphy->edev,
 +					cable, rport->vbus_attached);
@@ -47940,8 +47877,8 @@ index cab6a94bf..6b7d0c24a 100644
 +		 */
 +		extcon_set_state_sync(rphy->edev, cable, false);
 +		cable = EXTCON_NONE;
-+	}
-+
+ 	}
+ 
 +	if (rphy->edev_self &&
 +	    (extcon_get_state(rphy->edev, EXTCON_USB) !=
 +	     rport->perip_connected)) {
@@ -47957,7 +47894,7 @@ index cab6a94bf..6b7d0c24a 100644
  }
  
  static const char *chg_to_string(enum power_supply_type chg_type)
-@@ -689,21 +1367,45 @@ static void rockchip_chg_detect_work(struct work_struct *work)
+@@ -689,21 +1313,45 @@ static void rockchip_chg_detect_work(struct work_struct *work)
  		container_of(work, struct rockchip_usb2phy_port, chg_work.work);
  	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
  	struct regmap *base = get_reg_base(rphy);
@@ -48007,7 +47944,7 @@ index cab6a94bf..6b7d0c24a 100644
  		delay = CHG_DCD_POLL_TIME;
  		break;
  	case USB_CHG_STATE_WAIT_FOR_DCD:
-@@ -741,6 +1443,19 @@ static void rockchip_chg_detect_work(struct work_struct *work)
+@@ -741,6 +1389,19 @@ static void rockchip_chg_detect_work(struct work_struct *work)
  				rphy->chg_state = USB_CHG_STATE_DETECTED;
  				delay = 0;
  			} else {
@@ -48027,7 +47964,7 @@ index cab6a94bf..6b7d0c24a 100644
  				rphy->chg_type = POWER_SUPPLY_TYPE_USB;
  				rphy->chg_state = USB_CHG_STATE_DETECTED;
  				delay = 0;
-@@ -759,19 +1474,36 @@ static void rockchip_chg_detect_work(struct work_struct *work)
+@@ -759,19 +1420,36 @@ static void rockchip_chg_detect_work(struct work_struct *work)
  		fallthrough;
  	case USB_CHG_STATE_SECONDARY_DONE:
  		rphy->chg_state = USB_CHG_STATE_DETECTED;
@@ -48067,7 +48004,7 @@ index cab6a94bf..6b7d0c24a 100644
  	schedule_delayed_work(&rport->chg_work, delay);
  }
  
-@@ -793,30 +1525,43 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
+@@ -793,30 +1471,43 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
  	struct rockchip_usb2phy_port *rport =
  		container_of(work, struct rockchip_usb2phy_port, sm_work.work);
  	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
@@ -48123,7 +48060,7 @@ index cab6a94bf..6b7d0c24a 100644
  
  	switch (state) {
  	case PHY_STATE_HS_ONLINE:
-@@ -841,7 +1586,9 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
+@@ -841,7 +1532,9 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
  	case PHY_STATE_CONNECT:
  		if (rport->suspended) {
  			dev_dbg(&rport->phy->dev, "Connected\n");
@@ -48133,7 +48070,7 @@ index cab6a94bf..6b7d0c24a 100644
  			rport->suspended = false;
  		} else {
  			/* D+ line pull-up, D- line pull-down */
-@@ -851,7 +1598,9 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
+@@ -851,7 +1544,9 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
  	case PHY_STATE_DISCONNECT:
  		if (!rport->suspended) {
  			dev_dbg(&rport->phy->dev, "Disconnected\n");
@@ -48143,7 +48080,7 @@ index cab6a94bf..6b7d0c24a 100644
  			rport->suspended = true;
  		}
  
-@@ -859,8 +1608,7 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
+@@ -859,8 +1554,7 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
  		 * activate the linestate detection to get the next device
  		 * plug-in irq.
  		 */
@@ -48153,7 +48090,7 @@ index cab6a94bf..6b7d0c24a 100644
  
  		/*
  		 * we don't need to rearm the delayed work when the phy port
-@@ -869,7 +1617,7 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
+@@ -869,7 +1563,7 @@ static void rockchip_usb2phy_sm_work(struct work_struct *work)
  		mutex_unlock(&rport->mutex);
  		return;
  	default:
@@ -48162,13 +48099,8 @@ index cab6a94bf..6b7d0c24a 100644
  		break;
  	}
  
-@@ -883,14 +1631,24 @@ static irqreturn_t rockchip_usb2phy_linestate_irq(int irq, void *data)
- 	struct rockchip_usb2phy_port *rport = data;
- 	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
- 
--	if (!property_enabled(rphy->grf, &rport->port_cfg->ls_det_st))
-+	if (!property_enabled(rphy->grf, &rport->port_cfg->ls_det_st) ||
-+	    !property_enabled(rphy->grf, &rport->port_cfg->ls_det_en))
+@@ -886,11 +1580,12 @@ static irqreturn_t rockchip_usb2phy_linestate_irq(int irq, void *data)
+ 	if (!property_enabled(rphy->grf, &rport->port_cfg->ls_det_st))
  		return IRQ_NONE;
  
 +	dev_dbg(&rport->phy->dev, "linestate interrupt\n");
@@ -48179,29 +48111,18 @@ index cab6a94bf..6b7d0c24a 100644
 -	property_enable(rphy->grf, &rport->port_cfg->ls_det_en, false);
 -	property_enable(rphy->grf, &rport->port_cfg->ls_det_clr, true);
 +	rockchip_usb2phy_enable_line_irq(rphy, rport, false);
-+
-+	/*
-+	 * For host port, it may miss disc irq when device is connected,
-+	 * in this case, we can clear host_disconnect state depend on
-+	 * the linestate irq.
-+	 */
-+	if (rport->port_id == USB2PHY_PORT_HOST && rport->port_cfg->disfall_en.offset)
-+		rport->host_disconnect = false;
  
  	mutex_unlock(&rport->mutex);
  
-@@ -920,99 +1678,163 @@ static irqreturn_t rockchip_usb2phy_bvalid_irq(int irq, void *data)
+@@ -920,99 +1615,157 @@ static irqreturn_t rockchip_usb2phy_bvalid_irq(int irq, void *data)
  
  	mutex_unlock(&rport->mutex);
  
--	rockchip_usb2phy_otg_sm_work(&rport->otg_sm_work.work);
 +	if (rport->bypass_uart_en)
 +		rockchip_usb_bypass_uart(rport, false);
 +
-+	if (rport->otg_sm_work.work.func) {
-+		cancel_delayed_work_sync(&rport->otg_sm_work);
-+		rockchip_usb2phy_otg_sm_work(&rport->otg_sm_work.work);
-+	}
++	cancel_delayed_work_sync(&rport->otg_sm_work);
+ 	rockchip_usb2phy_otg_sm_work(&rport->otg_sm_work.work);
  
  	return IRQ_HANDLED;
  }
@@ -48340,17 +48261,13 @@ index cab6a94bf..6b7d0c24a 100644
 -	 */
 -	rport->suspended = true;
 -	rport->vbus_attached = false;
-+		/*
-+		 * Handle disc irq before linestate irq to set the disc
-+		 * state for sm work scheduled in the linestate irq handler.
-+		 */
 +		if (rport->port_id == USB2PHY_PORT_HOST &&
 +		    rport->port_cfg->disfall_en.offset)
-+			ret |= rockchip_usb2phy_host_disc_irq(irq, rport);
++			ret = rockchip_usb2phy_host_disc_irq(irq, rport);
  
 -	mutex_init(&rport->mutex);
 +		/* Handle linestate irq for both otg port and host port */
-+		ret |= rockchip_usb2phy_linestate_irq(irq, rport);
++		ret = rockchip_usb2phy_linestate_irq(irq, rport);
  
 -	rport->mode = of_usb_get_dr_mode_by_phy(child_np, -1);
 -	if (rport->mode == USB_DR_MODE_HOST ||
@@ -48413,7 +48330,7 @@ index cab6a94bf..6b7d0c24a 100644
  	 */
  	rport->otg_mux_irq = of_irq_get_byname(child_np, "otg-mux");
  	if (rport->otg_mux_irq > 0) {
-@@ -1022,20 +1844,50 @@ static int rockchip_usb2phy_otg_port_init(struct rockchip_usb2phy *rphy,
+@@ -1022,20 +1775,50 @@ static int rockchip_usb2phy_otg_port_init(struct rockchip_usb2phy *rphy,
  						IRQF_ONESHOT,
  						"rockchip_usb2phy_otg",
  						rport);
@@ -48474,7 +48391,7 @@ index cab6a94bf..6b7d0c24a 100644
  						NULL,
  						rockchip_usb2phy_bvalid_irq,
  						IRQF_ONESHOT,
-@@ -1044,20 +1896,283 @@ static int rockchip_usb2phy_otg_port_init(struct rockchip_usb2phy *rphy,
+@@ -1044,187 +1827,1104 @@ static int rockchip_usb2phy_otg_port_init(struct rockchip_usb2phy *rphy,
  		if (ret) {
  			dev_err(rphy->dev,
  				"failed to request otg-bvalid irq handle\n");
@@ -48495,6 +48412,8 @@ index cab6a94bf..6b7d0c24a 100644
  
 -		ret = devm_extcon_register_notifier(rphy->dev, rphy->edev,
 -					EXTCON_USB_HOST, &rport->event_nb);
+-		if (ret)
+-			dev_err(rphy->dev, "register USB HOST notifier failed\n");
 +		ret = devm_request_threaded_irq(rphy->dev,
 +						rport->id_irq, NULL,
 +						rockchip_usb2phy_id_irq,
@@ -48506,35 +48425,72 @@ index cab6a94bf..6b7d0c24a 100644
 +				"failed to request otg-id irq handle\n");
 +			return ret;
 +		}
-+	}
-+
-+	return ret;
-+}
-+
+ 	}
+ 
+-out:
+ 	return ret;
+ }
+ 
+-static int rockchip_usb2phy_probe(struct platform_device *pdev)
 +static void rockchip_usb2phy_usb_bvalid_enable(struct rockchip_usb2phy_port *rport,
 +					       u8 enable)
-+{
+ {
+-	struct device *dev = &pdev->dev;
+-	struct device_node *np = dev->of_node;
+-	struct device_node *child_np;
+-	struct phy_provider *provider;
+-	struct rockchip_usb2phy *rphy;
+-	const struct rockchip_usb2phy_cfg *phy_cfgs;
+-	const struct of_device_id *match;
+-	unsigned int reg;
+-	int index, ret;
 +	struct rockchip_usb2phy *rphy = dev_get_drvdata(rport->phy->dev.parent);
 +	const struct rockchip_usb2phy_port_cfg *cfg = rport->port_cfg;
-+
+ 
+-	rphy = devm_kzalloc(dev, sizeof(*rphy), GFP_KERNEL);
+-	if (!rphy)
+-		return -ENOMEM;
 +	if (cfg->bvalid_phy_con.enable)
 +		property_enable(rphy->grf, &cfg->bvalid_phy_con, enable);
-+
+ 
+-	match = of_match_device(dev->driver->of_match_table, dev);
+-	if (!match || !match->data) {
+-		dev_err(dev, "phy configs are not assigned!\n");
+-		return -EINVAL;
+-	}
 +	if (cfg->bvalid_grf_con.enable)
 +		property_enable(rphy->grf, &cfg->bvalid_grf_con, enable);
 +}
-+
+ 
+-	if (!dev->parent || !dev->parent->of_node)
+-		return -EINVAL;
 +static int rockchip_usb2phy_orien_sw_set(struct typec_switch *sw,
 +					 enum typec_orientation orien)
 +{
 +	struct rockchip_usb2phy_port *rport = typec_switch_get_drvdata(sw);
-+
+ 
+-	rphy->grf = syscon_node_to_regmap(dev->parent->of_node);
+-	if (IS_ERR(rphy->grf))
+-		return PTR_ERR(rphy->grf);
 +	dev_dbg(&rport->phy->dev, "type-c orientation: %d\n", orien);
-+
+ 
+-	if (of_device_is_compatible(np, "rockchip,rv1108-usb2phy")) {
+-		rphy->usbgrf =
+-			syscon_regmap_lookup_by_phandle(dev->of_node,
+-							"rockchip,usbgrf");
+-		if (IS_ERR(rphy->usbgrf))
+-			return PTR_ERR(rphy->usbgrf);
+-	} else {
+-		rphy->usbgrf = NULL;
+-	}
 +	mutex_lock(&rport->mutex);
 +	rockchip_usb2phy_usb_bvalid_enable(rport, orien != TYPEC_ORIENTATION_NONE);
 +	mutex_unlock(&rport->mutex);
-+
+ 
+-	if (of_property_read_u32(np, "reg", &reg)) {
+-		dev_err(dev, "the reg property is not assigned in %pOFn node\n",
+-			np);
+-		return -EINVAL;
 +	return 0;
 +}
 +
@@ -48554,28 +48510,52 @@ index cab6a94bf..6b7d0c24a 100644
 +		dev_err(dev, "Error register typec orientation switch: %ld\n",
 +			PTR_ERR(rport->sw));
 +		return PTR_ERR(rport->sw);
-+	}
-+
+ 	}
+ 
+-	rphy->dev = dev;
+-	phy_cfgs = match->data;
+-	rphy->chg_state = USB_CHG_STATE_UNDEFINED;
+-	rphy->chg_type = POWER_SUPPLY_TYPE_UNKNOWN;
+-	platform_set_drvdata(pdev, rphy);
 +	return 0;
 +}
-+
+ 
+-	ret = rockchip_usb2phy_extcon_register(rphy);
+-	if (ret)
+-		return ret;
 +static void rockchip_usb2phy_orien_switch_unregister(void *data)
 +{
 +	struct rockchip_usb2phy_port *rport = data;
-+
+ 
+-	/* find out a proper config which can be matched with dt. */
+-	index = 0;
+-	while (phy_cfgs[index].reg) {
+-		if (phy_cfgs[index].reg == reg) {
+-			rphy->phy_cfg = &phy_cfgs[index];
+-			break;
+-		}
 +	typec_switch_unregister(rport->sw);
 +}
-+
+ 
+-		++index;
+-	}
 +static int rockchip_usb2phy_host_port_init(struct rockchip_usb2phy *rphy,
 +					   struct rockchip_usb2phy_port *rport,
 +					   struct device_node *child_np)
 +{
 +	int ret;
 +	struct regmap *base = get_reg_base(rphy);
-+
+ 
+-	if (!rphy->phy_cfg) {
+-		dev_err(dev, "no phy-config can be matched with %pOFn node\n",
+-			np);
+-		return -EINVAL;
+-	}
 +	rport->port_id = USB2PHY_PORT_HOST;
 +	rport->port_cfg = &rphy->phy_cfg->port_cfgs[USB2PHY_PORT_HOST];
-+
+ 
+-	rphy->clk = of_clk_get_by_name(np, "phyclk");
+-	if (!IS_ERR(rphy->clk)) {
 +	/* enter lower power state when suspend */
 +	rport->low_power_en =
 +		of_property_read_bool(child_np, "rockchip,low-power-mode");
@@ -48694,7 +48674,7 @@ index cab6a94bf..6b7d0c24a 100644
 +	if (IS_REACHABLE(CONFIG_TYPEC) &&
 +	    device_property_present(rphy->dev, "orientation-switch")) {
 +		ret = rockchip_usb2phy_setup_orien_switch(rphy, rport);
- 		if (ret)
++		if (ret)
 +			return ret;
 +
 +		ret = devm_add_action_or_reset(rphy->dev,
@@ -48704,29 +48684,13 @@ index cab6a94bf..6b7d0c24a 100644
 +			return ret;
 +	}
 +
-+	/*
-+	 * Set the utmi bvalid come from the usb phy or grf.
-+	 * For most of Rockchip SoCs, them have VBUSDET pin
-+	 * for the usb phy to detect the USB VBUS and set
-+	 * the bvalid signal, so select the bvalid from the
-+	 * usb phy by default. And for those SoCs which don't
-+	 * have VBUSDET pin (e.g. RV1103), it needs to select
-+	 * the bvaid from the grf and set bvalid to be valid
-+	 * (high) by default.
-+	 */
-+	if (rport->port_cfg->bvalid_grf_sel.enable != 0) {
-+		if (of_machine_is_compatible("rockchip,rv1103"))
-+			property_enable(base, &rport->port_cfg->bvalid_grf_sel, true);
-+		else
-+			property_enable(base, &rport->port_cfg->bvalid_grf_sel, false);
-+	}
-+
-+	if (rport->vbus_always_on)
-+		extcon_set_state(rphy->edev, EXTCON_USB, true);
-+
 +	if (rport->vbus_always_on || rport->mode == USB_DR_MODE_HOST ||
 +	    rport->mode == USB_DR_MODE_UNKNOWN)
 +		goto out;
++
++	/* Select bvalid of usb phy as bvalid of usb controller */
++	if (rport->port_cfg->bvalid_grf_sel.enable != 0)
++		property_enable(base, &rport->port_cfg->bvalid_grf_sel, false);
 +
 +	wake_lock_init(&rport->wakelock, WAKE_LOCK_SUSPEND, "rockchip_otg");
 +	INIT_DELAYED_WORK(&rport->bypass_uart_work,
@@ -48740,12 +48704,12 @@ index cab6a94bf..6b7d0c24a 100644
 +		ret = devm_extcon_register_notifier(rphy->dev, rphy->edev,
 +					EXTCON_USB_HOST, &rport->event_nb);
 +		if (ret) {
- 			dev_err(rphy->dev, "register USB HOST notifier failed\n");
++			dev_err(rphy->dev, "register USB HOST notifier failed\n");
 +			goto err;
 +		}
- 	}
- 
- out:
++	}
++
++out:
 +	/*
 +	 * Let us put phy-port into suspend mode here for saving power
 +	 * consumption, and usb controller will resume it during probe
@@ -48760,66 +48724,55 @@ index cab6a94bf..6b7d0c24a 100644
 +
 +err:
 +	wake_lock_destroy(&rport->wakelock);
- 	return ret;
- }
- 
-@@ -1068,10 +2183,12 @@ static int rockchip_usb2phy_probe(struct platform_device *pdev)
- 	struct device_node *child_np;
- 	struct phy_provider *provider;
- 	struct rockchip_usb2phy *rphy;
++	return ret;
++}
++
++static int rockchip_usb2phy_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct device_node *np = dev->of_node;
++	struct device_node *child_np;
++	struct phy_provider *provider;
++	struct rockchip_usb2phy *rphy;
 +	struct resource *res;
- 	const struct rockchip_usb2phy_cfg *phy_cfgs;
- 	const struct of_device_id *match;
- 	unsigned int reg;
--	int index, ret;
++	const struct rockchip_usb2phy_cfg *phy_cfgs;
++	const struct of_device_id *match;
++	unsigned int reg;
 +	unsigned int index;
 +	int ret;
- 
- 	rphy = devm_kzalloc(dev, sizeof(*rphy), GFP_KERNEL);
- 	if (!rphy)
-@@ -1083,33 +2200,51 @@ static int rockchip_usb2phy_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	if (!dev->parent || !dev->parent->of_node)
--		return -EINVAL;
++
++	rphy = devm_kzalloc(dev, sizeof(*rphy), GFP_KERNEL);
++	if (!rphy)
++		return -ENOMEM;
++
++	match = of_match_device(dev->driver->of_match_table, dev);
++	if (!match || !match->data) {
++		dev_err(dev, "phy configs are not assigned!\n");
++		return -EINVAL;
++	}
++
 +	if (!dev->parent || !dev->parent->of_node) {
 +		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 +		if (!res) {
 +			dev_err(dev, "missing memory resource\n");
 +			return -ENODEV;
 +		}
- 
--	rphy->grf = syscon_node_to_regmap(dev->parent->of_node);
--	if (IS_ERR(rphy->grf))
--		return PTR_ERR(rphy->grf);
++
 +		rphy->phy_base = devm_ioremap_resource(dev, res);
 +		if (IS_ERR(rphy->phy_base))
 +			return PTR_ERR(rphy->phy_base);
- 
--	if (of_device_is_compatible(np, "rockchip,rv1108-usb2phy")) {
--		rphy->usbgrf =
--			syscon_regmap_lookup_by_phandle(dev->of_node,
--							"rockchip,usbgrf");
--		if (IS_ERR(rphy->usbgrf))
--			return PTR_ERR(rphy->usbgrf);
++
 +		rphy->grf = syscon_regmap_lookup_by_phandle(np,
 +							    "rockchip,usbgrf");
 +		if (IS_ERR(rphy->grf))
 +			return PTR_ERR(rphy->grf);
 +
 +		reg = res->start;
- 	} else {
--		rphy->usbgrf = NULL;
--	}
++	} else {
 +		rphy->grf = syscon_node_to_regmap(dev->parent->of_node);
 +		if (IS_ERR(rphy->grf))
 +			return PTR_ERR(rphy->grf);
- 
--	if (of_property_read_u32(np, "reg", &reg)) {
--		dev_err(dev, "the reg property is not assigned in %pOFn node\n",
--			np);
--		return -EINVAL;
++
 +		if (of_device_is_compatible(np, "rockchip,rv1108-usb2phy")) {
 +			rphy->usbgrf =
 +				syscon_regmap_lookup_by_phandle(dev->of_node,
@@ -48835,30 +48788,28 @@ index cab6a94bf..6b7d0c24a 100644
 +				np->name);
 +			return -EINVAL;
 +		}
- 	}
- 
- 	rphy->dev = dev;
- 	phy_cfgs = match->data;
- 	rphy->chg_state = USB_CHG_STATE_UNDEFINED;
- 	rphy->chg_type = POWER_SUPPLY_TYPE_UNKNOWN;
++	}
++
++	rphy->dev = dev;
++	phy_cfgs = match->data;
++	rphy->chg_state = USB_CHG_STATE_UNDEFINED;
++	rphy->chg_type = POWER_SUPPLY_TYPE_UNKNOWN;
 +	rphy->edev_self = false;
 +	rphy->irq = platform_get_irq(pdev, 0);
- 	platform_set_drvdata(pdev, rphy);
- 
- 	ret = rockchip_usb2phy_extcon_register(rphy);
-@@ -1118,113 +2253,778 @@ static int rockchip_usb2phy_probe(struct platform_device *pdev)
- 
- 	/* find out a proper config which can be matched with dt. */
- 	index = 0;
--	while (phy_cfgs[index].reg) {
++	platform_set_drvdata(pdev, rphy);
++
++	ret = rockchip_usb2phy_extcon_register(rphy);
++	if (ret)
++		return ret;
++
++	/* find out a proper config which can be matched with dt. */
++	index = 0;
 +	do {
- 		if (phy_cfgs[index].reg == reg) {
- 			rphy->phy_cfg = &phy_cfgs[index];
- 			break;
- 		}
- 
--		++index;
--	}
++		if (phy_cfgs[index].reg == reg) {
++			rphy->phy_cfg = &phy_cfgs[index];
++			break;
++		}
++
 +		++index;
 +	} while (phy_cfgs[index].reg);
 +
@@ -48877,20 +48828,19 @@ index cab6a94bf..6b7d0c24a 100644
 +	if (IS_ERR(rphy->phy_reset))
 +		return PTR_ERR(rphy->phy_reset);
 +
-+	ret = devm_clk_bulk_get_all(dev, &rphy->clks);
-+	if (ret == -EPROBE_DEFER)
-+		return ret;
-+
-+	/* Clocks are optional */
-+	if (ret < 0)
-+		rphy->num_clks = 0;
-+	else
-+		rphy->num_clks = ret;
-+
-+	ret = clk_bulk_prepare_enable(rphy->num_clks, rphy->clks);
-+	if (ret)
-+		return ret;
-+
++	rphy->clk = of_clk_get_by_name(np, "phyclk");
++	if (!IS_ERR(rphy->clk)) {
+ 		clk_prepare_enable(rphy->clk);
+ 	} else {
+ 		dev_info(&pdev->dev, "no phyclk specified\n");
+ 		rphy->clk = NULL;
+ 	}
+ 
+-	ret = rockchip_usb2phy_clk480m_register(rphy);
+-	if (ret) {
+-		dev_err(dev, "failed to register 480m output clock\n");
+-		goto disable_clks;
+-	}
 +	if (rphy->phy_cfg->phy_tuning) {
 +		ret = rphy->phy_cfg->phy_tuning(rphy);
 +		if (ret)
@@ -48981,7 +48931,10 @@ index cab6a94bf..6b7d0c24a 100644
 +disable_clks:
 +	pm_runtime_put_sync(dev);
 +	pm_runtime_disable(dev);
-+	clk_bulk_disable_unprepare(rphy->num_clks, rphy->clks);
++	if (rphy->clk) {
++		clk_disable_unprepare(rphy->clk);
++		clk_put(rphy->clk);
++	}
 +	return ret;
 +}
 +
@@ -49042,6 +48995,55 @@ index cab6a94bf..6b7d0c24a 100644
 +		ret = regmap_write(rphy->grf, 0x76c, 0x00070004);
 +
 +	return ret;
++}
++
++static int rk3308_usb2phy_tuning(struct rockchip_usb2phy *rphy)
++{
++	int ret;
++
++	/* Open pre-emphasize in non-chirp state for otg port */
++	ret = regmap_write(rphy->grf, 0x0, 0x00070004);
++	if (ret)
++		return ret;
++
++	/* Open pre-emphasize in non-chirp state for host port */
++	ret = regmap_write(rphy->grf, 0x30, 0x00070004);
++	if (ret)
++		return ret;
++
++	/* Turn off differential receiver in suspend mode */
++	ret = regmap_write(rphy->grf, 0x18, 0x00040000);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int rk3328_usb2phy_tuning(struct rockchip_usb2phy *rphy)
++{
++	int ret;
++
++	/* Open debug mode for tuning */
++	ret = regmap_write(rphy->grf, 0x2c, 0xffff0400);
++	if (ret)
++		return ret;
++
++	/* Open pre-emphasize in non-chirp state for otg port */
++	ret = regmap_write(rphy->grf, 0x0, 0x00070004);
++	if (ret)
++		return ret;
++
++	/* Open pre-emphasize in non-chirp state for host port */
++	ret = regmap_write(rphy->grf, 0x30, 0x00070004);
++	if (ret)
++		return ret;
++
++	/* Turn off differential receiver in suspend mode */
++	ret = regmap_write(rphy->grf, 0x18, 0x00040000);
++	if (ret)
++		return ret;
++
++	return 0;
 +}
 +
 +static int rk3366_usb2phy_tuning(struct rockchip_usb2phy *rphy)
@@ -49136,20 +49138,31 @@ index cab6a94bf..6b7d0c24a 100644
 +
 +static int rk3568_usb2phy_tuning(struct rockchip_usb2phy *rphy)
 +{
++	u32 reg;
 +	int ret = 0;
 +
-+	/* Turn off differential receiver by default to save power */
-+	phy_clear_bits(rphy->phy_base + 0x30, BIT(2));
++	reg = readl(rphy->phy_base + 0x30);
++	/* turn off differential reciver in suspend mode */
++	writel(reg & ~BIT(2), rphy->phy_base + 0x30);
 +
++	reg = readl(rphy->phy_base);
 +	/* Enable otg port pre-emphasis during non-chirp phase */
-+	phy_update_bits(rphy->phy_base, GENMASK(2, 0), 0x04);
++	reg &= ~(0x07 << 0);
++	reg |= (0x04 << 0);
++	writel(reg, rphy->phy_base);
 +
++	reg = readl(rphy->phy_base + 0x0400);
 +	/* Enable host port pre-emphasis during non-chirp phase */
-+	phy_update_bits(rphy->phy_base + 0x0400, GENMASK(2, 0), 0x04);
++	reg &= ~(0x07 << 0);
++	reg |= (0x04 << 0);
++	writel(reg, rphy->phy_base + 0x0400);
 +
 +	if (rphy->phy_cfg->reg == 0xfe8a0000) {
 +		/* Set otg port HS eye height to 437.5mv(default is 400mv) */
-+		phy_update_bits(rphy->phy_base + 0x30, GENMASK(6, 4), (0x06 << 4));
++		reg = readl(rphy->phy_base + 0x30);
++		reg &= ~(0x07 << 4);
++		reg |= (0x06 << 4);
++		writel(reg, rphy->phy_base + 0x30);
 +
 +		/*
 +		 * Set the bvalid filter time to 10ms
@@ -49164,52 +49177,21 @@ index cab6a94bf..6b7d0c24a 100644
 +		ret |= regmap_write(rphy->grf, 0x004c, FILTER_COUNTER);
 +	}
 +
-+	/* Enable host port (usb3 host1 and usb2 host1) wakeup irq */
-+	ret |= regmap_write(rphy->grf, 0x000c, 0x80008000);
-+
 +	return ret;
-+}
-+
-+static int rv1106_usb2phy_tuning(struct rockchip_usb2phy *rphy)
-+{
-+	/* Always enable pre-emphasis in SOF & EOP & chirp & non-chirp state */
-+	phy_update_bits(rphy->phy_base + 0x30, GENMASK(2, 0), 0x07);
-+
-+	if (rockchip_get_cpu_version()) {
-+		/* Set Tx HS pre_emphasize strength to 3'b001 */
-+		phy_update_bits(rphy->phy_base + 0x40, GENMASK(5, 3), (0x01 << 3));
-+	} else {
-+		/* Set Tx HS pre_emphasize strength to 3'b011 */
-+		phy_update_bits(rphy->phy_base + 0x40, GENMASK(5, 3), (0x03 << 3));
-+	}
-+
-+	/* Set RX Squelch trigger point configure to 4'b0000(112.5 mV) */
-+	phy_update_bits(rphy->phy_base + 0x64, GENMASK(6, 3), (0x00 << 3));
-+
-+	/* Turn off differential receiver by default to save power */
-+	phy_clear_bits(rphy->phy_base + 0x100, BIT(6));
-+
-+	/* Set 45ohm HS ODT value to 5'b10111 to increase driver strength */
-+	phy_update_bits(rphy->phy_base + 0x11c, GENMASK(4, 0), 0x17);
-+
-+	/* Set Tx HS eye height tuning to 3'b011(462 mV)*/
-+	phy_update_bits(rphy->phy_base + 0x124, GENMASK(4, 2), (0x03 << 2));
-+
-+	/* Bypass Squelch detector calibration */
-+	phy_update_bits(rphy->phy_base + 0x1a4, GENMASK(7, 4), (0x01 << 4));
-+	phy_update_bits(rphy->phy_base + 0x1b4, GENMASK(7, 4), (0x01 << 4));
-+
-+	return 0;
 +}
 +
 +static int rk3568_vbus_detect_control(struct rockchip_usb2phy *rphy, bool en)
 +{
++	u32 reg;
++
 +	if (en) {
++		reg = readl(rphy->phy_base + 0x3c);
 +		/* Enable vbus voltage level detection function */
-+		phy_clear_bits(rphy->phy_base + 0x3c, BIT(7));
++		writel(reg & ~BIT(7), rphy->phy_base + 0x3c);
 +	} else {
++		reg = readl(rphy->phy_base + 0x3c);
 +		/* Disable vbus voltage level detection function */
-+		phy_set_bits(rphy->phy_base + 0x3c, BIT(7));
++		writel(reg | BIT(7), rphy->phy_base + 0x3c);
 +	}
 +
 +	return 0;
@@ -49217,26 +49199,18 @@ index cab6a94bf..6b7d0c24a 100644
 +
 +static int rk3588_usb2phy_tuning(struct rockchip_usb2phy *rphy)
 +{
-+	unsigned int reg;
 +	int ret = 0;
 +
-+	/* Read the SIDDQ control register */
-+	ret = regmap_read(rphy->grf, 0x0008, &reg);
++	/* Deassert SIDDQ to power on analog block */
++	ret = regmap_write(rphy->grf, 0x0008,
++			   GENMASK(29, 29) | 0x0000);
 +	if (ret)
 +		return ret;
 +
-+	if (reg & BIT(13)) {
-+		/* Deassert SIDDQ to power on analog block */
-+		ret = regmap_write(rphy->grf, 0x0008,
-+				   GENMASK(29, 29) | 0x0000);
-+		if (ret)
-+			return ret;
-+
-+		/* Do reset after exit IDDQ mode */
-+		ret = rockchip_usb2phy_reset(rphy);
-+		if (ret)
-+			return ret;
-+	}
++	/* Do reset after exit IDDQ mode */
++	ret = rockchip_usb2phy_reset(rphy);
++	if (ret)
++		return ret;
 +
 +	if (rphy->phy_cfg->reg == 0x0000) {
 +		/*
@@ -49251,11 +49225,19 @@ index cab6a94bf..6b7d0c24a 100644
 +		/* HS DC Voltage Level Adjustment 4'b1001 : +5.89% */
 +		ret |= regmap_write(rphy->grf, 0x0004,
 +				   GENMASK(27, 24) | 0x0900);
-+
+ 
+-	index = 0;
+-	for_each_available_child_of_node(np, child_np) {
+-		struct rockchip_usb2phy_port *rport = &rphy->ports[index];
+-		struct phy *phy;
 +		/* HS Transmitter Pre-Emphasis Current Control 2'b10 : 2x */
 +		ret |= regmap_write(rphy->grf, 0x0008,
 +				   GENMASK(20, 19) | 0x0010);
-+
+ 
+-		/* This driver aims to support both otg-port and host-port */
+-		if (!of_node_name_eq(child_np, "host-port") &&
+-		    !of_node_name_eq(child_np, "otg-port"))
+-			goto next_child;
 +		/* Pullup iddig pin for USB3_0 OTG mode */
 +		ret |= regmap_write(rphy->grf, 0x0010,
 +				    GENMASK(17, 16) | 0x0003);
@@ -49268,7 +49250,12 @@ index cab6a94bf..6b7d0c24a 100644
 +		 */
 +		ret |= regmap_write(rphy->grf, 0x000c,
 +				    GENMASK(20, 16) | 0x0015);
-+
+ 
+-		phy = devm_phy_create(dev, child_np, &rockchip_usb2phy_ops);
+-		if (IS_ERR(phy)) {
+-			dev_err(dev, "failed to create phy\n");
+-			ret = PTR_ERR(phy);
+-			goto put_child;
 +		/* HS DC Voltage Level Adjustment 4'b1001 : +5.89% */
 +		ret |= regmap_write(rphy->grf, 0x0004,
 +				   GENMASK(27, 24) | 0x0900);
@@ -49323,7 +49310,6 @@ index cab6a94bf..6b7d0c24a 100644
 +static int rockchip_usb2phy_pm_suspend(struct device *dev)
 +{
 +	struct rockchip_usb2phy *rphy = dev_get_drvdata(dev);
-+	const struct rockchip_usb2phy_cfg *phy_cfg = rphy->phy_cfg;
 +	struct rockchip_usb2phy_port *rport;
 +	unsigned int index;
 +	int ret = 0;
@@ -49332,18 +49318,7 @@ index cab6a94bf..6b7d0c24a 100644
 +	if (device_may_wakeup(rphy->dev))
 +		wakeup_enable = true;
 +
-+	/*
-+	 * Set the linestate filter time to 1ms based
-+	 * on the usb2 phy grf pclk 32KHz on suspend.
-+	 */
-+	if (phy_cfg->ls_filter_con.enable) {
-+		ret = regmap_write(rphy->grf, phy_cfg->ls_filter_con.offset,
-+				   phy_cfg->ls_filter_con.enable);
-+		if (ret)
-+			dev_err(rphy->dev, "failed to set ls filter %d\n", ret);
-+	}
-+
-+	for (index = 0; index < phy_cfg->num_ports; index++) {
++	for (index = 0; index < rphy->phy_cfg->num_ports; index++) {
 +		rport = &rphy->ports[index];
 +		if (!rport->phy)
 +			continue;
@@ -49361,78 +49336,13 @@ index cab6a94bf..6b7d0c24a 100644
 +					"failed to disable id irq\n");
 +				return ret;
 +			}
-+		}
-+
-+		if (rport->port_id == USB2PHY_PORT_OTG && wakeup_enable &&
-+		    rport->bvalid_irq > 0)
-+			enable_irq_wake(rport->bvalid_irq);
- 
--	if (!rphy->phy_cfg) {
--		dev_err(dev, "no phy-config can be matched with %pOFn node\n",
--			np);
--		return -EINVAL;
--	}
-+		/* activate the linestate to detect the next interrupt. */
-+		mutex_lock(&rport->mutex);
-+		ret = rockchip_usb2phy_enable_line_irq(rphy, rport, true);
-+		mutex_unlock(&rport->mutex);
-+		if (ret) {
-+			dev_err(rphy->dev, "failed to enable linestate irq\n");
-+			return ret;
-+		}
- 
--	rphy->clk = of_clk_get_by_name(np, "phyclk");
--	if (!IS_ERR(rphy->clk)) {
--		clk_prepare_enable(rphy->clk);
--	} else {
--		dev_info(&pdev->dev, "no phyclk specified\n");
--		rphy->clk = NULL;
--	}
-+		if (wakeup_enable && rport->ls_irq > 0)
-+			enable_irq_wake(rport->ls_irq);
- 
--	ret = rockchip_usb2phy_clk480m_register(rphy);
--	if (ret) {
--		dev_err(dev, "failed to register 480m output clock\n");
--		goto disable_clks;
-+		/* enter low power state */
-+		rockchip_usb2phy_low_power_enable(rphy, rport, true);
- 	}
- 
--	index = 0;
--	for_each_available_child_of_node(np, child_np) {
--		struct rockchip_usb2phy_port *rport = &rphy->ports[index];
--		struct phy *phy;
-+	if (wakeup_enable && rphy->irq > 0)
-+		enable_irq_wake(rphy->irq);
- 
--		/* This driver aims to support both otg-port and host-port */
--		if (!of_node_name_eq(child_np, "host-port") &&
--		    !of_node_name_eq(child_np, "otg-port"))
--			goto next_child;
-+	return ret;
-+}
- 
--		phy = devm_phy_create(dev, child_np, &rockchip_usb2phy_ops);
--		if (IS_ERR(phy)) {
--			dev_err(dev, "failed to create phy\n");
--			ret = PTR_ERR(phy);
--			goto put_child;
--		}
-+static int rockchip_usb2phy_pm_resume(struct device *dev)
-+{
-+	struct rockchip_usb2phy *rphy = dev_get_drvdata(dev);
-+	const struct rockchip_usb2phy_cfg *phy_cfg = rphy->phy_cfg;
-+	struct rockchip_usb2phy_port *rport;
-+	unsigned int index;
-+	bool iddig;
-+	int ret = 0;
-+	bool wakeup_enable = false;
+ 		}
  
 -		rport->phy = phy;
 -		phy_set_drvdata(rport->phy, rport);
-+	if (device_may_wakeup(rphy->dev))
-+		wakeup_enable = true;
++		if (rport->port_id == USB2PHY_PORT_OTG && wakeup_enable &&
++		    rport->bvalid_irq > 0)
++			enable_irq_wake(rport->bvalid_irq);
  
 -		/* initialize otg/host port separately */
 -		if (of_node_name_eq(child_np, "host-port")) {
@@ -49445,31 +49355,53 @@ index cab6a94bf..6b7d0c24a 100644
 -							     child_np);
 -			if (ret)
 -				goto put_child;
--		}
-+	/*
-+	 * PHY lost power in suspend, it needs to reset
-+	 * PHY to recovery clock to usb controller.
-+	 */
-+	if (!wakeup_enable)
-+		rockchip_usb2phy_reset(rphy);
++		/* activate the linestate to detect the next interrupt. */
++		mutex_lock(&rport->mutex);
++		ret = rockchip_usb2phy_enable_line_irq(rphy, rport, true);
++		mutex_unlock(&rport->mutex);
++		if (ret) {
++			dev_err(rphy->dev, "failed to enable linestate irq\n");
++			return ret;
+ 		}
  
 -next_child:
 -		/* to prevent out of boundary */
 -		if (++index >= rphy->phy_cfg->num_ports)
 -			break;
-+	if (phy_cfg->phy_tuning)
-+		ret = phy_cfg->phy_tuning(rphy);
++		if (wakeup_enable && rport->ls_irq > 0)
++			enable_irq_wake(rport->ls_irq);
 +
-+	if (phy_cfg->ls_filter_con.disable) {
-+		ret = regmap_write(rphy->grf, phy_cfg->ls_filter_con.offset,
-+				   phy_cfg->ls_filter_con.disable);
-+		if (ret)
-+			dev_err(rphy->dev, "failed to set ls filter %d\n", ret);
++		/* enter low power state */
++		rockchip_usb2phy_low_power_enable(rphy, rport, true);
  	}
  
 -	provider = devm_of_phy_provider_register(dev, of_phy_simple_xlate);
 -	return PTR_ERR_OR_ZERO(provider);
-+	for (index = 0; index < phy_cfg->num_ports; index++) {
++	return ret;
++}
+ 
+-put_child:
+-	of_node_put(child_np);
+-disable_clks:
+-	if (rphy->clk) {
+-		clk_disable_unprepare(rphy->clk);
+-		clk_put(rphy->clk);
++static int rockchip_usb2phy_pm_resume(struct device *dev)
++{
++	struct rockchip_usb2phy *rphy = dev_get_drvdata(dev);
++	struct rockchip_usb2phy_port *rport;
++	unsigned int index;
++	bool iddig;
++	int ret = 0;
++	bool wakeup_enable = false;
++
++	if (device_may_wakeup(rphy->dev))
++		wakeup_enable = true;
++
++	if (rphy->phy_cfg->phy_tuning)
++		ret = rphy->phy_cfg->phy_tuning(rphy);
++
++	for (index = 0; index < rphy->phy_cfg->num_ports; index++) {
 +		rport = &rphy->ports[index];
 +		if (!rport->phy)
 +			continue;
@@ -49487,13 +49419,7 @@ index cab6a94bf..6b7d0c24a 100644
 +					"failed to enable id irq\n");
 +				return ret;
 +			}
- 
--put_child:
--	of_node_put(child_np);
--disable_clks:
--	if (rphy->clk) {
--		clk_disable_unprepare(rphy->clk);
--		clk_put(rphy->clk);
++
 +			if (iddig != rport->prev_iddig) {
 +				dev_dbg(&rport->phy->dev,
 +					"iddig changed during resume\n");
@@ -49520,9 +49446,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		/* exit low power state */
 +		rockchip_usb2phy_low_power_enable(rphy, rport, false);
  	}
-+
-+	if (wakeup_enable && rphy->irq > 0)
-+		disable_irq_wake(rphy->irq);
 +
  	return ret;
  }
@@ -49687,93 +49610,155 @@ index cab6a94bf..6b7d0c24a 100644
  			.cp_det		= { 0x0884, 4, 4, 0, 1 },
  			.dcp_det	= { 0x0884, 3, 3, 0, 1 },
  			.dp_det		= { 0x0884, 5, 5, 0, 1 },
-@@ -1242,80 +3042,88 @@ static const struct rockchip_usb2phy_cfg rk3228_phy_cfgs[] = {
+@@ -1242,18 +2942,72 @@ static const struct rockchip_usb2phy_cfg rk3228_phy_cfgs[] = {
  		.clkout_ctl	= { 0x0808, 4, 4, 1, 0 },
  		.port_cfgs	= {
  			[USB2PHY_PORT_OTG] = {
 -				.phy_sus	= { 0x800, 15, 0, 0, 0x1d1 },
--				.ls_det_en	= { 0x0684, 0, 0, 0, 1 },
--				.ls_det_st	= { 0x0694, 0, 0, 0, 1 },
--				.ls_det_clr	= { 0x06a4, 0, 0, 0, 1 }
--			},
--			[USB2PHY_PORT_HOST] = {
--				.phy_sus	= { 0x804, 15, 0, 0, 0x1d1 },
 +				.phy_sus	= { 0x804, 8, 0, 0, 0x1d1 },
- 				.ls_det_en	= { 0x0684, 1, 1, 0, 1 },
- 				.ls_det_st	= { 0x0694, 1, 1, 0, 1 },
- 				.ls_det_clr	= { 0x06a4, 1, 1, 0, 1 }
++				.ls_det_en	= { 0x0684, 1, 1, 0, 1 },
++				.ls_det_st	= { 0x0694, 1, 1, 0, 1 },
++				.ls_det_clr	= { 0x06a4, 1, 1, 0, 1 }
 +			},
 +			[USB2PHY_PORT_HOST] = {
 +				.phy_sus	= { 0x800, 8, 0, 0, 0x1d1 },
-+				.ls_det_en	= { 0x0684, 0, 0, 0, 1 },
-+				.ls_det_st	= { 0x0694, 0, 0, 0, 1 },
-+				.ls_det_clr	= { 0x06a4, 0, 0, 0, 1 }
+ 				.ls_det_en	= { 0x0684, 0, 0, 0, 1 },
+ 				.ls_det_st	= { 0x0694, 0, 0, 0, 1 },
+ 				.ls_det_clr	= { 0x06a4, 0, 0, 0, 1 }
++			}
++		},
++	},
++	{ /* sentinel */ }
++};
++
++static const struct rockchip_usb2phy_cfg rk3308_phy_cfgs[] = {
++	{
++		.reg = 0x100,
++		.num_ports	= 2,
++		.phy_tuning	= rk3308_usb2phy_tuning,
++		.clkout_ctl	= { 0x0108, 4, 4, 1, 0 },
++		.port_cfgs	= {
++			[USB2PHY_PORT_OTG] = {
++				.phy_sus	= { 0x0100, 8, 0, 0, 0x1d1 },
++				.bvalid_det_en	= { 0x3020, 2, 2, 0, 1 },
++				.bvalid_det_st	= { 0x3024, 2, 2, 0, 1 },
++				.bvalid_det_clr = { 0x3028, 2, 2, 0, 1 },
++				.iddig_output	= { 0x0100, 10, 10, 0, 1 },
++				.iddig_en	= { 0x0100, 9, 9, 0, 1 },
++				.idfall_det_en	= { 0x3020, 5, 5, 0, 1 },
++				.idfall_det_st	= { 0x3024, 5, 5, 0, 1 },
++				.idfall_det_clr = { 0x3028, 5, 5, 0, 1 },
++				.idrise_det_en	= { 0x3020, 4, 4, 0, 1 },
++				.idrise_det_st	= { 0x3024, 4, 4, 0, 1 },
++				.idrise_det_clr = { 0x3028, 4, 4, 0, 1 },
++				.ls_det_en	= { 0x3020, 0, 0, 0, 1 },
++				.ls_det_st	= { 0x3024, 0, 0, 0, 1 },
++				.ls_det_clr	= { 0x3028, 0, 0, 0, 1 },
++				.utmi_avalid	= { 0x0120, 10, 10, 0, 1 },
++				.utmi_bvalid	= { 0x0120, 9, 9, 0, 1 },
++				.utmi_iddig	= { 0x0120, 6, 6, 0, 1 },
++				.utmi_ls	= { 0x0120, 5, 4, 0, 1 },
++				.vbus_det_en	= { 0x001c, 15, 15, 1, 0 },
+ 			},
+ 			[USB2PHY_PORT_HOST] = {
+-				.phy_sus	= { 0x804, 15, 0, 0, 0x1d1 },
+-				.ls_det_en	= { 0x0684, 1, 1, 0, 1 },
+-				.ls_det_st	= { 0x0694, 1, 1, 0, 1 },
+-				.ls_det_clr	= { 0x06a4, 1, 1, 0, 1 }
++				.phy_sus	= { 0x0104, 8, 0, 0, 0x1d1 },
++				.ls_det_en	= { 0x3020, 1, 1, 0, 1 },
++				.ls_det_st	= { 0x3024, 1, 1, 0, 1 },
++				.ls_det_clr	= { 0x3028, 1, 1, 0, 1 },
++				.utmi_ls	= { 0x120, 17, 16, 0, 1 },
++				.utmi_hstdet	= { 0x120, 19, 19, 0, 1 }
  			}
  		},
++		.chg_det = {
++			.chg_mode	= { 0x0100, 8, 0, 0, 0x1d7 },
++			.cp_det		= { 0x0120, 24, 24, 0, 1 },
++			.dcp_det	= { 0x0120, 23, 23, 0, 1 },
++			.dp_det		= { 0x0120, 25, 25, 0, 1 },
++			.idm_sink_en	= { 0x0108, 8, 8, 0, 1 },
++			.idp_sink_en	= { 0x0108, 7, 7, 0, 1 },
++			.idp_src_en	= { 0x0108, 9, 9, 0, 1 },
++			.rdm_pdwn_en	= { 0x0108, 10, 10, 0, 1 },
++			.vdm_src_en	= { 0x0108, 12, 12, 0, 1 },
++			.vdp_src_en	= { 0x0108, 11, 11, 0, 1 },
++		},
  	},
  	{ /* sentinel */ }
  };
- 
--static const struct rockchip_usb2phy_cfg rk3328_phy_cfgs[] = {
-+static const struct rockchip_usb2phy_cfg rk3366_phy_cfgs[] = {
+@@ -1262,22 +3016,36 @@ static const struct rockchip_usb2phy_cfg rk3328_phy_cfgs[] = {
  	{
--		.reg = 0x100,
-+		.reg = 0x700,
+ 		.reg = 0x100,
  		.num_ports	= 2,
--		.clkout_ctl	= { 0x108, 4, 4, 1, 0 },
-+		.phy_tuning	= rk3366_usb2phy_tuning,
-+		.clkout_ctl	= { 0x0724, 15, 15, 1, 0 },
++		.phy_tuning = rk3328_usb2phy_tuning,
+ 		.clkout_ctl	= { 0x108, 4, 4, 1, 0 },
  		.port_cfgs	= {
--			[USB2PHY_PORT_OTG] = {
+ 			[USB2PHY_PORT_OTG] = {
 -				.phy_sus	= { 0x0100, 15, 0, 0, 0x1d1 },
--				.bvalid_det_en	= { 0x0110, 2, 2, 0, 1 },
--				.bvalid_det_st	= { 0x0114, 2, 2, 0, 1 },
--				.bvalid_det_clr = { 0x0118, 2, 2, 0, 1 },
--				.ls_det_en	= { 0x0110, 0, 0, 0, 1 },
--				.ls_det_st	= { 0x0114, 0, 0, 0, 1 },
--				.ls_det_clr	= { 0x0118, 0, 0, 0, 1 },
--				.utmi_avalid	= { 0x0120, 10, 10, 0, 1 },
--				.utmi_bvalid	= { 0x0120, 9, 9, 0, 1 },
--				.utmi_ls	= { 0x0120, 5, 4, 0, 1 },
--			},
++				.phy_sus	= { 0x0100, 8, 0, 0, 0x1d1 },
+ 				.bvalid_det_en	= { 0x0110, 2, 2, 0, 1 },
+ 				.bvalid_det_st	= { 0x0114, 2, 2, 0, 1 },
+ 				.bvalid_det_clr = { 0x0118, 2, 2, 0, 1 },
++				.bypass_bc      = { 0x0008, 14, 14, 0, 1 },
++				.bypass_otg     = { 0x0018, 15, 15, 1, 0 },
++				.iddig_output   = { 0x0100, 10, 10, 0, 1 },
++				.iddig_en       = { 0x0100, 9, 9, 0, 1 },
++				.idfall_det_en	= { 0x0110, 5, 5, 0, 1 },
++				.idfall_det_st	= { 0x0114, 5, 5, 0, 1 },
++				.idfall_det_clr = { 0x0118, 5, 5, 0, 1 },
++				.idrise_det_en	= { 0x0110, 4, 4, 0, 1 },
++				.idrise_det_st	= { 0x0114, 4, 4, 0, 1 },
++				.idrise_det_clr = { 0x0118, 4, 4, 0, 1 },
+ 				.ls_det_en	= { 0x0110, 0, 0, 0, 1 },
+ 				.ls_det_st	= { 0x0114, 0, 0, 0, 1 },
+ 				.ls_det_clr	= { 0x0118, 0, 0, 0, 1 },
+ 				.utmi_avalid	= { 0x0120, 10, 10, 0, 1 },
+ 				.utmi_bvalid	= { 0x0120, 9, 9, 0, 1 },
++				.utmi_iddig	= { 0x0120, 6, 6, 0, 1 },
+ 				.utmi_ls	= { 0x0120, 5, 4, 0, 1 },
++				.vbus_det_en	= { 0x001c, 15, 15, 1, 0 },
+ 			},
  			[USB2PHY_PORT_HOST] = {
 -				.phy_sus	= { 0x104, 15, 0, 0, 0x1d1 },
--				.ls_det_en	= { 0x110, 1, 1, 0, 1 },
--				.ls_det_st	= { 0x114, 1, 1, 0, 1 },
--				.ls_det_clr	= { 0x118, 1, 1, 0, 1 },
--				.utmi_ls	= { 0x120, 17, 16, 0, 1 },
--				.utmi_hstdet	= { 0x120, 19, 19, 0, 1 }
-+				.phy_sus	= { 0x0728, 8, 0, 0, 0x1d1 },
-+				.ls_det_en	= { 0x0680, 4, 4, 0, 1 },
-+				.ls_det_st	= { 0x0690, 4, 4, 0, 1 },
-+				.ls_det_clr	= { 0x06a0, 4, 4, 0, 1 },
-+				.utmi_ls	= { 0x049c, 14, 13, 0, 1 },
-+				.utmi_hstdet	= { 0x049c, 12, 12, 0, 1 }
++				.phy_sus	= { 0x104, 8, 0, 0, 0x1d1 },
++				.bypass_host	= { 0x048, 15, 15, 1, 0 },
+ 				.ls_det_en	= { 0x110, 1, 1, 0, 1 },
+ 				.ls_det_st	= { 0x114, 1, 1, 0, 1 },
+ 				.ls_det_clr	= { 0x118, 1, 1, 0, 1 },
+@@ -1286,7 +3054,7 @@ static const struct rockchip_usb2phy_cfg rk3328_phy_cfgs[] = {
  			}
  		},
--		.chg_det = {
+ 		.chg_det = {
 -			.opmode		= { 0x0100, 3, 0, 5, 1 },
--			.cp_det		= { 0x0120, 24, 24, 0, 1 },
--			.dcp_det	= { 0x0120, 23, 23, 0, 1 },
--			.dp_det		= { 0x0120, 25, 25, 0, 1 },
--			.idm_sink_en	= { 0x0108, 8, 8, 0, 1 },
--			.idp_sink_en	= { 0x0108, 7, 7, 0, 1 },
--			.idp_src_en	= { 0x0108, 9, 9, 0, 1 },
--			.rdm_pdwn_en	= { 0x0108, 10, 10, 0, 1 },
--			.vdm_src_en	= { 0x0108, 12, 12, 0, 1 },
--			.vdp_src_en	= { 0x0108, 11, 11, 0, 1 },
--		},
- 	},
- 	{ /* sentinel */ }
- };
- 
--static const struct rockchip_usb2phy_cfg rk3366_phy_cfgs[] = {
-+static const struct rockchip_usb2phy_cfg rk3368_phy_cfgs[] = {
++			.chg_mode	= { 0x0100, 8, 0, 0, 0x1d7 },
+ 			.cp_det		= { 0x0120, 24, 24, 0, 1 },
+ 			.dcp_det	= { 0x0120, 23, 23, 0, 1 },
+ 			.dp_det		= { 0x0120, 25, 25, 0, 1 },
+@@ -1305,10 +3073,11 @@ static const struct rockchip_usb2phy_cfg rk3366_phy_cfgs[] = {
  	{
  		.reg = 0x700,
  		.num_ports	= 2,
++		.phy_tuning	= rk3366_usb2phy_tuning,
  		.clkout_ctl	= { 0x0724, 15, 15, 1, 0 },
  		.port_cfgs	= {
+ 			[USB2PHY_PORT_HOST] = {
+-				.phy_sus	= { 0x0728, 15, 0, 0, 0x1d1 },
++				.phy_sus	= { 0x0728, 8, 0, 0, 0x1d1 },
+ 				.ls_det_en	= { 0x0680, 4, 4, 0, 1 },
+ 				.ls_det_st	= { 0x0690, 4, 4, 0, 1 },
+ 				.ls_det_clr	= { 0x06a0, 4, 4, 0, 1 },
+@@ -1320,19 +3089,86 @@ static const struct rockchip_usb2phy_cfg rk3366_phy_cfgs[] = {
+ 	{ /* sentinel */ }
+ };
+ 
++static const struct rockchip_usb2phy_cfg rk3368_phy_cfgs[] = {
++	{
++		.reg = 0x700,
++		.num_ports	= 2,
++		.clkout_ctl	= { 0x0724, 15, 15, 1, 0 },
++		.port_cfgs	= {
 +			[USB2PHY_PORT_OTG] = {
 +				.phy_sus	= { 0x0700, 8, 0, 0, 0x1d1 },
 +				.bvalid_det_en	= { 0x0680, 3, 3, 0, 1 },
@@ -49795,16 +49780,13 @@ index cab6a94bf..6b7d0c24a 100644
 +				.utmi_ls	= { 0x04bc, 25, 24, 0, 1 },
 +				.vbus_det_en    = { 0x079c, 15, 15, 1, 0 },
 +			},
- 			[USB2PHY_PORT_HOST] = {
- 				.phy_sus	= { 0x0728, 15, 0, 0, 0x1d1 },
- 				.ls_det_en	= { 0x0680, 4, 4, 0, 1 },
- 				.ls_det_st	= { 0x0690, 4, 4, 0, 1 },
--				.ls_det_clr	= { 0x06a0, 4, 4, 0, 1 },
--				.utmi_ls	= { 0x049c, 14, 13, 0, 1 },
--				.utmi_hstdet	= { 0x049c, 12, 12, 0, 1 }
++			[USB2PHY_PORT_HOST] = {
++				.phy_sus	= { 0x0728, 15, 0, 0, 0x1d1 },
++				.ls_det_en	= { 0x0680, 4, 4, 0, 1 },
++				.ls_det_st	= { 0x0690, 4, 4, 0, 1 },
 +				.ls_det_clr	= { 0x06a0, 4, 4, 0, 1 }
- 			}
- 		},
++			}
++		},
 +		.chg_det = {
 +			.chg_mode	= { 0x0700, 8, 0, 0, 0x1d7 },
 +			.cp_det		= { 0x04b8, 30, 30, 0, 1 },
@@ -49817,10 +49799,11 @@ index cab6a94bf..6b7d0c24a 100644
 +			.vdm_src_en	= { 0x0718, 12, 12, 0, 1 },
 +			.vdp_src_en	= { 0x0718, 11, 11, 0, 1 },
 +		},
- 	},
- 	{ /* sentinel */ }
- };
-@@ -1324,15 +3132,32 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
++	},
++	{ /* sentinel */ }
++};
++
+ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
  	{
  		.reg		= 0xe450,
  		.num_ports	= 2,
@@ -49854,7 +49837,7 @@ index cab6a94bf..6b7d0c24a 100644
  			},
  			[USB2PHY_PORT_HOST] = {
  				.phy_sus	= { 0xe458, 1, 0, 0x2, 0x1 },
-@@ -1344,7 +3169,7 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
+@@ -1344,7 +3180,7 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
  			}
  		},
  		.chg_det = {
@@ -49863,7 +49846,7 @@ index cab6a94bf..6b7d0c24a 100644
  			.cp_det		= { 0xe2ac, 2, 2, 0, 1 },
  			.dcp_det	= { 0xe2ac, 1, 1, 0, 1 },
  			.dp_det		= { 0xe2ac, 0, 0, 0, 1 },
-@@ -1359,15 +3184,30 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
+@@ -1359,15 +3195,30 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
  	{
  		.reg		= 0xe460,
  		.num_ports	= 2,
@@ -49895,7 +49878,7 @@ index cab6a94bf..6b7d0c24a 100644
  			},
  			[USB2PHY_PORT_HOST] = {
  				.phy_sus	= { 0xe468, 1, 0, 0x2, 0x1 },
-@@ -1378,6 +3218,304 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
+@@ -1378,6 +3229,250 @@ static const struct rockchip_usb2phy_cfg rk3399_phy_cfgs[] = {
  				.utmi_hstdet	= { 0xe2ac, 27, 27, 0, 1 }
  			}
  		},
@@ -49922,7 +49905,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		.phy_tuning	= rk3568_usb2phy_tuning,
 +		.vbus_detect	= rk3568_vbus_detect_control,
 +		.clkout_ctl	= { 0x0008, 4, 4, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
 +			[USB2PHY_PORT_OTG] = {
 +				.phy_sus	= { 0x0000, 8, 0, 0, 0x1d1 },
@@ -49976,7 +49958,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		.num_ports	= 2,
 +		.phy_tuning	= rk3568_usb2phy_tuning,
 +		.clkout_ctl	= { 0x0008, 4, 4, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
 +			[USB2PHY_PORT_OTG] = {
 +				.phy_sus	= { 0x0000, 8, 0, 0x1d2, 0x1d1 },
@@ -50005,7 +49986,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		.num_ports	= 1,
 +		.phy_tuning	= rk3588_usb2phy_tuning,
 +		.clkout_ctl	= { 0x0000, 0, 0, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
 +			[USB2PHY_PORT_OTG] = {
 +				.phy_sus	= { 0x000c, 11, 11, 0, 1 },
@@ -50059,17 +50039,14 @@ index cab6a94bf..6b7d0c24a 100644
 +		.num_ports	= 1,
 +		.phy_tuning	= rk3588_usb2phy_tuning,
 +		.clkout_ctl	= { 0x0000, 0, 0, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
++			/* Select suspend control from controller */
 +			[USB2PHY_PORT_OTG] = {
-+				.phy_sus	= { 0x000c, 11, 11, 0, 1 },
++				.phy_sus	= { 0x000c, 11, 11, 0, 0 },
 +				.pipe_phystatus	= { 0x0034, 3, 2, 0, 2 },
 +				.bvalid_det_en	= { 0x0080, 1, 1, 0, 1 },
 +				.bvalid_det_st	= { 0x0084, 1, 1, 0, 1 },
 +				.bvalid_det_clr = { 0x0088, 1, 1, 0, 1 },
-+				.bvalid_grf_sel	= { 0x0010, 3, 3, 0, 1 },
-+				.bvalid_grf_con	= { 0x0010, 3, 2, 2, 3 },
-+				.bvalid_phy_con = { 0x0008, 1, 0, 2, 3 },
 +				.bypass_dm_en	= { 0x000c, 5, 5, 0, 1 },
 +				.bypass_sel	= { 0x000c, 6, 6, 0, 1 },
 +				.iddig_output	= { 0x0010, 0, 0, 0, 1 },
@@ -50113,7 +50090,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		.num_ports	= 1,
 +		.phy_tuning	= rk3588_usb2phy_tuning,
 +		.clkout_ctl	= { 0x0000, 0, 0, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
 +			[USB2PHY_PORT_HOST] = {
 +				.phy_sus	= { 0x0008, 2, 2, 0, 1 },
@@ -50135,7 +50111,6 @@ index cab6a94bf..6b7d0c24a 100644
 +		.num_ports	= 1,
 +		.phy_tuning	= rk3588_usb2phy_tuning,
 +		.clkout_ctl	= { 0x0000, 0, 0, 1, 0 },
-+		.ls_filter_con	= { 0x0040, 19, 0, 0x30100, 0x00020 },
 +		.port_cfgs	= {
 +			[USB2PHY_PORT_HOST] = {
 +				.phy_sus	= { 0x0008, 2, 2, 0, 1 },
@@ -50151,56 +50126,10 @@ index cab6a94bf..6b7d0c24a 100644
 +				.utmi_ls	= { 0x00c0, 10, 9, 0, 1 },
 +			}
 +		},
-+	},
-+	{ /* sentinel */ }
-+};
-+
-+static const struct rockchip_usb2phy_cfg rv1106_phy_cfgs[] = {
-+	{
-+		.reg = 0xff3e0000,
-+		.num_ports	= 1,
-+		.phy_tuning	= rv1106_usb2phy_tuning,
-+		.clkout_ctl	= { 0x0058, 4, 4, 1, 0 },
-+		.port_cfgs	= {
-+			[USB2PHY_PORT_OTG] = {
-+				.phy_sus	= { 0x0050, 8, 0, 0, 0x1d1 },
-+				.bvalid_det_en	= { 0x0100, 2, 2, 0, 1 },
-+				.bvalid_det_st	= { 0x0104, 2, 2, 0, 1 },
-+				.bvalid_det_clr = { 0x0108, 2, 2, 0, 1 },
-+				.bvalid_grf_sel	= { 0x0058, 15, 14, 0, 3 },
-+				.iddig_output	= { 0x0050, 10, 10, 0, 1 },
-+				.iddig_en	= { 0x0050, 9, 9, 0, 1 },
-+				.idfall_det_en	= { 0x0100, 5, 5, 0, 1 },
-+				.idfall_det_st	= { 0x0104, 5, 5, 0, 1 },
-+				.idfall_det_clr = { 0x0108, 5, 5, 0, 1 },
-+				.idrise_det_en	= { 0x0100, 4, 4, 0, 1 },
-+				.idrise_det_st	= { 0x0104, 4, 4, 0, 1 },
-+				.idrise_det_clr = { 0x0108, 4, 4, 0, 1 },
-+				.ls_det_en	= { 0x0100, 0, 0, 0, 1 },
-+				.ls_det_st	= { 0x0104, 0, 0, 0, 1 },
-+				.ls_det_clr	= { 0x0108, 0, 0, 0, 1 },
-+				.utmi_avalid	= { 0x0060, 10, 10, 0, 1 },
-+				.utmi_bvalid	= { 0x0060, 9, 9, 0, 1 },
-+				.utmi_iddig	= { 0x0060, 6, 6, 0, 1 },
-+				.utmi_ls	= { 0x0060, 5, 4, 0, 1 },
-+			},
-+		},
-+		.chg_det = {
-+			.chg_mode	= { 0x0050, 8, 0, 0, 0x1d7 },
-+			.cp_det		= { 0x0060, 13, 13, 0, 1 },
-+			.dcp_det	= { 0x0060, 12, 12, 0, 1 },
-+			.dp_det		= { 0x0060, 14, 14, 0, 1 },
-+			.idm_sink_en	= { 0x0058, 8, 8, 0, 1 },
-+			.idp_sink_en	= { 0x0058, 7, 7, 0, 1 },
-+			.idp_src_en	= { 0x0058, 9, 9, 0, 1 },
-+			.rdm_pdwn_en	= { 0x0058, 10, 10, 0, 1 },
-+			.vdm_src_en	= { 0x0058, 12, 12, 0, 1 },
-+			.vdp_src_en	= { 0x0058, 11, 11, 0, 1 },
-+		},
  	},
  	{ /* sentinel */ }
  };
-@@ -1409,7 +3547,7 @@ static const struct rockchip_usb2phy_cfg rv1108_phy_cfgs[] = {
+@@ -1409,7 +3504,7 @@ static const struct rockchip_usb2phy_cfg rv1108_phy_cfgs[] = {
  			}
  		},
  		.chg_det = {
@@ -50209,46 +50138,24 @@ index cab6a94bf..6b7d0c24a 100644
  			.cp_det		= { 0x0804, 1, 1, 0, 1 },
  			.dcp_det	= { 0x0804, 0, 0, 0, 1 },
  			.dp_det		= { 0x0804, 2, 2, 0, 1 },
-@@ -1425,12 +3563,36 @@ static const struct rockchip_usb2phy_cfg rv1108_phy_cfgs[] = {
- };
+@@ -1426,10 +3521,16 @@ static const struct rockchip_usb2phy_cfg rv1108_phy_cfgs[] = {
  
  static const struct of_device_id rockchip_usb2phy_dt_match[] = {
--	{ .compatible = "rockchip,px30-usb2phy", .data = &rk3328_phy_cfgs },
-+#ifdef CONFIG_CPU_RK1808
+ 	{ .compatible = "rockchip,px30-usb2phy", .data = &rk3328_phy_cfgs },
 +	{ .compatible = "rockchip,rk1808-usb2phy", .data = &rk1808_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK312X
 +	{ .compatible = "rockchip,rk3128-usb2phy", .data = &rk312x_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK322X
  	{ .compatible = "rockchip,rk3228-usb2phy", .data = &rk3228_phy_cfgs },
--	{ .compatible = "rockchip,rk3328-usb2phy", .data = &rk3328_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK3366
++	{ .compatible = "rockchip,rk3308-usb2phy", .data = &rk3308_phy_cfgs },
+ 	{ .compatible = "rockchip,rk3328-usb2phy", .data = &rk3328_phy_cfgs },
  	{ .compatible = "rockchip,rk3366-usb2phy", .data = &rk3366_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK3368
 +	{ .compatible = "rockchip,rk3368-usb2phy", .data = &rk3368_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK3399
  	{ .compatible = "rockchip,rk3399-usb2phy", .data = &rk3399_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK3568
 +	{ .compatible = "rockchip,rk3568-usb2phy", .data = &rk3568_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RK3588
 +	{ .compatible = "rockchip,rk3588-usb2phy", .data = &rk3588_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RV1106
-+	{ .compatible = "rockchip,rv1106-usb2phy", .data = &rv1106_phy_cfgs },
-+#endif
-+#ifdef CONFIG_CPU_RV1108
  	{ .compatible = "rockchip,rv1108-usb2phy", .data = &rv1108_phy_cfgs },
-+#endif
  	{}
  };
- MODULE_DEVICE_TABLE(of, rockchip_usb2phy_dt_match);
-@@ -1439,6 +3601,7 @@ static struct platform_driver rockchip_usb2phy_driver = {
+@@ -1439,6 +3540,7 @@ static struct platform_driver rockchip_usb2phy_driver = {
  	.probe		= rockchip_usb2phy_probe,
  	.driver		= {
  		.name	= "rockchip-usb2phy",
@@ -50287,7 +50194,7 @@ index 75216091d..2f47a3e7f 100644
  	 * No documented timeout value for phy operation below,
  	 * so we make it large enough here. And we use loop-break
 diff --git a/drivers/phy/rockchip/phy-rockchip-typec.c b/drivers/phy/rockchip/phy-rockchip-typec.c
-index 70a31251b..676c213ce 100644
+index 20f787d5e..b029d0288 100644
 --- a/drivers/phy/rockchip/phy-rockchip-typec.c
 +++ b/drivers/phy/rockchip/phy-rockchip-typec.c
 @@ -54,6 +54,7 @@
@@ -50770,7 +50677,7 @@ index 70a31251b..676c213ce 100644
  
  	writel(0xbefc, tcphy->base + XCVR_PSM_RCTRL(lane));
  	writel(0x6799, tcphy->base + TX_PSC_A0(lane));
-@@ -536,27 +845,234 @@ static void tcphy_dp_cfg_lane(struct rockchip_typec_phy *tcphy, u32 lane)
+@@ -536,26 +845,233 @@ static void tcphy_dp_cfg_lane(struct rockchip_typec_phy *tcphy, u32 lane)
  	writel(0x98, tcphy->base + TX_PSC_A2(lane));
  	writel(0x98, tcphy->base + TX_PSC_A3(lane));
  
@@ -50819,8 +50726,8 @@ index 70a31251b..676c213ce 100644
 +		break;
 +	}
 +	writel(val, tcphy->base + XCVR_DIAG_PLLDRC_CTRL(lane));
- }
- 
++}
++
 +int tcphy_dp_set_phy_config(struct phy *phy, int link_rate,
 +			    int lane_count, u8 swing, u8 pre_emp)
 +{
@@ -51018,12 +50925,11 @@ index 70a31251b..676c213ce 100644
 +	}
 +
 +	return 0;
-+}
+ }
 +EXPORT_SYMBOL(tcphy_dp_set_link_rate);
-+
+ 
  static inline int property_enable(struct rockchip_typec_phy *tcphy,
  				  const struct usb3phy_reg *reg, bool en)
- {
 @@ -719,6 +1235,18 @@ static void tcphy_dp_aux_calibration(struct rockchip_typec_phy *tcphy)
  	writel(val, tcphy->base + TX_DIG_CTRL_REG_2);
  }
@@ -51089,7 +50995,7 @@ index 70a31251b..676c213ce 100644
  
  	reset_control_deassert(tcphy->uphy_rst);
  
-@@ -851,22 +1380,9 @@ static int tcphy_get_mode(struct rockchip_typec_phy *tcphy)
+@@ -850,22 +1379,9 @@ static int tcphy_get_mode(struct rockchip_typec_phy *tcphy)
  	return mode;
  }
  
@@ -51113,7 +51019,7 @@ index 70a31251b..676c213ce 100644
  	const struct usb3phy_reg *reg = &cfg->pipe_status;
  	int timeout, new_mode, ret = 0;
  	u32 val;
-@@ -917,6 +1433,24 @@ static int rockchip_usb3_phy_power_on(struct phy *phy)
+@@ -916,6 +1432,24 @@ static int rockchip_usb3_phy_power_on(struct phy *phy)
  	return ret;
  }
  
@@ -51138,7 +51044,7 @@ index 70a31251b..676c213ce 100644
  static int rockchip_usb3_phy_power_off(struct phy *phy)
  {
  	struct rockchip_typec_phy *tcphy = phy_get_drvdata(phy);
-@@ -980,8 +1514,8 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -979,8 +1513,8 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  
  	property_enable(tcphy, &cfg->uphy_dp_sel, 1);
  
@@ -51149,7 +51055,7 @@ index 70a31251b..676c213ce 100644
  				 PHY_MODE_SET_TIMEOUT);
  	if (ret < 0) {
  		dev_err(tcphy->dev, "failed to wait TCPHY enter A2\n");
-@@ -990,14 +1524,10 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -989,14 +1523,10 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  
  	tcphy_dp_aux_calibration(tcphy);
  
@@ -51168,7 +51074,7 @@ index 70a31251b..676c213ce 100644
  		goto power_on_finish;
  	}
  
-@@ -1014,6 +1544,7 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
+@@ -1013,6 +1543,7 @@ static int rockchip_dp_phy_power_on(struct phy *phy)
  static int rockchip_dp_phy_power_off(struct phy *phy)
  {
  	struct rockchip_typec_phy *tcphy = phy_get_drvdata(phy);
@@ -51176,7 +51082,7 @@ index 70a31251b..676c213ce 100644
  
  	mutex_lock(&tcphy->lock);
  
-@@ -1022,7 +1553,11 @@ static int rockchip_dp_phy_power_off(struct phy *phy)
+@@ -1021,7 +1552,11 @@ static int rockchip_dp_phy_power_off(struct phy *phy)
  
  	tcphy->mode &= ~MODE_DFP_DP;
  
@@ -51189,7 +51095,7 @@ index 70a31251b..676c213ce 100644
  
  	if (tcphy->mode == MODE_DISCONNECT)
  		tcphy_phy_deinit(tcphy);
-@@ -1041,6 +1576,8 @@ static const struct phy_ops rockchip_dp_phy_ops = {
+@@ -1040,6 +1575,8 @@ static const struct phy_ops rockchip_dp_phy_ops = {
  static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
  			  struct device *dev)
  {
@@ -51198,7 +51104,7 @@ index 70a31251b..676c213ce 100644
  	tcphy->grf_regs = syscon_regmap_lookup_by_phandle(dev->of_node,
  							  "rockchip,grf");
  	if (IS_ERR(tcphy->grf_regs)) {
-@@ -1078,6 +1615,16 @@ static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
+@@ -1077,6 +1614,16 @@ static int tcphy_parse_dt(struct rockchip_typec_phy *tcphy,
  		return PTR_ERR(tcphy->tcphy_rst);
  	}
  
@@ -52462,7 +52368,7 @@ index c6f4229eb..46e426cf4 100644
  MODULE_DESCRIPTION("RK805 pin control and GPIO driver");
  MODULE_AUTHOR("Joseph Chen <chenjh@rock-chips.com>");
 diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl-rockchip.c
-index 764c96ddf..1e78070ab 100644
+index 2a454098e..1e78070ab 100644
 --- a/drivers/pinctrl/pinctrl-rockchip.c
 +++ b/drivers/pinctrl/pinctrl-rockchip.c
 @@ -16,11 +16,13 @@
@@ -53007,68 +52913,14 @@ index 764c96ddf..1e78070ab 100644
  static struct rockchip_mux_route_data px30_mux_route_data[] = {
  	RK_MUXROUTE_SAME(2, RK_PA0, 1, 0x184, BIT(16 + 7)), /* cif-d2m0 */
  	RK_MUXROUTE_SAME(3, RK_PA3, 3, 0x184, BIT(16 + 7) | BIT(7)), /* cif-d2m1 */
-@@ -954,19 +936,20 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_PMU(0, RK_PB5, 4, 0x0110, WRITE_MASK_VAL(3, 2, 1)), /* PWM1 IO mux M1 */
- 	RK_MUXROUTE_PMU(0, RK_PC1, 1, 0x0110, WRITE_MASK_VAL(5, 4, 0)), /* PWM2 IO mux M0 */
- 	RK_MUXROUTE_PMU(0, RK_PB6, 4, 0x0110, WRITE_MASK_VAL(5, 4, 1)), /* PWM2 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB3, 2, 0x0300, WRITE_MASK_VAL(0, 0, 0)), /* CAN0 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PB3, 2, 0x0300, WRITE_MASK_VAL(0, 0, 0)), /* CAN0 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PA1, 4, 0x0300, WRITE_MASK_VAL(0, 0, 1)), /* CAN0 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA1, 3, 0x0300, WRITE_MASK_VAL(2, 2, 0)), /* CAN1 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PC3, 3, 0x0300, WRITE_MASK_VAL(2, 2, 1)), /* CAN1 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PB5, 3, 0x0300, WRITE_MASK_VAL(4, 4, 0)), /* CAN2 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PB2, 4, 0x0300, WRITE_MASK_VAL(4, 4, 1)), /* CAN2 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PC4, 1, 0x0300, WRITE_MASK_VAL(6, 6, 0)), /* HPDIN IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
+@@ -964,6 +946,7 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
+ 	RK_MUXROUTE_GRF(0, RK_PC2, 2, 0x0300, WRITE_MASK_VAL(6, 6, 1)), /* HPDIN IO mux M1 */
  	RK_MUXROUTE_GRF(3, RK_PB1, 3, 0x0300, WRITE_MASK_VAL(8, 8, 0)), /* GMAC1 IO mux M0 */
  	RK_MUXROUTE_GRF(4, RK_PA7, 3, 0x0300, WRITE_MASK_VAL(8, 8, 1)), /* GMAC1 IO mux M1 */
 +	RK_MUXROUTE_GRF(4, RK_PB7, 3, 0x0300, WRITE_MASK_VAL(8, 8, 1)), /* GMAC1 IO mux M1 */
  	RK_MUXROUTE_GRF(4, RK_PD1, 1, 0x0300, WRITE_MASK_VAL(10, 10, 0)), /* HDMITX IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PB4, 1, 0x0300, WRITE_MASK_VAL(14, 14, 1)), /* I2C2 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA0, 1, 0x0304, WRITE_MASK_VAL(0, 0, 0)), /* I2C3 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PB6, 4, 0x0304, WRITE_MASK_VAL(0, 0, 1)), /* I2C3 IO mux M1 */
-@@ -992,7 +975,7 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(4, RK_PC3, 1, 0x0308, WRITE_MASK_VAL(12, 12, 1)), /* PWM15 IO mux M1 */
- 	RK_MUXROUTE_GRF(3, RK_PD2, 3, 0x0308, WRITE_MASK_VAL(14, 14, 0)), /* SDMMC2 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PA5, 5, 0x0308, WRITE_MASK_VAL(14, 14, 1)), /* SDMMC2 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PB5, 2, 0x030c, WRITE_MASK_VAL(0, 0, 0)), /* SPI0 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PB5, 2, 0x030c, WRITE_MASK_VAL(0, 0, 0)), /* SPI0 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD3, 3, 0x030c, WRITE_MASK_VAL(0, 0, 1)), /* SPI0 IO mux M1 */
- 	RK_MUXROUTE_GRF(2, RK_PB5, 3, 0x030c, WRITE_MASK_VAL(2, 2, 0)), /* SPI1 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PC3, 3, 0x030c, WRITE_MASK_VAL(2, 2, 1)), /* SPI1 IO mux M1 */
-@@ -1001,8 +984,8 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(4, RK_PB3, 4, 0x030c, WRITE_MASK_VAL(6, 6, 0)), /* SPI3 IO mux M0 */
- 	RK_MUXROUTE_GRF(4, RK_PC2, 2, 0x030c, WRITE_MASK_VAL(6, 6, 1)), /* SPI3 IO mux M1 */
- 	RK_MUXROUTE_GRF(2, RK_PB4, 2, 0x030c, WRITE_MASK_VAL(8, 8, 0)), /* UART1 IO mux M0 */
--	RK_MUXROUTE_PMU(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(8, 8, 1)), /* UART1 IO mux M1 */
--	RK_MUXROUTE_PMU(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(10, 10, 0)), /* UART2 IO mux M0 */
-+	RK_MUXROUTE_GRF(3, RK_PD6, 4, 0x030c, WRITE_MASK_VAL(8, 8, 1)), /* UART1 IO mux M1 */
-+	RK_MUXROUTE_GRF(0, RK_PD1, 1, 0x030c, WRITE_MASK_VAL(10, 10, 0)), /* UART2 IO mux M0 */
- 	RK_MUXROUTE_GRF(1, RK_PD5, 2, 0x030c, WRITE_MASK_VAL(10, 10, 1)), /* UART2 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA1, 2, 0x030c, WRITE_MASK_VAL(12, 12, 0)), /* UART3 IO mux M0 */
- 	RK_MUXROUTE_GRF(3, RK_PB7, 4, 0x030c, WRITE_MASK_VAL(12, 12, 1)), /* UART3 IO mux M1 */
-@@ -1032,13 +1015,13 @@ static struct rockchip_mux_route_data rk3568_mux_route_data[] = {
- 	RK_MUXROUTE_GRF(3, RK_PD6, 5, 0x0314, WRITE_MASK_VAL(1, 0, 1)), /* PDM IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PA0, 4, 0x0314, WRITE_MASK_VAL(1, 0, 1)), /* PDM IO mux M1 */
- 	RK_MUXROUTE_GRF(3, RK_PC4, 5, 0x0314, WRITE_MASK_VAL(1, 0, 2)), /* PDM IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA5, 3, 0x0314, WRITE_MASK_VAL(3, 2, 0)), /* PCIE20 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA5, 3, 0x0314, WRITE_MASK_VAL(3, 2, 0)), /* PCIE20 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD0, 4, 0x0314, WRITE_MASK_VAL(3, 2, 1)), /* PCIE20 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PB0, 4, 0x0314, WRITE_MASK_VAL(3, 2, 2)), /* PCIE20 IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA4, 3, 0x0314, WRITE_MASK_VAL(5, 4, 0)), /* PCIE30X1 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA4, 3, 0x0314, WRITE_MASK_VAL(5, 4, 0)), /* PCIE30X1 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD2, 4, 0x0314, WRITE_MASK_VAL(5, 4, 1)), /* PCIE30X1 IO mux M1 */
- 	RK_MUXROUTE_GRF(1, RK_PA5, 4, 0x0314, WRITE_MASK_VAL(5, 4, 2)), /* PCIE30X1 IO mux M2 */
--	RK_MUXROUTE_PMU(0, RK_PA6, 2, 0x0314, WRITE_MASK_VAL(7, 6, 0)), /* PCIE30X2 IO mux M0 */
-+	RK_MUXROUTE_GRF(0, RK_PA6, 2, 0x0314, WRITE_MASK_VAL(7, 6, 0)), /* PCIE30X2 IO mux M0 */
- 	RK_MUXROUTE_GRF(2, RK_PD4, 4, 0x0314, WRITE_MASK_VAL(7, 6, 1)), /* PCIE30X2 IO mux M1 */
- 	RK_MUXROUTE_GRF(4, RK_PC2, 4, 0x0314, WRITE_MASK_VAL(7, 6, 2)), /* PCIE30X2 IO mux M2 */
- };
+ 	RK_MUXROUTE_GRF(0, RK_PC7, 1, 0x0300, WRITE_MASK_VAL(10, 10, 1)), /* HDMITX IO mux M1 */
+ 	RK_MUXROUTE_GRF(0, RK_PB6, 1, 0x0300, WRITE_MASK_VAL(14, 14, 0)), /* I2C2 IO mux M0 */
 @@ -1071,6 +1054,7 @@ static bool rockchip_get_mux_route(struct rockchip_pin_bank *bank, int pin,
  static int rockchip_get_mux(struct rockchip_pin_bank *bank, int pin)
  {
@@ -53749,7 +53601,7 @@ index 764c96ddf..1e78070ab 100644
  }
  
  static int rockchip_pull_list[PULL_TYPE_MAX][4] = {
-@@ -2040,11 +2559,15 @@ static int rockchip_get_pull(struct rockchip_pin_bank *bank, int pin_num)
+@@ -2040,23 +2559,18 @@ static int rockchip_get_pull(struct rockchip_pin_bank *bank, int pin_num)
  				: PIN_CONFIG_BIAS_DISABLE;
  	case PX30:
  	case RV1108:
@@ -53760,12 +53612,23 @@ index 764c96ddf..1e78070ab 100644
  	case RK3308:
  	case RK3368:
  	case RK3399:
-+	case RK3568:
+ 	case RK3568:
 +	case RK3588:
  		pull_type = bank->pull_type[pin_num / 8];
  		data >>= bit;
  		data &= (1 << RK3188_PULL_BITS_PER_PIN) - 1;
-@@ -2085,12 +2608,15 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
+-		/*
+-		 * In the TRM, pull-up being 1 for everything except the GPIO0_D3-D6,
+-		 * where that pull up value becomes 3.
+-		 */
+-		if (ctrl->type == RK3568 && bank->bank_num == 0 && pin_num >= 27 && pin_num <= 30) {
+-			if (data == 3)
+-				data = 1;
+-		}
+ 
+ 		return rockchip_pull_list[pull_type][data];
+ 	default:
+@@ -2094,12 +2608,15 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
  		break;
  	case PX30:
  	case RV1108:
@@ -53781,7 +53644,16 @@ index 764c96ddf..1e78070ab 100644
  		pull_type = bank->pull_type[pin_num / 8];
  		ret = -EINVAL;
  		for (i = 0; i < ARRAY_SIZE(rockchip_pull_list[pull_type]);
-@@ -2242,6 +2768,81 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
+@@ -2110,7 +2627,7 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
+ 			}
+ 		}
+ 		/*
+-		 * In the TRM, pull-up being 1 for everything except the GPIO0_D3-D6,
++		 * In the TRM, pull-up being 1 for everything except the GPIO0_D0-D6,
+ 		 * where that pull up value becomes 3.
+ 		 */
+ 		if (ctrl->type == RK3568 && bank->bank_num == 0 && pin_num >= 27 && pin_num <= 30) {
+@@ -2251,6 +2768,81 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
  	return regmap_update_bits(regmap, reg, rmask, data);
  }
  
@@ -53863,7 +53735,7 @@ index 764c96ddf..1e78070ab 100644
  /*
   * Pinmux_ops handling
   */
-@@ -2297,9 +2898,9 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
+@@ -2306,9 +2898,9 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
  			break;
  	}
  
@@ -53875,7 +53747,7 @@ index 764c96ddf..1e78070ab 100644
  			rockchip_set_mux(bank, pins[cnt] - bank->pin_base, 0);
  
  		return ret;
-@@ -2308,86 +2909,11 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
+@@ -2317,86 +2909,11 @@ static int rockchip_pmx_set(struct pinctrl_dev *pctldev, unsigned selector,
  	return 0;
  }
  
@@ -53962,7 +53834,7 @@ index 764c96ddf..1e78070ab 100644
  };
  
  /*
-@@ -2406,20 +2932,37 @@ static bool rockchip_pinconf_pull_valid(struct rockchip_pin_ctrl *ctrl,
+@@ -2415,20 +2932,37 @@ static bool rockchip_pinconf_pull_valid(struct rockchip_pin_ctrl *ctrl,
  		return pull ? false : true;
  	case PX30:
  	case RV1108:
@@ -54002,7 +53874,7 @@ index 764c96ddf..1e78070ab 100644
  
  /* set the pin config settings for a specified pin */
  static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
-@@ -2427,6 +2970,7 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2436,6 +2970,7 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  {
  	struct rockchip_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
  	struct rockchip_pin_bank *bank = pin_to_bank(info, pin);
@@ -54010,7 +53882,7 @@ index 764c96ddf..1e78070ab 100644
  	enum pin_config_param param;
  	u32 arg;
  	int i;
-@@ -2459,16 +3003,35 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2468,12 +3003,31 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  				return rc;
  			break;
  		case PIN_CONFIG_OUTPUT:
@@ -54020,10 +53892,6 @@ index 764c96ddf..1e78070ab 100644
 -					  pin - bank->pin_base, false);
 -			if (rc)
 -				return rc;
--			break;
--		case PIN_CONFIG_DRIVE_STRENGTH:
--			/* rk3288 is the first with per-pin drive-strength */
--			if (!info->ctrl->drv_calc_reg)
 +			rc = rockchip_set_mux(bank, pin - bank->pin_base,
 +					      RK_FUNC_GPIO);
 +			if (rc != RK_FUNC_GPIO)
@@ -54049,14 +53917,10 @@ index 764c96ddf..1e78070ab 100644
 +						    arg);
 +			if (rc)
 +				return rc;
-+			break;
-+		case PIN_CONFIG_DRIVE_STRENGTH:
-+			/* rk3288 is the first with per-pin drive-strength */
-+			if (!info->ctrl->drv_calc_reg)
- 				return -ENOTSUPP;
- 
- 			rc = rockchip_set_drive_perpin(bank,
-@@ -2485,9 +3048,17 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
+ 			break;
+ 		case PIN_CONFIG_DRIVE_STRENGTH:
+ 			/* rk3288 is the first with per-pin drive-strength */
+@@ -2494,9 +3048,17 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
  			if (rc < 0)
  				return rc;
  			break;
@@ -54075,7 +53939,7 @@ index 764c96ddf..1e78070ab 100644
  		}
  	} /* for each config */
  
-@@ -2500,6 +3071,7 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2509,6 +3071,7 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  {
  	struct rockchip_pinctrl *info = pinctrl_dev_get_drvdata(pctldev);
  	struct rockchip_pin_bank *bank = pin_to_bank(info, pin);
@@ -54083,7 +53947,7 @@ index 764c96ddf..1e78070ab 100644
  	enum pin_config_param param = pinconf_to_config_param(*config);
  	u16 arg;
  	int rc;
-@@ -2528,7 +3100,12 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2537,7 +3100,12 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  		if (rc != RK_FUNC_GPIO)
  			return -EINVAL;
  
@@ -54097,7 +53961,7 @@ index 764c96ddf..1e78070ab 100644
  		if (rc < 0)
  			return rc;
  
-@@ -2553,11 +3130,20 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
+@@ -2562,11 +3130,20 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
  		if (rc < 0)
  			return rc;
  
@@ -54119,7 +53983,7 @@ index 764c96ddf..1e78070ab 100644
  	}
  
  	*config = pinconf_to_config_packed(param, arg);
-@@ -2650,7 +3236,6 @@ static int rockchip_pinctrl_parse_groups(struct device_node *np,
+@@ -2659,7 +3236,6 @@ static int rockchip_pinctrl_parse_groups(struct device_node *np,
  		np_config = of_find_node_by_phandle(be32_to_cpup(phandle));
  		ret = pinconf_generic_parse_dt_config(np_config, NULL,
  				&grp->data[j].configs, &grp->data[j].nconfigs);
@@ -54127,7 +53991,7 @@ index 764c96ddf..1e78070ab 100644
  		if (ret)
  			return ret;
  	}
-@@ -2767,7 +3352,7 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2776,7 +3352,7 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  	ctrldesc->npins = info->ctrl->nr_pins;
  
  	pdesc = pindesc;
@@ -54136,7 +54000,7 @@ index 764c96ddf..1e78070ab 100644
  		pin_bank = &info->ctrl->pin_banks[bank];
  		for (pin = 0; pin < pin_bank->nr_pins; pin++, k++) {
  			pdesc->number = k;
-@@ -2775,6 +3360,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2784,6 +3360,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  						pin_bank->name, pin);
  			pdesc++;
  		}
@@ -54146,7 +54010,7 @@ index 764c96ddf..1e78070ab 100644
  	}
  
  	ret = rockchip_pinctrl_parse_dt(pdev, info);
-@@ -2787,552 +3375,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
+@@ -2796,552 +3375,9 @@ static int rockchip_pinctrl_register(struct platform_device *pdev,
  		return PTR_ERR(info->pctl_dev);
  	}
  
@@ -54699,7 +54563,7 @@ index 764c96ddf..1e78070ab 100644
  static const struct of_device_id rockchip_pinctrl_dt_match[];
  
  /* retrieve the soc specific data */
-@@ -3342,7 +3387,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3351,7 +3387,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  {
  	const struct of_device_id *match;
  	struct device_node *node = pdev->dev.of_node;
@@ -54707,7 +54571,7 @@ index 764c96ddf..1e78070ab 100644
  	struct rockchip_pin_ctrl *ctrl;
  	struct rockchip_pin_bank *bank;
  	int grf_offs, pmu_offs, drv_grf_offs, drv_pmu_offs, i, j;
-@@ -3350,23 +3394,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3359,23 +3394,6 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  	match = of_match_node(rockchip_pinctrl_dt_match, node);
  	ctrl = (struct rockchip_pin_ctrl *)match->data;
  
@@ -54731,7 +54595,7 @@ index 764c96ddf..1e78070ab 100644
  	grf_offs = ctrl->grf_mux_offset;
  	pmu_offs = ctrl->pmu_mux_offset;
  	drv_pmu_offs = ctrl->pmu_drv_offset;
-@@ -3391,12 +3418,13 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3400,12 +3418,13 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  
  			/* preset iomux offset value, set new start value */
  			if (iom->offset >= 0) {
@@ -54747,7 +54611,7 @@ index 764c96ddf..1e78070ab 100644
  							pmu_offs : grf_offs;
  			}
  
-@@ -3421,7 +3449,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
+@@ -3430,7 +3449,7 @@ static struct rockchip_pin_ctrl *rockchip_pinctrl_get_soc_data(
  			inc = (iom->type & (IOMUX_WIDTH_4BIT |
  					    IOMUX_WIDTH_3BIT |
  					    IOMUX_WIDTH_2BIT)) ? 8 : 4;
@@ -54756,7 +54620,7 @@ index 764c96ddf..1e78070ab 100644
  				pmu_offs += inc;
  			else
  				grf_offs += inc;
-@@ -3516,6 +3544,46 @@ static int __maybe_unused rockchip_pinctrl_resume(struct device *dev)
+@@ -3525,6 +3544,46 @@ static int __maybe_unused rockchip_pinctrl_resume(struct device *dev)
  static SIMPLE_DEV_PM_OPS(rockchip_pinctrl_dev_pm_ops, rockchip_pinctrl_suspend,
  			 rockchip_pinctrl_resume);
  
@@ -54803,7 +54667,7 @@ index 764c96ddf..1e78070ab 100644
  static int rockchip_pinctrl_probe(struct platform_device *pdev)
  {
  	struct rockchip_pinctrl *info;
-@@ -3589,17 +3657,50 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
+@@ -3598,17 +3657,50 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
  			return PTR_ERR(info->regmap_pmu);
  	}
  
@@ -54858,7 +54722,7 @@ index 764c96ddf..1e78070ab 100644
  
  	return 0;
  }
-@@ -3639,6 +3740,7 @@ static struct rockchip_pin_ctrl px30_pin_ctrl = {
+@@ -3648,6 +3740,7 @@ static struct rockchip_pin_ctrl px30_pin_ctrl = {
  		.pull_calc_reg		= px30_calc_pull_reg_and_bit,
  		.drv_calc_reg		= px30_calc_drv_reg_and_bit,
  		.schmitt_calc_reg	= px30_calc_schmitt_reg_and_bit,
@@ -54866,7 +54730,7 @@ index 764c96ddf..1e78070ab 100644
  };
  
  static struct rockchip_pin_bank rv1108_pin_banks[] = {
-@@ -3665,6 +3767,86 @@ static struct rockchip_pin_ctrl rv1108_pin_ctrl = {
+@@ -3674,6 +3767,86 @@ static struct rockchip_pin_ctrl rv1108_pin_ctrl = {
  	.schmitt_calc_reg	= rv1108_calc_schmitt_reg_and_bit,
  };
  
@@ -54953,7 +54817,7 @@ index 764c96ddf..1e78070ab 100644
  static struct rockchip_pin_bank rk2928_pin_banks[] = {
  	PIN_BANK(0, 32, "gpio0"),
  	PIN_BANK(1, 32, "gpio1"),
-@@ -3787,9 +3969,9 @@ static struct rockchip_pin_ctrl rk3228_pin_ctrl = {
+@@ -3796,9 +3969,9 @@ static struct rockchip_pin_ctrl rk3228_pin_ctrl = {
  };
  
  static struct rockchip_pin_bank rk3288_pin_banks[] = {
@@ -54966,7 +54830,7 @@ index 764c96ddf..1e78070ab 100644
  					     IOMUX_UNROUTED
  			    ),
  	PIN_BANK_IOMUX_FLAGS(1, 32, "gpio1", IOMUX_UNROUTED,
-@@ -3864,6 +4046,7 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl = {
+@@ -3873,6 +4046,7 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl = {
  		.niomux_recalced	= ARRAY_SIZE(rk3308_mux_recalced_data),
  		.iomux_routes		= rk3308_mux_route_data,
  		.niomux_routes		= ARRAY_SIZE(rk3308_mux_route_data),
@@ -54974,7 +54838,7 @@ index 764c96ddf..1e78070ab 100644
  		.pull_calc_reg		= rk3308_calc_pull_reg_and_bit,
  		.drv_calc_reg		= rk3308_calc_drv_reg_and_bit,
  		.schmitt_calc_reg	= rk3308_calc_schmitt_reg_and_bit,
-@@ -4024,14 +4207,42 @@ static struct rockchip_pin_ctrl rk3568_pin_ctrl = {
+@@ -4033,14 +4207,42 @@ static struct rockchip_pin_ctrl rk3568_pin_ctrl = {
  	.niomux_routes		= ARRAY_SIZE(rk3568_mux_route_data),
  	.pull_calc_reg		= rk3568_calc_pull_reg_and_bit,
  	.drv_calc_reg		= rk3568_calc_drv_reg_and_bit,
@@ -55017,7 +54881,7 @@ index 764c96ddf..1e78070ab 100644
  	{ .compatible = "rockchip,rk2928-pinctrl",
  		.data = &rk2928_pin_ctrl },
  	{ .compatible = "rockchip,rk3036-pinctrl",
-@@ -4058,11 +4269,14 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
+@@ -4067,11 +4269,14 @@ static const struct of_device_id rockchip_pinctrl_dt_match[] = {
  		.data = &rk3399_pin_ctrl },
  	{ .compatible = "rockchip,rk3568-pinctrl",
  		.data = &rk3568_pin_ctrl },
@@ -55032,7 +54896,7 @@ index 764c96ddf..1e78070ab 100644
  	.driver = {
  		.name	= "rockchip-pinctrl",
  		.pm = &rockchip_pinctrl_dev_pm_ops,
-@@ -4075,3 +4289,14 @@ static int __init rockchip_pinctrl_drv_register(void)
+@@ -4084,3 +4289,14 @@ static int __init rockchip_pinctrl_drv_register(void)
  	return platform_driver_register(&rockchip_pinctrl_driver);
  }
  postcore_initcall(rockchip_pinctrl_drv_register);
@@ -55202,7 +55066,7 @@ index e0772c9f7..2fe0089c4 100644
  
  	syscon_rbm->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
 diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 2b644590f..8cdd19de0 100644
+index 5c8c117b3..631fcaa68 100644
 --- a/drivers/power/supply/power_supply_core.c
 +++ b/drivers/power/supply/power_supply_core.c
 @@ -32,6 +32,13 @@ EXPORT_SYMBOL_GPL(power_supply_notifier);
@@ -55219,7 +55083,7 @@ index 2b644590f..8cdd19de0 100644
  #define POWER_SUPPLY_DEFERRED_REGISTER_TIME	msecs_to_jiffies(10)
  
  static bool __power_supply_is_supplied_by(struct power_supply *supplier,
-@@ -522,6 +529,77 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
+@@ -529,6 +536,77 @@ struct power_supply *power_supply_get_by_phandle(struct device_node *np,
  }
  EXPORT_SYMBOL_GPL(power_supply_get_by_phandle);
  
@@ -55298,7 +55162,7 @@ index 2b644590f..8cdd19de0 100644
  {
  	struct power_supply **psy = res;
 diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index a616b9d8f..a5e656360 100644
+index 2b1df9c33..932b890a8 100644
 --- a/drivers/power/supply/power_supply_sysfs.c
 +++ b/drivers/power/supply/power_supply_sysfs.c
 @@ -89,6 +89,7 @@ static const char * const POWER_SUPPLY_CHARGE_TYPE_TEXT[] = {
@@ -55615,7 +55479,7 @@ index 1f3079562..c6b3ce057 100644
  MODULE_AUTHOR("Beniamino Galvani <b.galvani@gmail.com>");
  MODULE_DESCRIPTION("Rockchip SoC PWM driver");
 diff --git a/drivers/pwm/sysfs.c b/drivers/pwm/sysfs.c
-index 9903c3a7e..ca47570cb 100644
+index b8417a8d2..1e9b97a78 100644
 --- a/drivers/pwm/sysfs.c
 +++ b/drivers/pwm/sysfs.c
 @@ -103,6 +103,43 @@ static ssize_t duty_cycle_store(struct device *child,
@@ -59076,7 +58940,7 @@ index aa9e0e31e..a328dec78 100644
  
  module_platform_driver(rockchip_thermal_driver);
 diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index b6dc9003b..b7b690972 100644
+index 61b11490a..5086a77b9 100644
 --- a/drivers/tty/serial/8250/8250.h
 +++ b/drivers/tty/serial/8250/8250.h
 @@ -48,6 +48,9 @@ struct uart_8250_dma {
@@ -59089,7 +58953,7 @@ index b6dc9003b..b7b690972 100644
  };
  
  struct old_serial_port {
-@@ -158,6 +161,9 @@ static inline bool serial8250_set_THRI(struct uart_8250_port *up)
+@@ -157,6 +160,9 @@ static inline bool serial8250_set_THRI(struct uart_8250_port *up)
  	if (up->ier & UART_IER_THRI)
  		return false;
  	up->ier |= UART_IER_THRI;
@@ -59099,7 +58963,7 @@ index b6dc9003b..b7b690972 100644
  	serial_out(up, UART_IER, up->ier);
  	return true;
  }
-@@ -167,6 +173,9 @@ static inline bool serial8250_clear_THRI(struct uart_8250_port *up)
+@@ -166,6 +172,9 @@ static inline bool serial8250_clear_THRI(struct uart_8250_port *up)
  	if (!(up->ier & UART_IER_THRI))
  		return false;
  	up->ier &= ~UART_IER_THRI;
@@ -59109,7 +58973,7 @@ index b6dc9003b..b7b690972 100644
  	serial_out(up, UART_IER, up->ier);
  	return true;
  }
-@@ -327,6 +336,9 @@ static inline int is_omap1510_8250(struct uart_8250_port *pt)
+@@ -326,6 +335,9 @@ static inline int is_omap1510_8250(struct uart_8250_port *pt)
  #ifdef CONFIG_SERIAL_8250_DMA
  extern int serial8250_tx_dma(struct uart_8250_port *);
  extern int serial8250_rx_dma(struct uart_8250_port *);
@@ -59119,7 +58983,7 @@ index b6dc9003b..b7b690972 100644
  extern void serial8250_rx_dma_flush(struct uart_8250_port *);
  extern int serial8250_request_dma(struct uart_8250_port *);
  extern void serial8250_release_dma(struct uart_8250_port *);
-@@ -335,10 +347,12 @@ static inline int serial8250_tx_dma(struct uart_8250_port *p)
+@@ -341,10 +353,12 @@ static inline int serial8250_tx_dma(struct uart_8250_port *p)
  {
  	return -1;
  }
@@ -59133,7 +58997,7 @@ index b6dc9003b..b7b690972 100644
  static inline int serial8250_request_dma(struct uart_8250_port *p)
  {
 diff --git a/drivers/tty/serial/8250/8250_core.c b/drivers/tty/serial/8250/8250_core.c
-index 0a7e9491b..760886a2c 100644
+index 355ee338d..e223c2250 100644
 --- a/drivers/tty/serial/8250/8250_core.c
 +++ b/drivers/tty/serial/8250/8250_core.c
 @@ -565,6 +565,7 @@ static void __init serial8250_isa_init_ports(void)
@@ -59152,7 +59016,7 @@ index 0a7e9491b..760886a2c 100644
  }
  
  #ifdef CONFIG_SERIAL_8250_CONSOLE
-@@ -1031,6 +1033,9 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
+@@ -1032,6 +1034,9 @@ int serial8250_register_8250_port(struct uart_8250_port *up)
  		uart->rs485_stop_tx	= up->rs485_stop_tx;
  		uart->dma		= up->dma;
  
@@ -59162,7 +59026,7 @@ index 0a7e9491b..760886a2c 100644
  		/* Take tx_loadsz from fifosize if it wasn't set separately */
  		if (uart->port.fifosize && !uart->tx_loadsz)
  			uart->tx_loadsz = uart->port.fifosize;
-@@ -1254,7 +1259,11 @@ static void __exit serial8250_exit(void)
+@@ -1256,7 +1261,11 @@ static void __exit serial8250_exit(void)
  #endif
  }
  
@@ -59657,10 +59521,10 @@ index ace221afe..5968b7714 100644
  	return 0;
  }
 diff --git a/drivers/tty/serial/8250/8250_dwlib.c b/drivers/tty/serial/8250/8250_dwlib.c
-index 6d6a78eea..fee4f2933 100644
+index 1cf229cca..da65f0658 100644
 --- a/drivers/tty/serial/8250/8250_dwlib.c
 +++ b/drivers/tty/serial/8250/8250_dwlib.c
-@@ -106,6 +106,15 @@ void dw8250_setup_port(struct uart_port *p)
+@@ -108,6 +108,15 @@ void dw8250_setup_port(struct uart_port *p)
  	}
  
  	reg = dw8250_readl_ext(p, DW_UART_CPR);
@@ -59676,7 +59540,7 @@ index 6d6a78eea..fee4f2933 100644
  	if (!reg)
  		return;
  
-@@ -114,6 +123,9 @@ void dw8250_setup_port(struct uart_port *p)
+@@ -116,6 +125,9 @@ void dw8250_setup_port(struct uart_port *p)
  		p->type = PORT_16550A;
  		p->flags |= UPF_FIXED_TYPE;
  		p->fifosize = DW_UART_CPR_FIFO_SIZE(reg);
@@ -59687,10 +59551,10 @@ index 6d6a78eea..fee4f2933 100644
  	}
  
 diff --git a/drivers/tty/serial/8250/8250_port.c b/drivers/tty/serial/8250/8250_port.c
-index 1f231fcda..1cb78f8ea 100644
+index 8b49ac485..c89bab530 100644
 --- a/drivers/tty/serial/8250/8250_port.c
 +++ b/drivers/tty/serial/8250/8250_port.c
-@@ -122,8 +122,7 @@ static const struct serial8250_config uart_config[] = {
+@@ -123,8 +123,7 @@ static const struct serial8250_config uart_config[] = {
  		.name		= "16C950/954",
  		.fifo_size	= 128,
  		.tx_loadsz	= 128,
@@ -59700,7 +59564,7 @@ index 1f231fcda..1cb78f8ea 100644
  		/* UART_CAP_EFR breaks billionon CF bluetooth card. */
  		.flags		= UART_CAP_FIFO | UART_CAP_SLEEP,
  	},
-@@ -1537,8 +1536,13 @@ static inline void __start_tx(struct uart_port *port)
+@@ -1538,8 +1537,13 @@ static inline void __start_tx(struct uart_port *port)
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -59714,7 +59578,7 @@ index 1f231fcda..1cb78f8ea 100644
  
  	if (serial8250_set_THRI(up)) {
  		if (up->bugs & UART_BUG_TXEN) {
-@@ -1868,6 +1872,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
+@@ -1869,6 +1873,12 @@ EXPORT_SYMBOL_GPL(serial8250_modem_status);
  
  static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  {
@@ -59727,7 +59591,7 @@ index 1f231fcda..1cb78f8ea 100644
  	switch (iir & 0x3f) {
  	case UART_IIR_RDI:
  		if (!up->dma->rx_running)
-@@ -1879,6 +1889,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
+@@ -1880,6 +1890,7 @@ static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
  		return true;
  	}
  	return up->dma->rx_dma(up);
@@ -59735,17 +59599,17 @@ index 1f231fcda..1cb78f8ea 100644
  }
  
  /*
-@@ -1889,7 +1900,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
- 	unsigned char status;
+@@ -1891,7 +1902,9 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  	unsigned long flags;
  	struct uart_8250_port *up = up_to_u8250p(port);
+ 	struct tty_port *tport = &port->state->port;
 +#ifndef CONFIG_ARCH_ROCKCHIP
  	bool skip_rx = false;
 +#endif
  
  	if (iir & UART_IIR_NO_INT)
  		return 0;
-@@ -1898,6 +1911,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1900,6 +1913,17 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  
  	status = serial_port_in(port, UART_LSR);
  
@@ -59763,7 +59627,7 @@ index 1f231fcda..1cb78f8ea 100644
  	/*
  	 * If port is stopped and there are no error conditions in the
  	 * FIFO, then don't drain the FIFO, as this may lead to TTY buffer
-@@ -1915,11 +1939,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
+@@ -1922,11 +1946,34 @@ int serial8250_handle_irq(struct uart_port *port, unsigned int iir)
  		if (!up->dma || handle_rx_dma(up, iir))
  			status = serial8250_rx_chars(up, status);
  	}
@@ -59801,7 +59665,7 @@ index 1f231fcda..1cb78f8ea 100644
  	uart_unlock_and_check_sysrq(port, flags);
  	return 1;
  }
-@@ -2393,7 +2440,11 @@ int serial8250_do_startup(struct uart_port *port)
+@@ -2406,7 +2453,11 @@ int serial8250_do_startup(struct uart_port *port)
  		if (uart_console(port))
  			msg = "forbid DMA for kernel console";
  		else if (serial8250_request_dma(up))
@@ -59813,7 +59677,7 @@ index 1f231fcda..1cb78f8ea 100644
  		if (msg) {
  			dev_warn_ratelimited(port->dev, "%s\n", msg);
  			up->dma = NULL;
-@@ -2587,6 +2638,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2597,6 +2648,10 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  {
  	struct uart_8250_port *up = up_to_u8250p(port);
  
@@ -59824,7 +59688,7 @@ index 1f231fcda..1cb78f8ea 100644
  	/* Workaround to enable 115200 baud on OMAP1510 internal ports */
  	if (is_omap1510_8250(up)) {
  		if (baud == 115200) {
-@@ -2606,6 +2661,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
+@@ -2616,6 +2671,17 @@ void serial8250_do_set_divisor(struct uart_port *port, unsigned int baud,
  		serial_port_out(port, UART_LCR, up->lcr | UART_LCR_DLAB);
  
  	serial_dl_write(up, quot);
