@@ -21,7 +21,10 @@ action("kernel") {
   sources = [ kernel_source_dir ]
 
   product_path = "vendor/$product_company/$product_name"
-  outputs = [ "$root_build_dir/../kernel/src_tmp/linux-5.10/boot_linux" ]
+  outputs = [
+    "$root_build_dir/kernel/src_tmp/linux-5.10/boot_linux",
+    "$root_build_dir/kernel/checkpoint/compile_check",
+  ]
   args = [
     rebase_path(kernel_build_script_dir, root_build_dir),
     rebase_path("$root_build_dir/packages/phone/images"),
@@ -31,8 +34,26 @@ action("kernel") {
     device_company,
     device_name,
     product_company,
+    "${linux_kernel_version}",
+    build_variant,
+    device_type,
   ]
+  if (enable_lto_O0) {
+    args += [ "enable_lto_O0" ]
+  } else {
+    args += [ "disable_lto_O0" ]
+  }
   if (enable_ramdisk) {
     args += [ "enable_ramdisk" ]
+  }
+
+  if (enable_mesa3d) {
+    args += [ "enable_mesa3d" ]
+  }
+  if (enable_absystem) {
+    args += [ "enable_absystem" ]
+  }
+  if (build_variant == "user") {
+    args += [ "is_release" ]
   }
 }
