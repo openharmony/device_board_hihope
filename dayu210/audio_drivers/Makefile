@@ -14,7 +14,7 @@
 
 KHDF_AUDIO_KHDF_ROOT_DIR = drivers/hdf/khdf
 KHDF_FRAMEWORK_ROOT_DIR = drivers/hdf/framework
-KHDF_AUDIO_RK3588_INC_DIR = ../../../../device/board/hihope/dayu210/audio_drivers
+KHDF_AUDIO_RK3588_INC_DIR = ../../../../../device/board/hihope/dayu210/audio_drivers
 
 obj-$(CONFIG_DRIVERS_HDF_AUDIO_RK3588) += \
         accessory/es8323/src/es8323_adapter.o \

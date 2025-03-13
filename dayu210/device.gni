@@ -24,10 +24,15 @@ if (!defined(defines)) {
 declare_args() {
   is_support_boot_animation = true
   is_support_graphic = true
+  is_support_codec = true
 }
 
 if (!defined(global_parts_info.graphic_graphic_2d)) {
   is_support_graphic = false
+}
+
+if (!defined(global_parts_info.hdf_drivers_peripheral_codec)) {
+  is_support_codec = false
 }
 
 product_config_path = "//vendor/${product_company}/${product_name}"
