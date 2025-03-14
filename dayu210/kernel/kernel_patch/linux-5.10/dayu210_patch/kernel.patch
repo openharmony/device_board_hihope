@@ -72292,1098 +72292,871 @@ index 000000000..09a6a54ae
 +#define SRST_REF_PIPE_PHY1		1239
 +#define SRST_REF_PIPE_PHY2		1240
 +
-+#define BUCK1_SLP_SET_MASK	BIT(0)
-+#define BUCK2_SLP_SET_MASK	BIT(1)
-+#define BUCK3_SLP_SET_MASK	BIT(2)
-+#define BUCK4_SLP_SET_MASK	BIT(3)
-+#define BOOST_SLP_SET_MASK	BIT(4)
-+#define LDO9_SLP_SET_MASK	BIT(5)
-+#define SWITCH_SLP_SET_MASK	BIT(6)
-+#define OTG_SLP_SET_MASK	BIT(7)
++/********Name=PHPTOPSOFTRST_CON0,Offset=0x8A00********/
++#define SRST_P_PHPTOP_CRU		131073
++#define SRST_P_PCIE2_GRF0		131074
++#define SRST_P_PCIE2_GRF1		131075
++#define SRST_P_PCIE2_GRF2		131076
++#define SRST_P_PCIE2_PHY0		131077
++#define SRST_P_PCIE2_PHY1		131078
++#define SRST_P_PCIE2_PHY2		131079
++#define SRST_P_PCIE3_PHY		131080
++#define SRST_P_APB2ASB_SLV_CHIP_TOP	131081
++#define SRST_PCIE30_PHY			131082
 +
-+#define BUCK1_SLP_SET_OFF	BIT(0)
-+#define BUCK2_SLP_SET_OFF	BIT(1)
-+#define BUCK3_SLP_SET_OFF	BIT(2)
-+#define BUCK4_SLP_SET_OFF	BIT(3)
-+#define BOOST_SLP_SET_OFF	BIT(4)
-+#define LDO9_SLP_SET_OFF	BIT(5)
-+#define SWITCH_SLP_SET_OFF	BIT(6)
-+#define OTG_SLP_SET_OFF		BIT(7)
-+#define OTG_BOOST_SLP_OFF	(BOOST_SLP_SET_OFF | OTG_SLP_SET_OFF)
++/********Name=PMU1SOFTRST_CON00,Offset=0x30A00********/
++#define SRST_H_PMU1_BIU			786442
++#define SRST_P_PMU1_BIU			786443
++#define SRST_H_PMU_CM0_BIU		786444
++#define SRST_F_PMU_CM0_CORE		786445
++#define SRST_T_PMU1_CM0_JTAG		786446
 +
-+#define BUCK1_SLP_SET_ON	BIT(0)
-+#define BUCK2_SLP_SET_ON	BIT(1)
-+#define BUCK3_SLP_SET_ON	BIT(2)
-+#define BUCK4_SLP_SET_ON	BIT(3)
-+#define BOOST_SLP_SET_ON	BIT(4)
-+#define LDO9_SLP_SET_ON		BIT(5)
-+#define SWITCH_SLP_SET_ON	BIT(6)
-+#define OTG_SLP_SET_ON		BIT(7)
++/********Name=PMU1SOFTRST_CON01,Offset=0x30A04********/
++#define SRST_DDR_FAIL_SAFE		786449
++#define SRST_P_CRU_PMU1			786450
++#define SRST_P_PMU1_GRF			786452
++#define SRST_P_PMU1_IOC			786453
++#define SRST_P_PMU1WDT			786454
++#define SRST_T_PMU1WDT			786455
++#define SRST_P_PMU1TIMER		786456
++#define SRST_PMU1TIMER0			786458
++#define SRST_PMU1TIMER1			786459
++#define SRST_P_PMU1PWM			786460
++#define SRST_PMU1PWM			786461
 +
-+#define VOUT_LO_MASK		BIT(0)
-+#define VB_LO_MASK		BIT(1)
-+#define PWRON_MASK		BIT(2)
-+#define PWRON_LP_MASK		BIT(3)
-+#define HOTDIE_MASK		BIT(4)
-+#define RTC_ALARM_MASK		BIT(5)
-+#define RTC_PERIOD_MASK		BIT(6)
-+#define USB_OV_MASK		BIT(7)
++/********Name=PMU1SOFTRST_CON02,Offset=0x30A08********/
++#define SRST_P_I2C0			786465
++#define SRST_I2C0			786466
++#define SRST_S_UART0			786469
++#define SRST_P_UART0			786470
++#define SRST_H_I2S1_8CH			786471
++#define SRST_M_I2S1_8CH_TX		786474
++#define SRST_M_I2S1_8CH_RX		786477
++#define SRST_H_PDM0			786478
++#define SRST_PDM0			786479
 +
-+#define VOUT_LO_DISABLE		BIT(0)
-+#define VB_LO_DISABLE		BIT(1)
-+#define PWRON_DISABLE		BIT(2)
-+#define PWRON_LP_DISABLE	BIT(3)
-+#define HOTDIE_DISABLE		BIT(4)
-+#define RTC_ALARM_DISABLE	BIT(5)
-+#define RTC_PERIOD_DISABLE	BIT(6)
-+#define USB_OV_INT_DISABLE	BIT(7)
++/********Name=PMU1SOFTRST_CON03,Offset=0x30A0C********/
++#define SRST_H_VAD			786480
++#define SRST_HDPTX0_INIT		786491
++#define SRST_HDPTX0_CMN			786492
++#define SRST_HDPTX0_LANE		786493
++#define SRST_HDPTX1_INIT		786495
 +
-+#define VOUT_LO_ENABLE		(0 << 0)
-+#define VB_LO_ENABLE		(0 << 1)
-+#define PWRON_ENABLE		(0 << 2)
-+#define PWRON_LP_ENABLE		(0 << 3)
-+#define HOTDIE_ENABLE		(0 << 4)
-+#define RTC_ALARM_ENABLE	(0 << 5)
-+#define RTC_PERIOD_ENABLE	(0 << 6)
-+#define USB_OV_INT_ENABLE	(0 << 7)
++/********Name=PMU1SOFTRST_CON04,Offset=0x30A10********/
++#define SRST_HDPTX1_CMN			786496
++#define SRST_HDPTX1_LANE		786497
++#define SRST_M_MIPI_DCPHY0		786499
++#define SRST_S_MIPI_DCPHY0		786500
++#define SRST_M_MIPI_DCPHY1		786501
++#define SRST_S_MIPI_DCPHY1		786502
++#define SRST_OTGPHY_U3_0		786503
++#define SRST_OTGPHY_U3_1		786504
++#define SRST_OTGPHY_U2_0		786505
++#define SRST_OTGPHY_U2_1		786506
 +
-+#define PLUG_IN_MASK		BIT(0)
-+#define PLUG_OUT_MASK		BIT(1)
-+#define CHGOK_MASK		BIT(2)
-+#define CHGTE_MASK		BIT(3)
-+#define CHGTS1_MASK		BIT(4)
-+#define TS2_MASK		BIT(5)
-+#define CHG_CVTLIM_MASK		BIT(6)
-+#define DISCHG_ILIM_MASK	BIT(7)
++/********Name=PMU1SOFTRST_CON05,Offset=0x30A14********/
++#define SRST_P_PMU0GRF			786515
++#define SRST_P_PMU0IOC			786516
++#define SRST_P_GPIO0			786517
++#define SRST_GPIO0			786518
 +
-+#define PLUG_IN_DISABLE		BIT(0)
-+#define PLUG_OUT_DISABLE	BIT(1)
-+#define CHGOK_DISABLE		BIT(2)
-+#define CHGTE_DISABLE		BIT(3)
-+#define CHGTS1_DISABLE		BIT(4)
-+#define TS2_DISABLE		BIT(5)
-+#define CHG_CVTLIM_DISABLE	BIT(6)
-+#define DISCHG_ILIM_DISABLE	BIT(7)
++/* scmi-clocks indices */
 +
-+#define PLUG_IN_ENABLE		BIT(0)
-+#define PLUG_OUT_ENABLE		BIT(1)
-+#define CHGOK_ENABLE		BIT(2)
-+#define CHGTE_ENABLE		BIT(3)
-+#define CHGTS1_ENABLE		BIT(4)
-+#define TS2_ENABLE		BIT(5)
-+#define CHG_CVTLIM_ENABLE	BIT(6)
-+#define DISCHG_ILIM_ENABLE	BIT(7)
++#define SCMI_CLK_CPUL			0
++#define SCMI_CLK_DSU			1
++#define SCMI_CLK_CPUB01			2
++#define SCMI_CLK_CPUB23			3
++#define SCMI_CLK_DDR			4
++#define SCMI_CLK_GPU			5
++#define SCMI_CLK_NPU			6
++#define SCMI_CLK_SBUS			7
++#define SCMI_PCLK_SBUS			8
++#define SCMI_CCLK_SD			9
++#define SCMI_DCLK_SD			10
++#define SCMI_ACLK_SECURE_NS		11
++#define SCMI_HCLK_SECURE_NS		12
++#define SCMI_TCLK_WDT			13
++#define SCMI_KEYLADDER_CORE		14
++#define SCMI_KEYLADDER_RNG		15
++#define SCMI_ACLK_SECURE_S		16
++#define SCMI_HCLK_SECURE_S		17
++#define SCMI_PCLK_SECURE_S		18
++#define SCMI_CRYPTO_RNG			19
++#define SCMI_CRYPTO_CORE		20
++#define SCMI_CRYPTO_PKA			21
++#define SCMI_SPLL			22
++#define SCMI_HCLK_SD			23
 +
- #define RK808_VBAT_LOW_2V8	0x00
- #define RK808_VBAT_LOW_2V9	0x01
- #define RK808_VBAT_LOW_3V0	0x02
-@@ -381,7 +808,10 @@ enum rk805_reg {
- 
- #define VOUT_LO_INT	BIT(0)
- #define CLK32KOUT2_EN	BIT(0)
-+#define CLK32KOUT2_FUNC		(0 << 1)
-+#define CLK32KOUT2_FUNC_MASK	BIT(1)
- 
-+#define TEMP105C			0x08
- #define TEMP115C			0x0c
- #define TEMP_HOTDIE_MSK			0x0c
- #define SLP_SD_MSK			(0x3 << 2)
-@@ -391,6 +821,7 @@ enum rk805_reg {
- #define PWM_MODE_MSK			BIT(7)
- #define FPWM_MODE			BIT(7)
- #define AUTO_PWM_MODE			0
-+#define REGS_WMSK			0xf0
- 
- enum rk817_reg_id {
- 	RK817_ID_DCDC1 = 0,
-@@ -436,6 +867,10 @@ enum rk809_reg_id {
- #define RK817_RTC_INT_REG		0xf
- #define RK817_RTC_COMP_LSB_REG		0x10
- #define RK817_RTC_COMP_MSB_REG		0x11
-+#define RK817_ADC_CONFIG0		0x50
-+#define RK817_CURE_ADC_K0		0xb0
-+#define RK817_POWER_EN_SAVE0            0x99
-+#define RK817_POWER_EN_SAVE1            0xa4
- 
- #define RK817_POWER_EN_REG(i)		(0xb1 + (i))
- #define RK817_POWER_SLP_EN_REG(i)	(0xb5 + (i))
-@@ -462,6 +897,9 @@ enum rk809_reg_id {
- #define RK817_LDO_ON_VSEL_REG(idx)	(0xcc + (idx) * 2)
- #define RK817_BOOST_OTG_CFG		(0xde)
- 
-+#define RK817_CHRG_OUT			0xe4
-+#define RK817_CHRG_IN			0xe5
-+#define RK817_CHRG_STS			0xeb
- #define RK817_ID_MSB			0xed
- #define RK817_ID_LSB			0xee
- 
-@@ -609,16 +1047,27 @@ enum {
- 	RK805_ID = 0x8050,
- 	RK808_ID = 0x0000,
- 	RK809_ID = 0x8090,
-+	RK816_ID = 0x8160,
- 	RK817_ID = 0x8170,
- 	RK818_ID = 0x8180,
- };
- 
-+struct rk808_pin_info {
-+	struct pinctrl *p;
-+	struct pinctrl_state *reset;
-+	struct pinctrl_state *power_off;
-+	struct pinctrl_state *sleep;
-+};
++/********Name=SECURE_SOFTRST_CON00,Offset=0xA00********/
++#define SRST_A_SECURE_NS_BIU		10
++#define SRST_H_SECURE_NS_BIU		11
++#define SRST_A_SECURE_S_BIU		12
++#define SRST_H_SECURE_S_BIU		13
++#define SRST_P_SECURE_S_BIU		14
++#define SRST_CRYPTO_CORE		15
++/********Name=SECURE_SOFTRST_CON01,Offset=0xA04********/
++#define SRST_CRYPTO_PKA			16
++#define SRST_CRYPTO_RNG			17
++#define SRST_A_CRYPTO			18
++#define SRST_H_CRYPTO			19
++#define SRST_KEYLADDER_CORE		25
++#define SRST_KEYLADDER_RNG		26
++#define SRST_A_KEYLADDER		27
++#define SRST_H_KEYLADDER		28
++#define SRST_P_OTPC_S			29
++#define SRST_OTPC_S			30
++#define SRST_WDT_S			31
++/********Name=SECURE_SOFTRST_CON02,Offset=0xA08********/
++#define SRST_T_WDT_S			32
++#define SRST_H_BOOTROM			33
++#define SRST_A_DCF			34
++#define SRST_P_DCF			35
++#define SRST_H_BOOTROM_NS		37
++#define SRST_P_KEYLADDER		46
++#define SRST_H_TRNG_S			47
++/********Name=SECURE_SOFTRST_CON03,Offset=0xA0C********/
++#define SRST_H_TRNG_NS			48
++#define SRST_D_SDMMC_BUFFER		49
++#define SRST_H_SDMMC			50
++#define SRST_H_SDMMC_BUFFER		51
++#define SRST_SDMMC			52
++#define SRST_P_TRNG_CHK			53
++#define SRST_TRNG_S			54
 +
- struct rk808 {
- 	struct i2c_client		*i2c;
- 	struct regmap_irq_chip_data	*irq_data;
-+	struct regmap_irq_chip_data	*battery_irq_data;
- 	struct regmap			*regmap;
- 	long				variant;
- 	const struct regmap_config	*regmap_cfg;
- 	const struct regmap_irq_chip	*regmap_irq_chip;
-+	void				(*pm_pwroff_prep_fn)(void);
-+	struct rk808_pin_info *pins;
- };
- #endif /* __LINUX_REGULATOR_RK808_H */
-diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
-index 29aa50711..7768c644a 100644
---- a/include/linux/mmc/core.h
-+++ b/include/linux/mmc/core.h
-@@ -162,6 +162,10 @@ struct mmc_request {
- 	bool			cap_cmd_during_tfr;
- 
- 	int			tag;
-+#ifdef CONFIG_MMC_CRYPTO
-+	const struct bio_crypt_ctx *crypto_ctx;
-+	int			crypto_key_slot;
 +#endif
- };
- 
- struct mmc_card;
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 40d7e98fc..4e8b65492 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -374,6 +374,11 @@ struct mmc_host {
- #define MMC_CAP2_CQE_DCMD	(1 << 24)	/* CQE can issue a direct command */
- #define MMC_CAP2_AVOID_3_3V	(1 << 25)	/* Host must negotiate down from 3.3V */
- #define MMC_CAP2_MERGE_CAPABLE	(1 << 26)	/* Host can merge a segment over the segment size */
-+#ifdef CONFIG_MMC_CRYPTO
-+#define MMC_CAP2_CRYPTO		(1 << 27)	/* Host supports inline encryption */
-+#else
-+#define MMC_CAP2_CRYPTO		0
-+#endif
- 
- 	int			fixed_drv_type;	/* fixed driver type for non-removable media */
- 
-@@ -468,6 +473,9 @@ struct mmc_host {
- 	bool			cqe_enabled;
- 	bool			cqe_on;
- 
-+#ifdef CONFIG_MMC_CRYPTO
-+	struct blk_keyslot_manager ksm;
-+#endif
- 	/* Host Software Queue support */
- 	bool			hsq_enabled;
- 
-diff --git a/include/linux/mmc/mmc.h b/include/linux/mmc/mmc.h
-index 545578fb8..29e09d23e 100644
---- a/include/linux/mmc/mmc.h
-+++ b/include/linux/mmc/mmc.h
-@@ -449,4 +449,11 @@ static inline bool mmc_ready_for_data(u32 status)
- 
- #define mmc_driver_type_mask(n)		(1 << (n))
- 
-+struct mmc_card;
-+extern int mmc_select_bus_width(struct mmc_card *card);
-+extern int mmc_select_hs(struct mmc_card *card);
-+extern int mmc_select_hs_ddr(struct mmc_card *card);
-+extern int mmc_select_hs400(struct mmc_card *card);
-+extern int mmc_hs200_tuning(struct mmc_card *card);
-+extern int mmc_select_timing(struct mmc_card *card);
- #endif /* LINUX_MMC_MMC_H */
-diff --git a/include/linux/mmc/pm.h b/include/linux/mmc/pm.h
-index 3549f8045..1d554b858 100644
---- a/include/linux/mmc/pm.h
-+++ b/include/linux/mmc/pm.h
-@@ -23,5 +23,6 @@ typedef unsigned int mmc_pm_flag_t;
- 
- #define MMC_PM_KEEP_POWER	(1 << 0)	/* preserve card power during suspend */
- #define MMC_PM_WAKE_SDIO_IRQ	(1 << 1)	/* wake up host system on SDIO IRQ assertion */
-+#define MMC_PM_IGNORE_PM_NOTIFY	(1 << 2)	/* ignore mmc pm notify */
- 
- #endif /* LINUX_MMC_PM_H */
-diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
-index 03dee12d2..bc4ac3c52 100644
---- a/include/linux/mmu_context.h
-+++ b/include/linux/mmu_context.h
-@@ -14,4 +14,12 @@
- static inline void leave_mm(int cpu) { }
- #endif
- 
+diff --git a/include/dt-bindings/display/drm_mipi_dsi.h b/include/dt-bindings/display/drm_mipi_dsi.h
+new file mode 100755
+index 000000000..bc24ce4dd
+--- /dev/null
++++ b/include/dt-bindings/display/drm_mipi_dsi.h
+@@ -0,0 +1,53 @@
 +/*
-+ * CPUs that are capable of running task @p. By default, we assume a sane,
-+ * homogeneous system. Must contain at least one active CPU.
-+ */
-+#ifndef task_cpu_possible_mask
-+# define task_cpu_possible_mask(p)	cpu_possible_mask
-+#endif
-+
- #endif
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 81a55e974..e51b3d8e6 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -49,6 +49,7 @@ enum {
- 	POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,	/* dynamically adjusted speed */
- 	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
- 	POWER_SUPPLY_CHARGE_TYPE_LONGLIFE,	/* slow speed, longer life */
-+	POWER_SUPPLY_CHARGE_TYPE_TAPER = 50,	/* charging in CV phase */
- };
- 
- enum {
-@@ -386,12 +387,22 @@ extern void power_supply_put(struct power_supply *psy);
- #ifdef CONFIG_OF
- extern struct power_supply *power_supply_get_by_phandle(struct device_node *np,
- 							const char *property);
-+extern int power_supply_get_by_phandle_array(struct device_node *np,
-+					     const char *property,
-+					     struct power_supply **psy,
-+					     ssize_t size);
- extern struct power_supply *devm_power_supply_get_by_phandle(
- 				    struct device *dev, const char *property);
- #else /* !CONFIG_OF */
- static inline struct power_supply *
- power_supply_get_by_phandle(struct device_node *np, const char *property)
- { return NULL; }
-+static inline int
-+power_supply_get_by_phandle_array(struct device_node *np,
-+				  const char *property,
-+				  struct power_supply **psy,
-+				  int size)
-+{ return 0; }
- static inline struct power_supply *
- devm_power_supply_get_by_phandle(struct device *dev, const char *property)
- { return NULL; }
-@@ -426,9 +437,16 @@ static inline int power_supply_is_system_supplied(void) { return -ENOSYS; }
- extern int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val);
-+#if IS_ENABLED(CONFIG_POWER_SUPPLY)
- extern int power_supply_set_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    const union power_supply_propval *val);
-+#else
-+static inline int power_supply_set_property(struct power_supply *psy,
-+			    enum power_supply_property psp,
-+			    const union power_supply_propval *val)
-+{ return 0; }
-+#endif
- extern int power_supply_property_is_writeable(struct power_supply *psy,
- 					enum power_supply_property psp);
- extern void power_supply_external_power_changed(struct power_supply *psy);
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index a13ff383f..cb4abed98 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -48,6 +48,10 @@ enum {
- 	PWMF_EXPORTED = 1 << 1,
- };
- 
-+enum pwm_output_type {
-+	PWM_OUTPUT_FIXED = 1 << 0,
-+	PWM_OUTPUT_MODULATED = 1 << 1,
-+};
- /*
-  * struct pwm_state - state of a PWM channel
-  * @period: PWM period (in nanoseconds)
-@@ -59,6 +63,10 @@ struct pwm_state {
- 	u64 period;
- 	u64 duty_cycle;
- 	enum pwm_polarity polarity;
-+	enum pwm_output_type output_type;
-+#ifdef CONFIG_PWM_ROCKCHIP_ONESHOT
-+	u64 oneshot_count;
-+#endif /* CONFIG_PWM_ROCKCHIP_ONESHOT */
- 	bool enabled;
- };
- 
-@@ -145,6 +153,13 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- 
- 	return state.polarity;
- }
-+static inline enum pwm_output_type pwm_get_output_type(
-+		const struct pwm_device *pwm)
-+{
-+	struct pwm_state state;
-+	pwm_get_state(pwm, &state);
-+	return state.output_type;
-+}
- 
- static inline void pwm_get_args(const struct pwm_device *pwm,
- 				struct pwm_args *args)
-@@ -264,6 +279,8 @@ struct pwm_ops {
- 		     const struct pwm_state *state);
- 	void (*get_state)(struct pwm_chip *chip, struct pwm_device *pwm,
- 			  struct pwm_state *state);
-+	int (*get_output_type_supported)(struct pwm_chip *chip,
-+			struct pwm_device *pwm);
- 	struct module *owner;
- 
- 	/* Only used by legacy drivers */
-@@ -317,6 +334,15 @@ struct pwm_device *pwm_request(int pwm_id, const char *label);
- void pwm_free(struct pwm_device *pwm);
- int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state);
- int pwm_adjust_config(struct pwm_device *pwm);
-+static inline int pwm_get_output_type_supported(struct pwm_device *pwm)
-+{
-+	if (!pwm)
-+		return -EINVAL;
-+	if (pwm->chip->ops->get_output_type_supported)
-+		return pwm->chip->ops->get_output_type_supported(pwm->chip,
-+				pwm);
-+	return PWM_OUTPUT_FIXED;
-+}
- 
- /**
-  * pwm_config() - change a PWM device configuration
-@@ -436,6 +462,10 @@ static inline int pwm_adjust_config(struct pwm_device *pwm)
- 	return -ENOTSUPP;
- }
- 
-+static inline int pwm_get_output_type_supported(struct pwm_device *pwm)
-+{
-+	return -EINVAL;
-+}
- static inline int pwm_config(struct pwm_device *pwm, int duty_ns,
- 			     int period_ns)
- {
-diff --git a/include/linux/reboot-mode.h b/include/linux/reboot-mode.h
-index 4a2abb38d..a7aa69d00 100644
---- a/include/linux/reboot-mode.h
-+++ b/include/linux/reboot-mode.h
-@@ -6,7 +6,9 @@ struct reboot_mode_driver {
- 	struct device *dev;
- 	struct list_head head;
- 	int (*write)(struct reboot_mode_driver *reboot, unsigned int magic);
-+	int (*read)(struct reboot_mode_driver *reboot);
- 	struct notifier_block reboot_notifier;
-+	struct notifier_block panic_notifier;
- };
- 
- int reboot_mode_register(struct reboot_mode_driver *reboot);
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 3734cd8f3..1c8d7856c 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -49,6 +49,26 @@ extern int register_restart_handler(struct notifier_block *);
- extern int unregister_restart_handler(struct notifier_block *);
- extern void do_kernel_restart(char *cmd);
- 
-+#ifdef CONFIG_NO_GKI
-+extern int register_pre_restart_handler(struct notifier_block *nb);
-+extern int unregister_pre_restart_handler(struct notifier_block *nb);
-+extern void do_kernel_pre_restart(char *cmd);
-+#else
-+static inline int register_pre_restart_handler(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline int unregister_pre_restart_handler(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+
-+static inline void do_kernel_pre_restart(char *cmd)
-+{
-+}
-+#endif
-+
- /*
-  * Architecture-specific implementations of sys_reboot commands.
-  */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index d590141f0..6e1cafd23 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -851,6 +851,9 @@ struct task_struct {
- 	 */
- 	struct uclamp_se		uclamp[UCLAMP_CNT];
- #endif
-+#ifdef CONFIG_HOTPLUG_CPU
-+	struct list_head		percpu_kthread_node;
-+#endif
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 	/* List of struct preempt_notifier: */
-@@ -1034,6 +1037,10 @@ struct task_struct {
- 	u64				stimescaled;
- #endif
- 	u64				gtime;
-+#ifdef CONFIG_CPU_FREQ_TIMES
-+	u64				*time_in_state;
-+	unsigned int			max_state;
-+#endif
- 	struct prev_cputime		prev_cputime;
- #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
- 	struct vtime			vtime;
-@@ -1145,6 +1152,7 @@ struct task_struct {
- 	raw_spinlock_t			pi_lock;
- 
- 	struct wake_q_node		wake_q;
-+	int				wake_q_count;
- 
- #ifdef CONFIG_RT_MUTEXES
- 	/* PI waiters blocked on a rt_mutex held by this task: */
-@@ -1369,7 +1377,7 @@ struct task_struct {
- 	u64				timer_slack_ns;
- 	u64				default_timer_slack_ns;
- 
--#ifdef CONFIG_KASAN
-+#if defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)
- 	unsigned int			kasan_depth;
- #endif
- 
-diff --git a/include/linux/soc/rockchip/pvtm.h b/include/linux/soc/rockchip/pvtm.h
-new file mode 100755
-index 000000000..3d2495cfd
---- /dev/null
-+++ b/include/linux/soc/rockchip/pvtm.h
-@@ -0,0 +1,17 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __SOC_ROCKCHIP_PVTM_H
-+#define __SOC_ROCKCHIP_PVTM_H
-+
-+#if IS_ENABLED(CONFIG_ROCKCHIP_PVTM)
-+u32 rockchip_get_pvtm_value(unsigned int id, unsigned int ring_sel,
-+			    unsigned int time_us);
-+#else
-+static inline u32 rockchip_get_pvtm_value(unsigned int id,
-+					  unsigned int ring_sel,
-+					  unsigned int time_us)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#endif /* __SOC_ROCKCHIP_PVTM_H */
-diff --git a/include/linux/soc/rockchip/rk_fiq_debugger.h b/include/linux/soc/rockchip/rk_fiq_debugger.h
-new file mode 100755
-index 000000000..f5ec8d143
---- /dev/null
-+++ b/include/linux/soc/rockchip/rk_fiq_debugger.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __PLAT_RK_FIQ_DEBUGGER_H
-+#define __PLAT_RK_FIQ_DEBUGGER_H
-+
-+#ifdef CONFIG_FIQ_DEBUGGER_TRUST_ZONE
-+void fiq_debugger_fiq(void *regs, u32 cpu);
-+
-+#ifdef CONFIG_ARM_SDE_INTERFACE
-+int sdei_fiq_debugger_is_enabled(void);
-+int fiq_sdei_event_enable(u32 event_num);
-+int fiq_sdei_event_routing_set(u32 event_num, unsigned long flags,
-+			       unsigned long affinity);
-+int fiq_sdei_event_disable(u32 event_num);
-+#else
-+static inline int sdei_fiq_debugger_is_enabled(void)
-+{
-+	return 0;
-+}
-+#endif
-+#endif
-+
-+#endif
-diff --git a/include/linux/soc/rockchip/rk_sdmmc.h b/include/linux/soc/rockchip/rk_sdmmc.h
-new file mode 100755
-index 000000000..14f70f72e
---- /dev/null
-+++ b/include/linux/soc/rockchip/rk_sdmmc.h
-@@ -0,0 +1,13 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __RK_SDMMC_H
-+#define __RK_SDMMC_H
-+
-+#if IS_ENABLED(CONFIG_CPU_RV1106) && IS_REACHABLE(CONFIG_MMC_DW)
-+void rv1106_sdmmc_get_lock(void);
-+void rv1106_sdmmc_put_lock(void);
-+#else
-+static inline void rv1106_sdmmc_get_lock(void) {}
-+static inline void rv1106_sdmmc_put_lock(void) {}
-+#endif
-+
-+#endif
-diff --git a/include/linux/soc/rockchip/rk_vendor_storage.h b/include/linux/soc/rockchip/rk_vendor_storage.h
-new file mode 100755
-index 000000000..29cee9bf6
---- /dev/null
-+++ b/include/linux/soc/rockchip/rk_vendor_storage.h
-@@ -0,0 +1,59 @@
-+/*
-+ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
++ * MIPI DSI Bus
++ *
++ * Copyright (c) Fuzhou Rockchip Electronics Co.Ltd
++ * Authors:
++ *       Mark Yao <yzq@rock-chips.com>
++ *
++ * based on include/drm/drm_mipi_dsi.h
 + *
 + * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or (at
-+ * your option) any later version.
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
 +
-+#ifndef __PLAT_RK_VENDOR_STORAGE_H
-+#define __PLAT_RK_VENDOR_STORAGE_H
++#ifndef _DRM_MIPI_DSI_H__
++#define _DRM_MIPI_DSI_H__
 +
-+#define RSV_ID				0
-+#define SN_ID				1
-+#define WIFI_MAC_ID			2
-+#define LAN_MAC_ID			3
-+#define BT_MAC_ID			4
-+#define HDCP_14_HDMI_ID			5
-+#define HDCP_14_DP_ID			6
-+#define HDCP_2X_ID			7
-+#define DRM_KEY_ID			8
-+#define PLAYREADY_CERT_ID		9
-+#define ATTENTION_KEY_ID		10
-+#define PLAYREADY_ROOT_KEY_0_ID		11
-+#define PLAYREADY_ROOT_KEY_1_ID		12
-+#define HDCP_14_HDMIRX_ID		13
-+#define SENSOR_CALIBRATION_ID		14
-+#define IMEI_ID				15
-+#define LAN_RGMII_DL_ID			16
-+#define EINK_VCOM_ID			17
++/* DSI mode flags */
 +
-+#if IS_REACHABLE(CONFIG_ROCKCHIP_VENDOR_STORAGE)
-+int rk_vendor_read(u32 id, void *pbuf, u32 size);
-+int rk_vendor_write(u32 id, void *pbuf, u32 size);
-+int rk_vendor_register(void *read, void *write);
-+bool is_rk_vendor_ready(void);
-+#else
-+static inline int rk_vendor_read(u32 id, void *pbuf, u32 size)
-+{
-+	return -1;
-+}
++/* video mode */
++#define MIPI_DSI_MODE_VIDEO		(1 << 0)
++/* video burst mode */
++#define MIPI_DSI_MODE_VIDEO_BURST	(1 << 1)
++/* video pulse mode */
++#define MIPI_DSI_MODE_VIDEO_SYNC_PULSE	(1 << 2)
++/* enable auto vertical count mode */
++#define MIPI_DSI_MODE_VIDEO_AUTO_VERT	(1 << 3)
++/* enable hsync-end packets in vsync-pulse and v-porch area */
++#define MIPI_DSI_MODE_VIDEO_HSE		(1 << 4)
++/* disable hfront-porch area */
++#define MIPI_DSI_MODE_VIDEO_HFP		(1 << 5)
++/* disable hback-porch area */
++#define MIPI_DSI_MODE_VIDEO_HBP		(1 << 6)
++/* disable hsync-active area */
++#define MIPI_DSI_MODE_VIDEO_HSA		(1 << 7)
++/* flush display FIFO on vsync pulse */
++#define MIPI_DSI_MODE_VSYNC_FLUSH	(1 << 8)
++/* disable EoT packets in HS mode */
++#define MIPI_DSI_MODE_EOT_PACKET	(1 << 9)
++/* device supports non-continuous clock behavior (DSI spec 5.6.1) */
++#define MIPI_DSI_CLOCK_NON_CONTINUOUS	(1 << 10)
++/* transmit data in low power */
++#define MIPI_DSI_MODE_LPM		(1 << 11)
 +
-+static inline int rk_vendor_write(u32 id, void *pbuf, u32 size)
-+{
-+	return -1;
-+}
++#define MIPI_DSI_FMT_RGB888		0
++#define MIPI_DSI_FMT_RGB666		1
++#define MIPI_DSI_FMT_RGB666_PACKED	2
++#define MIPI_DSI_FMT_RGB565		3
 +
-+static inline int rk_vendor_register(void *read, void *write)
-+{
-+	return -1;
-+}
++#define MIPI_CSI_FMT_RAW8		0x10
++#define MIPI_CSI_FMT_RAW10		0x11
 +
-+static inline bool is_rk_vendor_ready(void)
-+{
-+	return false;
-+}
-+#endif
-+
-+#endif
-diff --git a/include/linux/soc/rockchip/rockchip_decompress.h b/include/linux/soc/rockchip/rockchip_decompress.h
++#endif /* __DRM_MIPI_DSI__ */
+diff --git a/include/dt-bindings/display/media-bus-format.h b/include/dt-bindings/display/media-bus-format.h
 new file mode 100755
-index 000000000..120ae907c
+index 000000000..8d1f8733b
 --- /dev/null
-+++ b/include/linux/soc/rockchip/rockchip_decompress.h
-@@ -0,0 +1,42 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/* Copyright (c) 2020 Rockchip Electronics Co., Ltd */
-+
-+#ifndef _ROCKCHIP_DECOMPRESS
-+#define _ROCKCHIP_DECOMPRESS
-+
-+enum decom_mod {
-+	LZ4_MOD,
-+	GZIP_MOD,
-+	ZLIB_MOD,
-+};
-+
-+/* The high 16 bits indicate whether decompression is non-blocking */
-+#define DECOM_NOBLOCKING		(0x00010000)
-+
-+static inline u32 rk_get_decom_mode(u32 mode)
-+{
-+	return mode & 0x0000ffff;
-+}
-+
-+static inline bool rk_get_noblocking_flag(u32 mode)
-+{
-+	return !!(mode & DECOM_NOBLOCKING);
-+}
-+
-+#ifdef CONFIG_ROCKCHIP_HW_DECOMPRESS
-+int rk_decom_start(u32 mode, phys_addr_t src, phys_addr_t dst, u32 dst_max_size);
-+/* timeout in seconds */
-+int rk_decom_wait_done(u32 timeout, u64 *decom_len);
-+#else
-+static inline int rk_decom_start(u32 mode, phys_addr_t src, phys_addr_t dst, u32 dst_max_size)
-+{
-+	return -EINVAL;
-+}
-+
-+static inline int rk_decom_wait_done(u32 timeout, u64 *decom_len)
-+{
-+	return -EINVAL;
-+}
-+#endif
-+
-+#endif
-diff --git a/include/linux/soc/rockchip/rockchip_thunderboot_crypto.h b/include/linux/soc/rockchip/rockchip_thunderboot_crypto.h
++++ b/include/dt-bindings/display/media-bus-format.h
+@@ -0,0 +1,2 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++#include "../../uapi/linux/media-bus-format.h"
+diff --git a/include/dt-bindings/display/mipi_dsi.h b/include/dt-bindings/display/mipi_dsi.h
 new file mode 100755
-index 000000000..2fe176649
+index 000000000..38aeee0ed
 --- /dev/null
-+++ b/include/linux/soc/rockchip/rockchip_thunderboot_crypto.h
-@@ -0,0 +1,9 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/* Copyright (c) 2021 Rockchip Electronics Co., Ltd */
++++ b/include/dt-bindings/display/mipi_dsi.h
+@@ -0,0 +1,106 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++drivers/video/rockchip/transmitter/mipi_dsi.h
++*/
++#ifndef MIPI_DSI_H_
++#define MIPI_DSI_H_
 +
-+#ifndef _ROCKCHIP_THUNDERBOOT_CRYPTO_
-+#define _ROCKCHIP_THUNDERBOOT_CRYPTO_
-+
-+int rk_tb_sha256(dma_addr_t data, size_t data_len, void *user_data);
-+
++#ifdef CONFIG_MIPI_DSI_FT
++#include "..\..\common\config.h"
 +#endif
-diff --git a/include/linux/soc/rockchip/rockchip_thunderboot_service.h b/include/linux/soc/rockchip/rockchip_thunderboot_service.h
++
++//DSI DATA TYPE
++#define DTYPE_DCS_SWRITE_0P		0x05 
++#define DTYPE_DCS_SWRITE_1P		0x15 
++#define DTYPE_DCS_LWRITE		0x39 
++#define DTYPE_GEN_LWRITE		0x29 
++#define DTYPE_GEN_SWRITE_2P		0x23 
++#define DTYPE_GEN_SWRITE_1P		0x13
++#define DTYPE_GEN_SWRITE_0P		0x03
++
++//command transmit mode
++#define HSDT			0x00
++#define LPDT			0x01
++
++//DSI DATA TYPE FLAG
++#define DATA_TYPE_DCS			0x00
++#define DATA_TYPE_GEN			0x01
++
++//Video Mode
++#define VM_NBMWSP		0x00  //Non burst mode with sync pulses
++#define VM_NBMWSE		0x01  //Non burst mode with sync events
++#define VM_BM			0x02  //Burst mode
++
++//Video Pixel Format
++#define VPF_16BPP		0x00
++#define VPF_18BPP		0x01	 //packed
++#define VPF_18BPPL		0x02     //loosely packed
++#define VPF_24BPP		0x03
++
++//Display Command Set
++#define dcs_enter_idle_mode 		0x39
++#define dcs_enter_invert_mode 		0x21
++#define dcs_enter_normal_mode 		0x13
++#define dcs_enter_partial_mode  	0x12
++#define dcs_enter_sleep_mode  		0x10
++#define dcs_exit_idle_mode  		0x38
++#define dcs_exit_invert_mode  		0x20
++#define dcs_exit_sleep_mode  		0x11
++#define dcs_get_address_mode  		0x0b
++#define dcs_get_blue_channel  		0x08
++#define dcs_get_diagnostic_result  	0x0f
++#define dcs_get_display_mode  		0x0d
++#define dcs_get_green_channel  		0x07
++#define dcs_get_pixel_format  		0x0c
++#define dcs_get_power_mode  		0x0a
++#define dcs_get_red_channel 		0x06
++#define dcs_get_scanline 	 		0x45
++#define dcs_get_signal_mode  		0x0e
++#define dcs_nop				 		0x00
++#define dcs_read_DDB_continue  		0xa8
++#define dcs_read_DDB_start  		0xa1
++#define dcs_read_memory_continue  	0x3e
++#define dcs_read_memory_start  		0x2e
++#define dcs_set_address_mode  		0x36
++#define dcs_set_column_address  	0x2a
++#define dcs_set_display_off  		0x28
++#define dcs_set_display_on  		0x29
++#define dcs_set_gamma_curve  		0x26
++#define dcs_set_page_address  		0x2b
++#define dcs_set_partial_area  		0x30
++#define dcs_set_pixel_format  		0x3a
++#define dcs_set_scroll_area  		0x33
++#define dcs_set_scroll_start  		0x37
++#define dcs_set_tear_off 	 		0x34
++#define dcs_set_tear_on 	 		0x35
++#define dcs_set_tear_scanline  		0x44
++#define dcs_soft_reset 		 		0x01
++#define dcs_write_LUT 		 		0x2d
++#define dcs_write_memory_continue  	0x3c
++#define dcs_write_memory_start 		0x2c
++
++#ifndef MHz
++#define MHz   1000000
++#endif
++
++
++#if 0
++typedef signed char s8;
++typedef unsigned char u8;
++
++typedef signed short s16;
++typedef unsigned short u16;
++
++typedef signed int s32;
++typedef unsigned int u32;
++
++typedef signed long s64;
++typedef unsigned long u64;
++#endif
++
++
++//iomux
++#define OLD_RK_IOMUX 0
++
++
++#endif /* end of MIPI_DSI_H_ */
+diff --git a/include/dt-bindings/display/rockchip_vop.h b/include/dt-bindings/display/rockchip_vop.h
 new file mode 100755
-index 000000000..5ab1cf490
+index 000000000..3e14128e7
 --- /dev/null
-+++ b/include/linux/soc/rockchip/rockchip_thunderboot_service.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/* Copyright (c) 2022 Rockchip Electronics Co., Ltd */
++++ b/include/dt-bindings/display/rockchip_vop.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++/*
++ * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
++ */
 +
-+#ifndef _ROCKCHIP_THUNDERBOOT_SERVICE_H
-+#define _ROCKCHIP_THUNDERBOOT_SERVICE_H
 +
-+struct rk_tb_client {
-+	struct list_head node;
-+	void *data;
-+	void (*cb)(void *data);
-+};
++#ifndef _DT_BINDINGS_ROCKCHIP_VOP_H
++#define _DT_BINDINGS_ROCKCHIP_VOP_H
 +
-+#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT_SERVICE
-+bool rk_tb_mcu_is_done(void);
-+int rk_tb_client_register_cb(struct rk_tb_client *client);
-+#else
-+static inline bool rk_tb_mcu_is_done(void)
-+{
-+	return true;
-+}
-+static inline int rk_tb_client_register_cb(struct rk_tb_client *client)
-+{
-+	if (client && client->cb)
-+		client->cb(client->data);
++#define	ROCKCHIP_VOP2_CLUSTER0	0
++#define	ROCKCHIP_VOP2_CLUSTER1	1
++#define	ROCKCHIP_VOP2_ESMART0	2
++#define	ROCKCHIP_VOP2_ESMART1	3
++#define	ROCKCHIP_VOP2_SMART0	4
++#define	ROCKCHIP_VOP2_SMART1	5
++#define	ROCKCHIP_VOP2_CLUSTER2	6
++#define	ROCKCHIP_VOP2_CLUSTER3	7
++#define	ROCKCHIP_VOP2_ESMART2	8
++#define	ROCKCHIP_VOP2_ESMART3	9
 +
-+	return 0;
-+}
 +#endif
-+#endif
-diff --git a/include/linux/stmmac.h b/include/linux/stmmac.h
-index abf7b8ec1..bf41c178e 100644
---- a/include/linux/stmmac.h
-+++ b/include/linux/stmmac.h
-@@ -183,6 +183,7 @@ struct plat_stmmacenet_data {
- 	void (*serdes_powerdown)(struct net_device *ndev, void *priv);
- 	int (*init)(struct platform_device *pdev, void *priv);
- 	void (*exit)(struct platform_device *pdev, void *priv);
-+	void (*get_eth_addr)(void *priv, unsigned char *addr);
- 	struct mac_device_info *(*setup)(void *priv);
- 	void *bsp_priv;
- 	struct clk *stmmac_clk;
-diff --git a/include/linux/usb/composite.h b/include/linux/usb/composite.h
-index a2d229ab6..4d352204e 100644
---- a/include/linux/usb/composite.h
-+++ b/include/linux/usb/composite.h
-@@ -525,6 +525,8 @@ extern struct usb_string *usb_gstrings_attach(struct usb_composite_dev *cdev,
- extern int usb_string_ids_n(struct usb_composite_dev *c, unsigned n);
- 
- extern void composite_disconnect(struct usb_gadget *gadget);
-+extern void composite_reset(struct usb_gadget *gadget);
+diff --git a/include/dt-bindings/dram/rockchip,rk322x.h b/include/dt-bindings/dram/rockchip,rk322x.h
+new file mode 100755
+index 000000000..1ab3317d7
+--- /dev/null
++++ b/include/dt-bindings/dram/rockchip,rk322x.h
+@@ -0,0 +1,90 @@
++/*
++ * Copyright (c) 2018 Fuzhou Rockchip Electronics Co., Ltd
++ *
++ * SPDX-License-Identifier: GPL-2.0+
++ */
 +
- extern int composite_setup(struct usb_gadget *gadget,
- 		const struct usb_ctrlrequest *ctrl);
- extern void composite_suspend(struct usb_gadget *gadget);
-@@ -590,6 +592,7 @@ struct usb_function_instance {
- 	struct config_group group;
- 	struct list_head cfs_list;
- 	struct usb_function_driver *fd;
-+	struct usb_function *f;
- 	int (*set_inst_name)(struct usb_function_instance *inst,
- 			      const char *name);
- 	void (*free_func_inst)(struct usb_function_instance *inst);
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index e7351d64f..e5cdba2db 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -26,6 +26,7 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- #include <linux/usb/ch9.h>
-+#include <linux/android_kabi.h>
- 
- #define UDC_TRACE_STR_MAX	512
- 
-@@ -122,6 +123,8 @@ struct usb_request {
- 
- 	int			status;
- 	unsigned		actual;
++#ifndef _DT_BINDINGS_DRAM_ROCKCHIP_RK322X_H
++#define _DT_BINDINGS_DRAM_ROCKCHIP_RK322X_H
 +
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /*-------------------------------------------------------------------------*/
-@@ -152,6 +155,8 @@ struct usb_ep_ops {
- 
- 	int (*fifo_status) (struct usb_ep *ep);
- 	void (*fifo_flush) (struct usb_ep *ep);
++#define DDR3_DS_34ohm		(1 << 1)
++#define DDR3_DS_40ohm		(0x0)
 +
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /**
-@@ -217,6 +222,7 @@ struct usb_ep_caps {
-  *	enabled and remains valid until the endpoint is disabled.
-  * @comp_desc: In case of SuperSpeed support, this is the endpoint companion
-  *	descriptor that is used to configure the endpoint
-+ * @transfer_type: Used to specify transfer type of EP.
-  *
-  * the bus controller driver lists all the general purpose endpoints in
-  * gadget->ep_list.  the control endpoint (gadget->ep0) is not in that list,
-@@ -240,6 +246,11 @@ struct usb_ep {
- 	u8			address;
- 	const struct usb_endpoint_descriptor	*desc;
- 	const struct usb_ss_ep_comp_descriptor	*comp_desc;
-+#if defined(CONFIG_ARCH_ROCKCHIP) && defined(CONFIG_NO_GKI)
-+	u8			transfer_type;
-+#endif
++#define LP2_DS_34ohm		(0x1)
++#define LP2_DS_40ohm		(0x2)
++#define LP2_DS_48ohm		(0x3)
++#define LP2_DS_60ohm		(0x4)
++#define LP2_DS_68_6ohm		(0x5)/* optional */
++#define LP2_DS_80ohm		(0x6)
++#define LP2_DS_120ohm		(0x7)/* optional */
 +
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /*-------------------------------------------------------------------------*/
-@@ -323,9 +334,18 @@ struct usb_gadget_ops {
- 			struct usb_gadget_driver *);
- 	int	(*udc_stop)(struct usb_gadget *);
- 	void	(*udc_set_speed)(struct usb_gadget *, enum usb_device_speed);
-+	void	(*udc_set_ssp_rate)(struct usb_gadget *gadget,
-+			enum usb_ssp_rate rate);
-+	void	(*udc_async_callbacks)(struct usb_gadget *gadget, bool enable);
- 	struct usb_ep *(*match_ep)(struct usb_gadget *,
- 			struct usb_endpoint_descriptor *,
- 			struct usb_ss_ep_comp_descriptor *);
-+	int	(*check_config)(struct usb_gadget *gadget);
++#define LP3_DS_34ohm		(0x1)
++#define LP3_DS_40ohm		(0x2)
++#define LP3_DS_48ohm		(0x3)
++#define LP3_DS_60ohm		(0x4)
++#define LP3_DS_80ohm		(0x6)
++#define LP3_DS_34D_40U		(0x9)
++#define LP3_DS_40D_48U		(0xa)
++#define LP3_DS_34D_48U		(0xb)
 +
-+	ANDROID_KABI_RESERVE(1);
-+	ANDROID_KABI_RESERVE(2);
-+	ANDROID_KABI_RESERVE(3);
-+	ANDROID_KABI_RESERVE(4);
- };
- 
- /**
-@@ -339,6 +359,10 @@ struct usb_gadget_ops {
-  * @speed: Speed of current connection to USB host.
-  * @max_speed: Maximal speed the UDC can handle.  UDC must support this
-  *      and all slower speeds.
-+ * @ssp_rate: Current connected SuperSpeed Plus signaling rate and lane count.
-+ * @max_ssp_rate: Maximum SuperSpeed Plus signaling rate and lane count the UDC
-+ *	can handle. The UDC must support this and all slower speeds and lower
-+ *	number of lanes.
-  * @state: the state we are now (attached, suspended, configured, etc)
-  * @name: Identifies the controller hardware type.  Used in diagnostics
-  *	and sometimes configuration.
-@@ -406,6 +430,11 @@ struct usb_gadget {
- 	struct list_head		ep_list;	/* of usb_ep */
- 	enum usb_device_speed		speed;
- 	enum usb_device_speed		max_speed;
++#define DDR3_ODT_DIS		(0)
++#define DDR3_ODT_40ohm		((1 << 2) | (1 << 6))
++#define DDR3_ODT_60ohm		(1 << 2)
++#define DDR3_ODT_120ohm		(1 << 6)
 +
-+	/* USB SuperSpeed Plus only */
-+	enum usb_ssp_rate		ssp_rate;
-+	enum usb_ssp_rate		max_ssp_rate;
++#define LP3_ODT_DIS		(0)
++#define LP3_ODT_60ohm		(1)
++#define LP3_ODT_120ohm		(2)
++#define LP3_ODT_240ohm		(3)
 +
- 	enum usb_device_state		state;
- 	const char			*name;
- 	struct device			dev;
-@@ -433,6 +462,11 @@ struct usb_gadget {
- 	unsigned			connected:1;
- 	unsigned			lpm_capable:1;
- 	int				irq;
++#define PHY_DDR3_RON_RTT_DISABLE	(0)
++#define PHY_DDR3_RON_RTT_451ohm		(1)
++#define PHY_DDR3_RON_RTT_225ohm		(2)
++#define PHY_DDR3_RON_RTT_150ohm		(3)
++#define PHY_DDR3_RON_RTT_112ohm		(4)
++#define PHY_DDR3_RON_RTT_90ohm		(5)
++#define PHY_DDR3_RON_RTT_75ohm		(6)
++#define PHY_DDR3_RON_RTT_64ohm		(7)
++#define PHY_DDR3_RON_RTT_56ohm		(16)
++#define PHY_DDR3_RON_RTT_50ohm		(17)
++#define PHY_DDR3_RON_RTT_45ohm		(18)
++#define PHY_DDR3_RON_RTT_41ohm		(19)
++#define PHY_DDR3_RON_RTT_37ohm		(20)
++#define PHY_DDR3_RON_RTT_34ohm		(21)
++#define PHY_DDR3_RON_RTT_33ohm		(22)
++#define PHY_DDR3_RON_RTT_30ohm		(23)
++#define PHY_DDR3_RON_RTT_28ohm		(24)
++#define PHY_DDR3_RON_RTT_26ohm		(25)
++#define PHY_DDR3_RON_RTT_25ohm		(26)
++#define PHY_DDR3_RON_RTT_23ohm		(27)
++#define PHY_DDR3_RON_RTT_22ohm		(28)
++#define PHY_DDR3_RON_RTT_21ohm		(29)
++#define PHY_DDR3_RON_RTT_20ohm		(30)
++#define PHY_DDR3_RON_RTT_19ohm		(31)
 +
-+	ANDROID_KABI_RESERVE(1);
-+	ANDROID_KABI_RESERVE(2);
-+	ANDROID_KABI_RESERVE(3);
-+	ANDROID_KABI_RESERVE(4);
- };
- #define work_to_gadget(w)	(container_of((w), struct usb_gadget, work))
- 
-@@ -596,6 +630,7 @@ int usb_gadget_connect(struct usb_gadget *gadget);
- int usb_gadget_disconnect(struct usb_gadget *gadget);
- int usb_gadget_deactivate(struct usb_gadget *gadget);
- int usb_gadget_activate(struct usb_gadget *gadget);
-+int usb_gadget_check_config(struct usb_gadget *gadget);
- #else
- static inline int usb_gadget_frame_number(struct usb_gadget *gadget)
- { return 0; }
-@@ -619,6 +654,8 @@ static inline int usb_gadget_deactivate(struct usb_gadget *gadget)
- { return 0; }
- static inline int usb_gadget_activate(struct usb_gadget *gadget)
- { return 0; }
-+static inline int usb_gadget_check_config(struct usb_gadget *gadget)
-+{ return 0; }
- #endif /* CONFIG_USB_GADGET */
- 
- /*-------------------------------------------------------------------------*/
-diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
-index c0cf20b19..3dbb42c63 100644
---- a/include/linux/usb/hcd.h
-+++ b/include/linux/usb/hcd.h
-@@ -66,7 +66,6 @@
- 
- struct giveback_urb_bh {
- 	bool running;
--	bool high_prio;
- 	spinlock_t lock;
- 	struct list_head  head;
- 	struct tasklet_struct bh;
-@@ -125,7 +124,6 @@ struct usb_hcd {
- #define HCD_FLAG_RH_RUNNING		5	/* root hub is running? */
- #define HCD_FLAG_DEAD			6	/* controller has died? */
- #define HCD_FLAG_INTF_AUTHORIZED	7	/* authorize interfaces? */
--#define HCD_FLAG_DEFER_RH_REGISTER	8	/* Defer roothub registration */
- 
- 	/* The flags can be tested using these macros; they are likely to
- 	 * be slightly faster than test_bit().
-@@ -136,7 +134,6 @@ struct usb_hcd {
- #define HCD_WAKEUP_PENDING(hcd)	((hcd)->flags & (1U << HCD_FLAG_WAKEUP_PENDING))
- #define HCD_RH_RUNNING(hcd)	((hcd)->flags & (1U << HCD_FLAG_RH_RUNNING))
- #define HCD_DEAD(hcd)		((hcd)->flags & (1U << HCD_FLAG_DEAD))
--#define HCD_DEFER_RH_REGISTER(hcd) ((hcd)->flags & (1U << HCD_FLAG_DEFER_RH_REGISTER))
- 
- 	/*
- 	 * Specifies if interfaces are authorized by default
-diff --git a/include/linux/usb/otg.h b/include/linux/usb/otg.h
-index 69f1b6328..10cb3d193 100644
---- a/include/linux/usb/otg.h
-+++ b/include/linux/usb/otg.h
-@@ -12,6 +12,7 @@
- 
- #include <linux/phy/phy.h>
- #include <linux/usb/phy.h>
-+#include <linux/android_kabi.h>
- 
- struct usb_otg {
- 	u8			default_a;
-@@ -40,6 +41,7 @@ struct usb_otg {
- 	/* start or continue HNP role switch */
- 	int	(*start_hnp)(struct usb_otg *otg);
- 
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /**
-diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
-index 433040ff8..96b7ff66f 100644
---- a/include/linux/usb/pd.h
-+++ b/include/linux/usb/pd.h
-@@ -225,6 +225,7 @@ enum pd_pdo_type {
- #define PDO_FIXED_EXTPOWER		BIT(27) /* Externally powered */
- #define PDO_FIXED_USB_COMM		BIT(26) /* USB communications capable */
- #define PDO_FIXED_DATA_SWAP		BIT(25) /* Data role swap supported */
-+#define PDO_FIXED_UNCHUNK_EXT		BIT(24) /* Unchunked Extended Message supported (Source) */
- #define PDO_FIXED_FRS_CURR_MASK		(BIT(24) | BIT(23)) /* FR_Swap Current (Sink) */
- #define PDO_FIXED_FRS_CURR_SHIFT	23
- #define PDO_FIXED_VOLT_SHIFT		10	/* 50mV units */
-@@ -466,6 +467,7 @@ static inline unsigned int rdo_max_power(u32 rdo)
- #define PD_T_DRP_SRC		30
- #define PD_T_PS_SOURCE_OFF	920
- #define PD_T_PS_SOURCE_ON	480
-+#define PD_T_PS_SOURCE_ON_PRS	450	/* 390 - 480ms */
- #define PD_T_PS_HARD_RESET	30
- #define PD_T_SRC_RECOVER	760
- #define PD_T_SRC_RECOVER_MAX	1000
-@@ -478,14 +480,19 @@ static inline unsigned int rdo_max_power(u32 rdo)
- #define PD_T_NEWSRC		250	/* Maximum of 275ms */
- #define PD_T_SWAP_SRC_START	20	/* Minimum of 20ms */
- #define PD_T_BIST_CONT_MODE	50	/* 30 - 60 ms */
-+#define PD_T_SINK_TX		16	/* 16 - 20 ms */
-+#define PD_T_CHUNK_NOT_SUPP	42	/* 40 - 50 ms */
- 
- #define PD_T_DRP_TRY		100	/* 75 - 150 ms */
- #define PD_T_DRP_TRYWAIT	600	/* 400 - 800 ms */
- 
- #define PD_T_CC_DEBOUNCE	200	/* 100 - 200 ms */
- #define PD_T_PD_DEBOUNCE	20	/* 10 - 20 ms */
-+#define PD_T_TRY_CC_DEBOUNCE	15	/* 10 - 20 ms */
- 
- #define PD_N_CAPS_COUNT		(PD_T_NO_RESPONSE / PD_T_SEND_SOURCE_CAP)
- #define PD_N_HARD_RESET_COUNT	2
- 
-+#define PD_P_SNK_STDBY_MW	2500	/* 2500 mW */
++#define PHY_LP23_RON_RTT_DISABLE	(0)
++#define PHY_LP23_RON_RTT_480ohm		(1)
++#define PHY_LP23_RON_RTT_240ohm		(2)
++#define PHY_LP23_RON_RTT_160ohm		(3)
++#define PHY_LP23_RON_RTT_120ohm		(4)
++#define PHY_LP23_RON_RTT_96ohm		(5)
++#define PHY_LP23_RON_RTT_80ohm		(6)
++#define PHY_LP23_RON_RTT_68ohm		(7)
++#define PHY_LP23_RON_RTT_60ohm		(16)
++#define PHY_LP23_RON_RTT_53ohm		(17)
++#define PHY_LP23_RON_RTT_48ohm		(18)
++#define PHY_LP23_RON_RTT_43ohm		(19)
++#define PHY_LP23_RON_RTT_40ohm		(20)
++#define PHY_LP23_RON_RTT_37ohm		(21)
++#define PHY_LP23_RON_RTT_34ohm		(22)
++#define PHY_LP23_RON_RTT_32ohm		(23)
++#define PHY_LP23_RON_RTT_30ohm		(24)
++#define PHY_LP23_RON_RTT_28ohm		(25)
++#define PHY_LP23_RON_RTT_26ohm		(26)
++#define PHY_LP23_RON_RTT_25ohm		(27)
++#define PHY_LP23_RON_RTT_24ohm		(28)
++#define PHY_LP23_RON_RTT_22ohm		(29)
++#define PHY_LP23_RON_RTT_21ohm		(30)
++#define PHY_LP23_RON_RTT_20ohm		(31)
 +
- #endif /* __LINUX_USB_PD_H */
-diff --git a/include/linux/usb/pd_ext_sdb.h b/include/linux/usb/pd_ext_sdb.h
-index 0eb83ce19..b517ebc8f 100644
---- a/include/linux/usb/pd_ext_sdb.h
-+++ b/include/linux/usb/pd_ext_sdb.h
-@@ -24,8 +24,4 @@ enum usb_pd_ext_sdb_fields {
- #define USB_PD_EXT_SDB_EVENT_OVP		BIT(3)
- #define USB_PD_EXT_SDB_EVENT_CF_CV_MODE		BIT(4)
- 
--#define USB_PD_EXT_SDB_PPS_EVENTS	(USB_PD_EXT_SDB_EVENT_OCP |	\
--					 USB_PD_EXT_SDB_EVENT_OTP |	\
--					 USB_PD_EXT_SDB_EVENT_OVP)
--
- #endif /* __LINUX_USB_PD_EXT_SDB_H */
-diff --git a/include/linux/usb/pd_vdo.h b/include/linux/usb/pd_vdo.h
-index 68bdc4e2f..7f5e330a6 100644
---- a/include/linux/usb/pd_vdo.h
-+++ b/include/linux/usb/pd_vdo.h
-@@ -21,22 +21,24 @@
-  * ----------
-  * <31:16>  :: SVID
-  * <15>     :: VDM type ( 1b == structured, 0b == unstructured )
-- * <14:13>  :: Structured VDM version (can only be 00 == 1.0 currently)
-+ * <14:13>  :: Structured VDM version
-  * <12:11>  :: reserved
-  * <10:8>   :: object position (1-7 valid ... used for enter/exit mode only)
-  * <7:6>    :: command type (SVDM only?)
-  * <5>      :: reserved (SVDM), command type (UVDM)
-  * <4:0>    :: command
-  */
--#define VDO(vid, type, custom)				\
-+#define VDO(vid, type, ver, custom)			\
- 	(((vid) << 16) |				\
- 	 ((type) << 15) |				\
-+	 ((ver) << 13) |				\
- 	 ((custom) & 0x7FFF))
- 
- #define VDO_SVDM_TYPE		(1 << 15)
- #define VDO_SVDM_VERS(x)	((x) << 13)
- #define VDO_OPOS(x)		((x) << 8)
- #define VDO_CMDT(x)		((x) << 6)
-+#define VDO_SVDM_VERS_MASK	VDO_SVDM_VERS(0x3)
- #define VDO_OPOS_MASK		VDO_OPOS(0x7)
- #define VDO_CMDT_MASK		VDO_CMDT(0x3)
- 
-@@ -74,6 +76,7 @@
- 
- #define PD_VDO_VID(vdo)		((vdo) >> 16)
- #define PD_VDO_SVDM(vdo)	(((vdo) >> 15) & 1)
-+#define PD_VDO_SVDM_VER(vdo)	(((vdo) >> 13) & 0x3)
- #define PD_VDO_OPOS(vdo)	(((vdo) >> 8) & 0x7)
- #define PD_VDO_CMD(vdo)		((vdo) & 0x1f)
- #define PD_VDO_CMDT(vdo)	(((vdo) >> 6) & 0x3)
-@@ -103,25 +106,50 @@
-  * --------------------
-  * <31>     :: data capable as a USB host
-  * <30>     :: data capable as a USB device
-- * <29:27>  :: product type
-+ * <29:27>  :: product type (UFP / Cable / VPD)
-  * <26>     :: modal operation supported (1b == yes)
-- * <25:16>  :: Reserved, Shall be set to zero
-+ * <25:23>  :: product type (DFP) (SVDM version 2.0+ only; set to zero in version 1.0)
-+ * <22:21>  :: connector type (SVDM version 2.0+ only; set to zero in version 1.0)
-+ * <20:16>  :: Reserved, Shall be set to zero
-  * <15:0>   :: USB-IF assigned VID for this cable vendor
-  */
++#endif /* _DT_BINDINGS_DRAM_ROCKCHIP_RK322X_H */
+diff --git a/include/dt-bindings/dram/rockchip,rk3368.h b/include/dt-bindings/dram/rockchip,rk3368.h
+new file mode 100755
+index 000000000..993f1eed9
+--- /dev/null
++++ b/include/dt-bindings/dram/rockchip,rk3368.h
+@@ -0,0 +1,80 @@
++/*
++ *
++ * Copyright (C) 2011-2014 ROCKCHIP, Inc.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
 +
-+/* PD Rev2.0 definition */
- #define IDH_PTYPE_UNDEF		0
++#ifndef _DT_BINDINGS_DRAM_ROCKCHIP_RK3368_H
++#define _DT_BINDINGS_DRAM_ROCKCHIP_RK3368_H
 +
-+/* SOP Product Type (UFP) */
-+#define IDH_PTYPE_NOT_UFP	0
- #define IDH_PTYPE_HUB		1
- #define IDH_PTYPE_PERIPH	2
-+#define IDH_PTYPE_PSD		3
-+#define IDH_PTYPE_AMA		5
++#define DDR3_DS_34ohm		(1<<1)
++#define DDR3_DS_40ohm		(0x0)
 +
-+/* SOP' Product Type (Cable Plug / VPD) */
-+#define IDH_PTYPE_NOT_CABLE	0
- #define IDH_PTYPE_PCABLE	3
- #define IDH_PTYPE_ACABLE	4
--#define IDH_PTYPE_AMA		5
-+#define IDH_PTYPE_VPD		6
- 
--#define VDO_IDH(usbh, usbd, ptype, is_modal, vid)		\
--	((usbh) << 31 | (usbd) << 30 | ((ptype) & 0x7) << 27	\
--	 | (is_modal) << 26 | ((vid) & 0xffff))
-+/* SOP Product Type (DFP) */
-+#define IDH_PTYPE_NOT_DFP	0
-+#define IDH_PTYPE_DFP_HUB	1
-+#define IDH_PTYPE_DFP_HOST	2
-+#define IDH_PTYPE_DFP_PB	3
++#define LP2_DS_34ohm		(0x1)
++#define LP2_DS_40ohm		(0x2)
++#define LP2_DS_48ohm		(0x3)
++#define LP2_DS_60ohm		(0x4)
++#define LP2_DS_68_6ohm		(0x5)/*optional*/
++#define LP2_DS_80ohm		(0x6)
++#define LP2_DS_120ohm		(0x7)/*optional*/
 +
-+/* ID Header Mask */
-+#define IDH_DFP_MASK		GENMASK(25, 23)
-+#define IDH_CONN_MASK		GENMASK(22, 21)
++#define LP3_DS_34ohm		(0x1)
++#define LP3_DS_40ohm		(0x2)
++#define LP3_DS_48ohm		(0x3)
++#define LP3_DS_60ohm		(0x4)
++#define LP3_DS_80ohm		(0x6)
++#define LP3_DS_34D_40U		(0x9)
++#define LP3_DS_40D_48U		(0xa)
++#define LP3_DS_34D_48U		(0xb)
 +
-+#define VDO_IDH(usbh, usbd, ufp_cable, is_modal, dfp, conn, vid)		\
-+	((usbh) << 31 | (usbd) << 30 | ((ufp_cable) & 0x7) << 27		\
-+	 | (is_modal) << 26 | ((dfp) & 0x7) << 23 | ((conn) & 0x3) << 21	\
-+	 | ((vid) & 0xffff))
- 
- #define PD_IDH_PTYPE(vdo)	(((vdo) >> 27) & 0x7)
- #define PD_IDH_VID(vdo)		((vdo) & 0xffff)
- #define PD_IDH_MODAL_SUPP(vdo)	((vdo) & (1 << 26))
-+#define PD_IDH_DFP_PTYPE(vdo)	(((vdo) >> 23) & 0x7)
-+#define PD_IDH_CONN_TYPE(vdo)	(((vdo) >> 21) & 0x3)
- 
- /*
-  * Cert Stat VDO
-@@ -129,6 +157,7 @@
-  * <31:0>  : USB-IF assigned XID for this cable
-  */
- #define PD_CSTAT_XID(vdo)	(vdo)
-+#define VDO_CERT(xid)		((xid) & 0xffffffff)
- 
- /*
-  * Product VDO
-@@ -140,77 +169,270 @@
- #define PD_PRODUCT_PID(vdo)	(((vdo) >> 16) & 0xffff)
- 
- /*
-- * UFP VDO1
-+ * UFP VDO (PD Revision 3.0+ only)
-  * --------
-  * <31:29> :: UFP VDO version
-  * <28>    :: Reserved
-  * <27:24> :: Device capability
-- * <23:6>  :: Reserved
-+ * <23:22> :: Connector type (10b == receptacle, 11b == captive plug)
-+ * <21:11> :: Reserved
-+ * <10:8>  :: Vconn power (AMA only)
-+ * <7>     :: Vconn required (AMA only, 0b == no, 1b == yes)
-+ * <6>     :: Vbus required (AMA only, 0b == yes, 1b == no)
-  * <5:3>   :: Alternate modes
-  * <2:0>   :: USB highest speed
-  */
--#define PD_VDO1_UFP_DEVCAP(vdo)	(((vdo) & GENMASK(27, 24)) >> 24)
-+#define PD_VDO_UFP_DEVCAP(vdo)	(((vdo) & GENMASK(27, 24)) >> 24)
- 
-+/* UFP VDO Version */
-+#define UFP_VDO_VER1_2		2
++#define DDR3_ODT_DIS		(0)
++#define DDR3_ODT_40ohm		((1<<2)|(1<<6))
++#define DDR3_ODT_60ohm		(1<<2)
++#define DDR3_ODT_120ohm		(1<<6)
 +
-+/* Device Capability */
- #define DEV_USB2_CAPABLE	BIT(0)
- #define DEV_USB2_BILLBOARD	BIT(1)
- #define DEV_USB3_CAPABLE	BIT(2)
- #define DEV_USB4_CAPABLE	BIT(3)
- 
-+/* Connector Type */
-+#define UFP_RECEPTACLE		2
-+#define UFP_CAPTIVE		3
++#define LP3_ODT_DIS		(0)
++#define LP3_ODT_60ohm		(1)
++#define LP3_ODT_120ohm		(2)
++#define LP3_ODT_240ohm		(3)
 +
-+/* Vconn Power (AMA only, set to AMA_VCONN_NOT_REQ if Vconn is not required) */
-+#define AMA_VCONN_PWR_1W	0
-+#define AMA_VCONN_PWR_1W5	1
-+#define AMA_VCONN_PWR_2W	2
-+#define AMA_VCONN_PWR_3W	3
-+#define AMA_VCONN_PWR_4W	4
-+#define AMA_VCONN_PWR_5W	5
-+#define AMA_VCONN_PWR_6W	6
++#define PHY_RON_DISABLE		(0)
++#define PHY_RON_272ohm		(1)
++#define PHY_RON_135ohm		(2)
++#define PHY_RON_91ohm		(3)
++#define PHY_RON_38ohm		(7)
++#define PHY_RON_68ohm		(8)
++#define PHY_RON_54ohm		(9)
++#define PHY_RON_45ohm		(10)
++#define PHY_RON_39ohm		(11)
++#define PHY_RON_34ohm		(12)
++#define PHY_RON_30ohm		(13)
++#define PHY_RON_27ohm		(14)
++#define PHY_RON_25ohm		(15)
 +
-+/* Vconn Required (AMA only) */
-+#define AMA_VCONN_NOT_REQ	0
-+#define AMA_VCONN_REQ		1
++#define PHY_RTT_DISABLE		(0)
++#define PHY_RTT_1116ohm		(1)
++#define PHY_RTT_558ohm		(2)
++#define PHY_RTT_372ohm		(3)
++#define PHY_RTT_279ohm		(4)
++#define PHY_RTT_223ohm		(5)
++#define PHY_RTT_186ohm		(6)
++#define PHY_RTT_159ohm		(7)
++#define PHY_RTT_139ohm		(8)
++#define PHY_RTT_124ohm		(9)
++#define PHY_RTT_112ohm		(10)
++#define PHY_RTT_101ohm		(11)
++#define PHY_RTT_93ohm		(12)
++#define PHY_RTT_86ohm		(13)
++#define PHY_RTT_80ohm		(14)
++#define PHY_RTT_74ohm		(15)
++
++#endif /*_DT_BINDINGS_DRAM_ROCKCHIP_RK3368_H*/
+diff --git a/include/dt-bindings/input/rk-input.h b/include/dt-bindings/input/rk-input.h
+new file mode 100755
+index 000000000..00b412927
+--- /dev/null
++++ b/include/dt-bindings/input/rk-input.h
+@@ -0,0 +1,814 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Device properties and quirks
++ */
++
++#define INPUT_PROP_POINTER		0x00	/* needs a pointer */
++#define INPUT_PROP_DIRECT		0x01	/* direct input devices */
++#define INPUT_PROP_BUTTONPAD		0x02	/* has button(s) under pad */
++#define INPUT_PROP_SEMI_MT		0x03	/* touch rectangle only */
++
++#define INPUT_PROP_MAX			0x1f
++#define INPUT_PROP_CNT			(INPUT_PROP_MAX + 1)
++
++/*
++ * Event types
++ */
++
++#define EV_SYN			0x00
++#define EV_KEY			0x01
++#define EV_REL			0x02
++#define EV_ABS			0x03
++#define EV_MSC			0x04
++#define EV_SW			0x05
++#define EV_LED			0x11
++#define EV_SND			0x12
++#define EV_REP			0x14
++#define EV_FF			0x15
++#define EV_PWR			0x16
++#define EV_FF_STATUS		0x17
++#define EV_MAX			0x1f
++#define EV_CNT			(EV_MAX+1)
++
++/*
++ * Synchronization events.
++ */
++
++#define SYN_REPORT		0
++#define SYN_CONFIG		1
++#define SYN_MT_REPORT		2
++#define SYN_DROPPED		3
++
++/*
++ * Keys and buttons
++ *
++ * Most of the keys/buttons are modeled after USB HUT 1.12
++ * (see http://www.usb.org/developers/hidpage).
++ * Abbreviations in the comments:
++ * AC - Application Control
++ * AL - Application Launch Button
++ * SC - System Control
++ */
++
++#define KEY_RESERVED		0
++#define KEY_ESC			1
++#define KEY_1			2
++#define KEY_2			3
++#define KEY_3			4
++#define KEY_4			5
++#define KEY_5			6
++#define KEY_6			7
++#define KEY_7			8
++#define KEY_8			9
++#define KEY_9			10
++#define KEY_0			11
++#define KEY_MINUS		12
++#define KEY_EQUAL		13
++#define KEY_BACKSPACE		14
++#define KEY_TAB			15
++#define KEY_Q			16
++#define KEY_W			17
++#define KEY_E			18
++#define KEY_R			19
++#define KEY_T			20
++#define KEY_Y			21
++#define KEY_U			22
++#define KEY_I			23
++#define KEY_O			24
++#define KEY_P			25
++#define KEY_LEFTBRACE		26
++#define KEY_RIGHTBRACE		27
++#define KEY_ENTER		28
++#define KEY_LEFTCTRL		29
++#define KEY_A			30
++#define KEY_S			31
++#define KEY_D			32
++#define KEY_F			33
++#define KEY_G			34
++#define KEY_H			35
++#define KEY_J			36
++#define KEY_K			37
++#define KEY_L			38
++#define KEY_SEMICOLON		39
++#define KEY_APOSTROPHE		40
++#define KEY_GRAVE		41
++#define KEY_LEFTSHIFT		42
++#define KEY_BACKSLASH		43
++#define KEY_Z			44
++#define KEY_X			45
++#define KEY_C			46
++#define KEY_V			47
++#define KEY_B			48
++#define KEY_N			49
++#define KEY_M			50
++#define KEY_COMMA		51
++#define KEY_DOT			52
++#define KEY_SLASH		53
++#define KEY_RIGHTSHIFT		54
++#define KEY_KPASTERISK		55
++#define KEY_LEFTALT		56
++#define KEY_SPACE		57
++#define KEY_CAPSLOCK		58
++#define KEY_F1			59
++#define KEY_F2			60
++#define KEY_F3			61
++#define KEY_F4			62
++#define KEY_F5			63
++#define KEY_F6			64
++#define KEY_F7			65
++#define KEY_F8			66
++#define KEY_F9			67
++#define KEY_F10			68
++#define KEY_NUMLOCK		69
++#define KEY_SCROLLLOCK		70
++#define KEY_KP7			71
++#define KEY_KP8			72
++#define KEY_KP9			73
++#define KEY_KPMINUS		74
++#define KEY_KP4			75
++#define KEY_KP5			76
++#define KEY_KP6			77
++#define KEY_KPPLUS		78
++#define KEY_KP1			79
++#define KEY_KP2			80
++#define KEY_KP3			81
++#define KEY_KP0			82
++#define KEY_KPDOT		83
++
++#define KEY_ZENKAKUHANKAKU	85
++#define KEY_102ND		86
++#define KEY_F11			87
++#define KEY_F12			88
++#define KEY_RO			89
++#define KEY_KATAKANA		90
++#define KEY_HIRAGANA		91
++#define KEY_HENKAN		92
++#define KEY_KATAKANAHIRAGANA	93
++#define KEY_MUHENKAN		94
++#define KEY_KPJPCOMMA		95
++#define KEY_KPENTER		96
++#define KEY_RIGHTCTRL		97
++#define KEY_KPSLASH		98
++#define KEY_SYSRQ		99
++#define KEY_RIGHTALT		100
++#define KEY_LINEFEED		101
++#define KEY_HOME		102
++#define KEY_UP			103
++#define KEY_PAGEUP		104
++#define KEY_LEFT		105
++#define KEY_RIGHT		106
++#define KEY_END			107
++#define KEY_DOWN		108
++#define KEY_PAGEDOWN		109
++#define KEY_INSERT		110
++#define KEY_DELETE		111
++#define KEY_MACRO		112
++#define KEY_MUTE		113
++#define KEY_VOLUMEDOWN		114
++#define KEY_VOLUMEUP		115
++#define KEY_POWER		116	/* SC System Power Down */
++#define KEY_KPEQUAL		117
++#define KEY_KPPLUSMINUS		118
++#define KEY_PAUSE		119
++#define KEY_SCALE		120	/* AL Compiz Scale (Expose) */
++
++#define KEY_KPCOMMA		121
++#define KEY_HANGEUL		122
++#define KEY_HANGUEL		KEY_HANGEUL
++#define KEY_HANJA		123
++#define KEY_YEN			124
++#define KEY_LEFTMETA		125
++#define KEY_RIGHTMETA		126
++#define KEY_COMPOSE		127
++
++#define KEY_STOP		128	/* AC Stop */
++#define KEY_AGAIN		129
++#define KEY_PROPS		130	/* AC Properties */
++#define KEY_UNDO		131	/* AC Undo */
++#define KEY_FRONT		132
++#define KEY_COPY		133	/* AC Copy */
++#define KEY_OPEN		134	/* AC Open */
++#define KEY_PASTE		135	/* AC Paste */
++#define KEY_FIND		136	/* AC Search */
++#define KEY_CUT			137	/* AC Cut */
++#define KEY_HELP		138	/* AL Integrated Help Center */
++#define KEY_MENU		139	/* Menu (show menu) */
++#define KEY_CALC		140	/* AL Calculator */
++#define KEY_SETUP		141
++#define KEY_SLEEP		142	/* SC System Sleep */
++#define KEY_WAKEUP		143	/* System Wake Up */
++#define KEY_FILE		144	/* AL Local Machine Browser */
++#define KEY_SENDFILE		145
++#define KEY_DELETEFILE		146
++#define KEY_XFER		147
++#define KEY_PROG1		148
++#define KEY_PROG2		149
++#define KEY_WWW			150	/* AL Internet Browser */
++#define KEY_MSDOS		151
++#define KEY_COFFEE		152	/* AL Terminal Lock/Screensaver */
++#define KEY_SCREENLOCK		KEY_COFFEE
++#define KEY_DIRECTION		153
++#define KEY_CYCLEWINDOWS	154
++#define KEY_MAIL		155
++#define KEY_BOOKMARKS		156	/* AC Bookmarks */
++#define KEY_COMPUTER		157
++#define KEY_BACK		158	/* AC Back */
++#define KEY_FORWARD		159	/* AC Forward */
++#define KEY_CLOSECD		160
++#define KEY_EJECTCD		161
++#define KEY_EJECTCLOSECD	162
++#define KEY_NEXTSONG		163
++#define KEY_PLAYPAUSE		164
++#define KEY_PREVIOUSSONG	165
++#define KEY_STOPCD		166
++#define KEY_RECORD		167
++#define KEY_REWIND		168
++#define KEY_PHONE		169	/* Media Select Telephone */
++#define KEY_ISO			170
++#define KEY_CONFIG		171	/* AL Consumer Control Configuration */
++#define KEY_HOMEPAGE		172	/* AC Home */
++#define KEY_REFRESH		173	/* AC Refresh */
++#define KEY_EXIT		174	/* AC Exit */
++#define KEY_MOVE		175
++#define KEY_EDIT		176
++#define KEY_SCROLLUP		177
++#define KEY_SCROLLDOWN		178
++#define KEY_KPLEFTPAREN		179
++#define KEY_KPRIGHTPAREN	180
++#define KEY_NEW			181	/* AC New */
++#define KEY_REDO		182	/* AC Redo/Repeat */
++
++#define KEY_F13			183
++#define KEY_F14			184
++#define KEY_F15			185
++#define KEY_F16			186
++#define KEY_F17			187
++#define KEY_F18			188
++#define KEY_F19			189
++#define KEY_F20			190
++#define KEY_F21			191
++#define KEY_F22			192
++#define KEY_F23			193
++#define KEY_F24			194
++
++#define KEY_PLAYCD		200
++#define KEY_PAUSECD		201
++#define KEY_PROG3		202
++#define KEY_PROG4		203
++#define KEY_DASHBOARD		204	/* AL Dashboard */
++#define KEY_SUSPEND		205
++#define KEY_CLOSE		206	/* AC Close */
++#define KEY_PLAY		207
++#define KEY_FASTFORWARD		208
++#define KEY_BASSBOOST		209
++#define KEY_PRINT		210	/* AC Print */
++#define KEY_HP			211
++#define KEY_CAMERA		212
++#define KEY_SOUND		213
++#define KEY_QUESTION		214
++#define KEY_EMAIL		215
++#define KEY_CHAT		216
++#define KEY_SEARCH		217
++#define KEY_CONNECT		218
++#define KEY_FINANCE		219	/* AL Checkbook/Finance */
++#define KEY_SPORT		220
++#define KEY_SHOP		221
++#define KEY_ALTERASE		222
++#define KEY_CANCEL		223	/* AC Cancel */
++#define KEY_BRIGHTNESSDOWN	224
++#define KEY_BRIGHTNESSUP	225
++#define KEY_MEDIA		226
++
++#define KEY_SWITCHVIDEOMODE	227	/* Cycle between available video
++					   outputs (Monitor/LCD/TV-out/etc) */
++#define KEY_KBDILLUMTOGGLE	228
++#define KEY_KBDILLUMDOWN	229
++#define KEY_KBDILLUMUP		230
++
++#define KEY_SEND		231	/* AC Send */
++#define KEY_REPLY		232	/* AC Reply */
++#define KEY_FORWARDMAIL		233	/* AC Forward Msg */
++#define KEY_SAVE		234	/* AC Save */
++#define KEY_DOCUMENTS		235
++
++#define KEY_BATTERY		236
++
++#define KEY_BLUETOOTH		237
++#define KEY_WLAN		238
++#define KEY_UWB			239
++
++#define KEY_UNKNOWN		240
++
++#define KEY_VIDEO_NEXT		241	/* drive next video source */
++#define KEY_VIDEO_PREV		242	/* drive previous video source */
++#define KEY_BRIGHTNESS_CYCLE	243	/* brightness up, after max is min */
++#define KEY_BRIGHTNESS_AUTO	244	/* Set Auto Brightness: manual
++					  brightness control is off,
++					  rely on ambient */
++#define KEY_BRIGHTNESS_ZERO	KEY_BRIGHTNESS_AUTO
++#define KEY_DISPLAY_OFF		245	/* display device to off state */
++
++#define KEY_WWAN		246	/* Wireless WAN (LTE, UMTS, GSM, etc.) */
++#define KEY_WIMAX		KEY_WWAN
++#define KEY_RFKILL		247	/* Key that controls all radios */
++
++#define KEY_MICMUTE		248	/* Mute / unmute the microphone */
++
++/* Code 255 is reserved for special needs of AT keyboard driver */
++
++#define BTN_MISC		0x100
++#define BTN_0			0x100
++#define BTN_1			0x101
++#define BTN_2			0x102
++#define BTN_3			0x103
++#define BTN_4			0x104
++#define BTN_5			0x105
++#define BTN_6			0x106
++#define BTN_7			0x107
++#define BTN_8			0x108
++#define BTN_9			0x109
++
++#define BTN_MOUSE		0x110
++#define BTN_LEFT		0x110
++#define BTN_RIGHT		0x111
++#define BTN_MIDDLE		0x112
++#define BTN_SIDE		0x113
++#define BTN_EXTRA		0x114
++#define BTN_FORWARD		0x115
++#define BTN_BACK		0x116
++#define BTN_TASK		0x117
 +
 +/* Vbus Required (AMA only) */
 +#define AMA_VBUS_REQ		0
