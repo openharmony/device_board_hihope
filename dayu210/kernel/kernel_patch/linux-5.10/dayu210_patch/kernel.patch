@@ -67963,7 +67963,7 @@ index 89044e610..4b755e473 100644
  
  	ep_index = TRB_TO_EP_INDEX(le32_to_cpu(trb->generic.field[3]));
  	stream_id = TRB_TO_STREAM_ID(le32_to_cpu(trb->generic.field[2]));
-@@ -1242,8 +1375,7 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
+@@ -1240,8 +1326,7 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
  	if (!ep)
  		return;
  
@@ -67973,7 +67973,7 @@ index 89044e610..4b755e473 100644
  	if (!ep_ring) {
  		xhci_warn(xhci, "WARN Set TR deq ptr command for freed stream ID %u\n",
  				stream_id);
-@@ -1251,8 +1383,8 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
+@@ -1249,8 +1334,8 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
  		goto cleanup;
  	}
  
@@ -67984,7 +67984,7 @@ index 89044e610..4b755e473 100644
  	trace_xhci_handle_cmd_set_deq(slot_ctx);
  	trace_xhci_handle_cmd_set_deq_ep(ep_ctx);
  
-@@ -1305,7 +1437,7 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
+@@ -1303,7 +1388,7 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
  			/* Update the ring's dequeue segment and dequeue pointer
  			 * to reflect the new position.
  			 */
@@ -67993,7 +67993,7 @@ index 89044e610..4b755e473 100644
  				ep_ring, ep_index);
  		} else {
  			xhci_warn(xhci, "Mismatch between completed Set TR Deq Ptr command & xHCI internal state.\n");
-@@ -1313,7 +1445,20 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
+@@ -1311,7 +1396,24 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
  				  ep->queued_deq_seg, ep->queued_deq_ptr);
  		}
  	}
@@ -68004,18 +68004,22 @@ index 89044e610..4b755e473 100644
 +		ep_ring = xhci_urb_to_transfer_ring(ep->xhci, td->urb);
 +		if (td->cancel_status == TD_CLEARING_CACHE) {
 +			td->cancel_status = TD_CLEARED;
-+			xhci_dbg(ep->xhci, "%s: Giveback cancelled URB %p TD\n",
-+				 __func__, td->urb);
 +			xhci_td_cleanup(ep->xhci, td, ep_ring, td->status);
-+		} else {
-+			xhci_dbg(ep->xhci, "%s: Keep cancelled URB %p TD as cancel_status is %d\n",
-+				 __func__, td->urb, td->cancel_status);
++		}
++	}
++	/* HW cached TDs cleared from cache, give them back */
++	list_for_each_entry_safe(td, tmp_td, &ep->cancelled_td_list,
++				 cancelled_td_list) {
++		ep_ring = xhci_urb_to_transfer_ring(ep->xhci, td->urb);
++		if (td->cancel_status == TD_CLEARING_CACHE) {
++			td->cancel_status = TD_CLEARED;
++			xhci_td_cleanup(ep->xhci, td, ep_ring, td->status);
 +		}
 +	}
  cleanup:
  	ep->ep_state &= ~SET_DEQ_PENDING;
  	ep->queued_deq_seg = NULL;
-@@ -1325,7 +1470,6 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
+@@ -1323,7 +1425,6 @@ static void xhci_handle_cmd_set_deq(struct xhci_hcd *xhci, int slot_id,
  static void xhci_handle_cmd_reset_ep(struct xhci_hcd *xhci, int slot_id,
  		union xhci_trb *trb, u32 cmd_comp_code)
  {
@@ -68023,7 +68027,7 @@ index 89044e610..4b755e473 100644
  	struct xhci_virt_ep *ep;
  	struct xhci_ep_ctx *ep_ctx;
  	unsigned int ep_index;
-@@ -1335,8 +1479,7 @@ static void xhci_handle_cmd_reset_ep(struct xhci_hcd *xhci, int slot_id,
+@@ -1333,8 +1434,7 @@ static void xhci_handle_cmd_reset_ep(struct xhci_hcd *xhci, int slot_id,
  	if (!ep)
  		return;
  
@@ -68033,7 +68037,7 @@ index 89044e610..4b755e473 100644
  	trace_xhci_handle_cmd_reset_ep(ep_ctx);
  
  	/* This command will only fail if the endpoint wasn't halted,
-@@ -1345,27 +1488,15 @@ static void xhci_handle_cmd_reset_ep(struct xhci_hcd *xhci, int slot_id,
+@@ -1343,27 +1443,15 @@ static void xhci_handle_cmd_reset_ep(struct xhci_hcd *xhci, int slot_id,
  	xhci_dbg_trace(xhci, trace_xhci_dbg_reset_ep,
  		"Ignoring reset ep completion code of %u", cmd_comp_code);
  
@@ -68068,7 +68072,7 @@ index 89044e610..4b755e473 100644
  
  	/* if this was a soft reset, then restart */
  	if ((le32_to_cpu(trb->generic.field[3])) & TRB_TSP)
-@@ -1399,7 +1530,7 @@ static void xhci_handle_cmd_disable_slot(struct xhci_hcd *xhci, int slot_id)
+@@ -1397,7 +1485,7 @@ static void xhci_handle_cmd_disable_slot(struct xhci_hcd *xhci, int slot_id)
  }
  
  static void xhci_handle_cmd_config_ep(struct xhci_hcd *xhci, int slot_id,
@@ -68077,7 +68081,7 @@ index 89044e610..4b755e473 100644
  {
  	struct xhci_virt_device *virt_dev;
  	struct xhci_input_control_ctx *ctrl_ctx;
-@@ -1417,6 +1548,8 @@ static void xhci_handle_cmd_config_ep(struct xhci_hcd *xhci, int slot_id,
+@@ -1415,6 +1503,8 @@ static void xhci_handle_cmd_config_ep(struct xhci_hcd *xhci, int slot_id,
  	 * is not waiting on the configure endpoint command.
  	 */
  	virt_dev = xhci->devs[slot_id];
@@ -68086,7 +68090,7 @@ index 89044e610..4b755e473 100644
  	ctrl_ctx = xhci_get_input_control_ctx(virt_dev->in_ctx);
  	if (!ctrl_ctx) {
  		xhci_warn(xhci, "Could not get input context, bad type.\n");
-@@ -1461,24 +1594,27 @@ static void xhci_handle_cmd_addr_dev(struct xhci_hcd *xhci, int slot_id)
+@@ -1459,24 +1549,27 @@ static void xhci_handle_cmd_addr_dev(struct xhci_hcd *xhci, int slot_id)
  	struct xhci_slot_ctx *slot_ctx;
  
  	vdev = xhci->devs[slot_id];
@@ -68119,7 +68123,7 @@ index 89044e610..4b755e473 100644
  }
  
  static void xhci_handle_cmd_nec_get_fw(struct xhci_hcd *xhci,
-@@ -1571,7 +1707,7 @@ void xhci_handle_command_timeout(struct work_struct *work)
+@@ -1569,7 +1662,7 @@ void xhci_handle_command_timeout(struct work_struct *work)
  static void handle_cmd_completion(struct xhci_hcd *xhci,
  		struct xhci_event_cmd *event)
  {
@@ -68128,7 +68132,7 @@ index 89044e610..4b755e473 100644
  	u64 cmd_dma;
  	dma_addr_t cmd_dequeue_dma;
  	u32 cmd_comp_code;
-@@ -1579,6 +1715,11 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -1577,6 +1670,11 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
  	struct xhci_command *cmd;
  	u32 cmd_type;
  
@@ -68140,7 +68144,7 @@ index 89044e610..4b755e473 100644
  	cmd_dma = le64_to_cpu(event->cmd_trb);
  	cmd_trb = xhci->cmd_ring->dequeue;
  
-@@ -1639,8 +1780,7 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -1637,8 +1735,7 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
  		break;
  	case TRB_CONFIG_EP:
  		if (!cmd->completion)
@@ -68150,7 +68154,7 @@ index 89044e610..4b755e473 100644
  		break;
  	case TRB_EVAL_CONTEXT:
  		break;
-@@ -1651,7 +1791,8 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -1649,7 +1746,8 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
  		WARN_ON(slot_id != TRB_TO_SLOT_ID(
  				le32_to_cpu(cmd_trb->generic.field[3])));
  		if (!cmd->completion)
@@ -68160,7 +68164,7 @@ index 89044e610..4b755e473 100644
  		break;
  	case TRB_SET_DEQ:
  		WARN_ON(slot_id != TRB_TO_SLOT_ID(
-@@ -1674,7 +1815,7 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -1672,7 +1770,7 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
  		 */
  		slot_id = TRB_TO_SLOT_ID(
  				le32_to_cpu(cmd_trb->generic.field[3]));
@@ -68169,7 +68173,7 @@ index 89044e610..4b755e473 100644
  		break;
  	case TRB_NEC_GET_FW:
  		xhci_handle_cmd_nec_get_fw(xhci, event);
-@@ -1701,11 +1842,8 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
+@@ -1699,11 +1797,8 @@ static void handle_cmd_completion(struct xhci_hcd *xhci,
  }
  
  static void handle_vendor_event(struct xhci_hcd *xhci,
@@ -68182,33 +68186,9 @@ index 89044e610..4b755e473 100644
  	xhci_dbg(xhci, "Vendor specific event TRB type = %u\n", trb_type);
  	if (trb_type == TRB_NEC_CMD_COMP && (xhci->quirks & XHCI_NEC_HOST))
  		handle_cmd_completion(xhci, &event->event_cmd);
-@@ -1930,7 +2068,8 @@ static void handle_port_status(struct xhci_hcd *xhci,
- 	 * bits are still set.  When an event occurs, switch over to
- 	 * polling to avoid losing status changes.
- 	 */
--	xhci_dbg(xhci, "%s: starting port polling.\n", __func__);
-+	xhci_dbg(xhci, "%s: starting usb%d port polling.\n",
-+		 __func__, hcd->self.busnum);
- 	set_bit(HCD_FLAG_POLL_RH, &hcd->flags);
- 	spin_unlock(&xhci->lock);
- 	/* Pass this up to the core */
-@@ -2062,29 +2201,60 @@ int xhci_is_vendor_info_code(struct xhci_hcd *xhci, unsigned int trb_comp_code)
- 	return 0;
- }
+@@ -2067,18 +2162,52 @@ static int finish_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
  
--static int finish_td(struct xhci_hcd *xhci, struct xhci_td *td,
--	struct xhci_transfer_event *event, struct xhci_virt_ep *ep)
-+static int finish_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
-+		     struct xhci_ring *ep_ring, struct xhci_td *td,
-+		     u32 trb_comp_code)
- {
- 	struct xhci_ep_ctx *ep_ctx;
--	struct xhci_ring *ep_ring;
--	u32 trb_comp_code;
- 
--	ep_ring = xhci_dma_to_transfer_ring(ep, le64_to_cpu(event->buffer));
  	ep_ctx = xhci_get_ep_ctx(xhci, ep->vdev->out_ctx, ep->ep_index);
--	trb_comp_code = GET_COMP_CODE(le32_to_cpu(event->transfer_len));
  
 -	if (trb_comp_code == COMP_STOPPED_LENGTH_INVALID ||
 -			trb_comp_code == COMP_STOPPED ||
@@ -68268,7 +68248,7 @@ index 89044e610..4b755e473 100644
  		/*
  		 * xhci internal endpoint state will go to a "halt" state for
  		 * any stall, including default control pipe protocol stall.
-@@ -2095,18 +2265,23 @@ static int finish_td(struct xhci_hcd *xhci, struct xhci_td *td,
+@@ -2089,19 +2218,23 @@ static int finish_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
  		 * stall later. Hub TT buffer should only be cleared for FS/LS
  		 * devices behind HS hubs for functional stalls.
  		 */
@@ -68280,8 +68260,9 @@ index 89044e610..4b755e473 100644
 -					     EP_HARD_RESET);
 -	} else {
 -		/* Update ring dequeue pointer */
--		while (ep_ring->dequeue != td->last_trb)
--			inc_deq(xhci, ep_ring);
+-		ep_ring->dequeue = td->last_trb;
+-		ep_ring->deq_seg = td->last_trb_seg;
+-		ep_ring->num_trbs_free += td->num_trbs - 1;
 -		inc_deq(xhci, ep_ring);
 +					    EP_HARD_RESET);
 +
@@ -68299,110 +68280,7 @@ index 89044e610..4b755e473 100644
  	return xhci_td_cleanup(xhci, td, ep_ring, td->status);
  }
  
-@@ -2128,9 +2303,9 @@ static int sum_trb_lengths(struct xhci_hcd *xhci, struct xhci_ring *ring,
- /*
-  * Process control tds, update urb status and actual_length.
-  */
--static int process_ctrl_td(struct xhci_hcd *xhci, struct xhci_td *td,
--	union xhci_trb *ep_trb, struct xhci_transfer_event *event,
--	struct xhci_virt_ep *ep)
-+static int process_ctrl_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
-+		struct xhci_ring *ep_ring,  struct xhci_td *td,
-+			   union xhci_trb *ep_trb, struct xhci_transfer_event *event)
- {
- 	struct xhci_ep_ctx *ep_ctx;
- 	u32 trb_comp_code;
-@@ -2218,15 +2393,15 @@ static int process_ctrl_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 		td->urb->actual_length = requested;
- 
- finish_td:
--	return finish_td(xhci, td, event, ep);
-+	return finish_td(xhci, ep, ep_ring, td, trb_comp_code);
- }
- 
- /*
-  * Process isochronous tds, update urb packet status and actual_length.
-  */
--static int process_isoc_td(struct xhci_hcd *xhci, struct xhci_td *td,
--	union xhci_trb *ep_trb, struct xhci_transfer_event *event,
--	struct xhci_virt_ep *ep)
-+static int process_isoc_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
-+		struct xhci_ring *ep_ring, struct xhci_td *td,
-+		union xhci_trb *ep_trb, struct xhci_transfer_event *event)
- {
- 	struct urb_priv *urb_priv;
- 	int idx;
-@@ -2303,7 +2478,7 @@ static int process_isoc_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 
- 	td->urb->actual_length += frame->actual_length;
- 
--	return finish_td(xhci, td, event, ep);
-+	return finish_td(xhci, ep, ep_ring, td, trb_comp_code);
- }
- 
- static int skip_isoc_td(struct xhci_hcd *xhci, struct xhci_td *td,
-@@ -2324,8 +2499,9 @@ static int skip_isoc_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 	frame->actual_length = 0;
- 
- 	/* Update ring dequeue pointer */
--	while (ep->ring->dequeue != td->last_trb)
--		inc_deq(xhci, ep->ring);
-+	ep->ring->dequeue = td->last_trb;
-+	ep->ring->deq_seg = td->last_trb_seg;
-+	ep->ring->num_trbs_free += td->num_trbs - 1;
- 	inc_deq(xhci, ep->ring);
- 
- 	return xhci_td_cleanup(xhci, td, ep->ring, status);
-@@ -2334,17 +2510,15 @@ static int skip_isoc_td(struct xhci_hcd *xhci, struct xhci_td *td,
- /*
-  * Process bulk and interrupt tds, update urb status and actual_length.
-  */
--static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
--	union xhci_trb *ep_trb, struct xhci_transfer_event *event,
--	struct xhci_virt_ep *ep)
-+static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
-+		struct xhci_ring *ep_ring, struct xhci_td *td,
-+		union xhci_trb *ep_trb, struct xhci_transfer_event *event)
- {
- 	struct xhci_slot_ctx *slot_ctx;
--	struct xhci_ring *ep_ring;
- 	u32 trb_comp_code;
- 	u32 remaining, requested, ep_trb_len;
- 
- 	slot_ctx = xhci_get_slot_ctx(xhci, ep->vdev->out_ctx);
--	ep_ring = xhci_dma_to_transfer_ring(ep, le64_to_cpu(event->buffer));
- 	trb_comp_code = GET_COMP_CODE(le32_to_cpu(event->transfer_len));
- 	remaining = EVENT_TRB_LEN(le32_to_cpu(event->transfer_len));
- 	ep_trb_len = TRB_LEN(le32_to_cpu(ep_trb->generic.field[2]));
-@@ -2352,7 +2526,7 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 
- 	switch (trb_comp_code) {
- 	case COMP_SUCCESS:
--		ep->err_count = 0;
-+		ep_ring->err_count = 0;
- 		/* handle success with untransferred data as short packet */
- 		if (ep_trb != td->last_trb || remaining) {
- 			xhci_warn(xhci, "WARN Successful completion on short TX\n");
-@@ -2378,7 +2552,7 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 		break;
- 	case COMP_USB_TRANSACTION_ERROR:
- 		if (xhci->quirks & XHCI_NO_SOFT_RETRY ||
--		    (ep->err_count++ > MAX_SOFT_RETRY) ||
-+		    (ep_ring->err_count++ > MAX_SOFT_RETRY) ||
- 		    le32_to_cpu(slot_ctx->tt_info) & TT_SLOT)
- 			break;
- 
-@@ -2404,7 +2578,8 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
- 			  remaining);
- 		td->urb->actual_length = 0;
- 	}
--	return finish_td(xhci, td, event, ep);
-+
-+	return finish_td(xhci, ep, ep_ring, td, trb_comp_code);
- }
- 
- /*
-@@ -2415,7 +2590,6 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_td *td,
+@@ -2429,7 +2562,6 @@ static int process_bulk_intr_td(struct xhci_hcd *xhci, struct xhci_virt_ep *ep,
  static int handle_tx_event(struct xhci_hcd *xhci,
  		struct xhci_transfer_event *event)
  {
@@ -68410,7 +68288,7 @@ index 89044e610..4b755e473 100644
  	struct xhci_virt_ep *ep;
  	struct xhci_ring *ep_ring;
  	unsigned int slot_id;
-@@ -2442,9 +2616,8 @@ static int handle_tx_event(struct xhci_hcd *xhci,
+@@ -2456,9 +2588,8 @@ static int handle_tx_event(struct xhci_hcd *xhci,
  		goto err_out;
  	}
  
@@ -68421,24 +68299,7 @@ index 89044e610..4b755e473 100644
  
  	if (GET_EP_CTX_STATE(ep_ctx) == EP_STATE_DISABLED) {
  		xhci_err(xhci,
-@@ -2460,14 +2633,8 @@ static int handle_tx_event(struct xhci_hcd *xhci,
- 		case COMP_USB_TRANSACTION_ERROR:
- 		case COMP_INVALID_STREAM_TYPE_ERROR:
- 		case COMP_INVALID_STREAM_ID_ERROR:
--			xhci_dbg(xhci, "Stream transaction error ep %u no id\n",
--				 ep_index);
--			if (ep->err_count++ > MAX_SOFT_RETRY)
--				xhci_handle_halted_endpoint(xhci, ep, 0, NULL,
--							    EP_HARD_RESET);
--			else
--				xhci_handle_halted_endpoint(xhci, ep, 0, NULL,
--							    EP_SOFT_RESET);
-+			xhci_handle_halted_endpoint(xhci, ep, 0, NULL,
-+						    EP_SOFT_RESET);
- 			goto cleanup;
- 		case COMP_RING_UNDERRUN:
- 		case COMP_RING_OVERRUN:
-@@ -2522,7 +2689,6 @@ static int handle_tx_event(struct xhci_hcd *xhci,
+@@ -2537,7 +2668,6 @@ static int handle_tx_event(struct xhci_hcd *xhci,
  	case COMP_STALL_ERROR:
  		xhci_dbg(xhci, "Stalled endpoint for slot %u ep %u\n", slot_id,
  			 ep_index);
@@ -68446,22 +68307,7 @@ index 89044e610..4b755e473 100644
  		status = -EPIPE;
  		break;
  	case COMP_SPLIT_TRANSACTION_ERROR:
-@@ -2755,11 +2921,11 @@ static int handle_tx_event(struct xhci_hcd *xhci,
- 
- 		/* update the urb's actual_length and give back to the core */
- 		if (usb_endpoint_xfer_control(&td->urb->ep->desc))
--			process_ctrl_td(xhci, td, ep_trb, event, ep);
-+			process_ctrl_td(xhci, ep, ep_ring, td, ep_trb, event);
- 		else if (usb_endpoint_xfer_isoc(&td->urb->ep->desc))
--			process_isoc_td(xhci, td, ep_trb, event, ep);
-+			process_isoc_td(xhci, ep, ep_ring, td, ep_trb, event);
- 		else
--			process_bulk_intr_td(xhci, td, ep_trb, event, ep);
-+			process_bulk_intr_td(xhci, ep, ep_ring, td, ep_trb, event);
- cleanup:
- 		handling_skipped_tds = ep->skip &&
- 			trb_comp_code != COMP_MISSED_SERVICE_ERROR &&
-@@ -2800,10 +2966,11 @@ static int handle_tx_event(struct xhci_hcd *xhci,
+@@ -2846,10 +2976,11 @@ static int handle_tx_event(struct xhci_hcd *xhci,
   * Returns >0 for "possibly more events to process" (caller should call again),
   * otherwise 0 if done.  In future, <0 returns should indicate error code.
   */
@@ -68474,7 +68320,7 @@ index 89044e610..4b755e473 100644
  	int ret;
  
  	/* Event ring hasn't been allocated yet. */
-@@ -2825,31 +2992,30 @@ static int xhci_handle_event(struct xhci_hcd *xhci)
+@@ -2871,31 +3002,30 @@ static int xhci_handle_event(struct xhci_hcd *xhci)
  	 * speculative reads of the event's flags/data below.
  	 */
  	rmb();
@@ -68516,7 +68362,7 @@ index 89044e610..4b755e473 100644
  	}
  	/* Any of the above functions may drop and re-acquire the lock, so check
  	 * to make sure a watchdog timer didn't mark the host as non-responsive.
-@@ -2869,13 +3035,14 @@ static int xhci_handle_event(struct xhci_hcd *xhci)
+@@ -2915,13 +3045,14 @@ static int xhci_handle_event(struct xhci_hcd *xhci)
  	 */
  	return 1;
  }
@@ -68532,7 +68378,7 @@ index 89044e610..4b755e473 100644
  		union xhci_trb *event_ring_deq)
  {
  	u64 temp_64;
-@@ -2905,6 +3072,16 @@ static void xhci_update_erst_dequeue(struct xhci_hcd *xhci,
+@@ -2951,6 +3082,16 @@ static void xhci_update_erst_dequeue(struct xhci_hcd *xhci,
  	temp_64 |= ERST_EHB;
  	xhci_write_64(xhci, temp_64, &xhci->ir_set->erst_dequeue);
  }
@@ -68549,7 +68395,7 @@ index 89044e610..4b755e473 100644
  
  /*
   * xHCI spec says we can get an interrupt, and if the HC has an error condition,
-@@ -2940,6 +3117,10 @@ irqreturn_t xhci_irq(struct usb_hcd *hcd)
+@@ -2986,6 +3127,10 @@ irqreturn_t xhci_irq(struct usb_hcd *hcd)
  		goto out;
  	}
  
@@ -68560,16 +68406,7 @@ index 89044e610..4b755e473 100644
  	/*
  	 * Clear the op reg interrupt status first,
  	 * so we can receive interrupts from other MSI-X interrupters.
-@@ -2977,8 +3158,6 @@ irqreturn_t xhci_irq(struct usb_hcd *hcd)
- 		if (event_loop++ < TRBS_PER_SEGMENT / 2)
- 			continue;
- 		xhci_update_erst_dequeue(xhci, event_ring_deq);
--		event_ring_deq = xhci->event_ring->dequeue;
--
- 		event_loop = 0;
- 	}
- 
-@@ -3032,6 +3211,7 @@ static int prepare_ring(struct xhci_hcd *xhci, struct xhci_ring *ep_ring,
+@@ -3078,6 +3223,7 @@ static int prepare_ring(struct xhci_hcd *xhci, struct xhci_ring *ep_ring,
  		u32 ep_state, unsigned int num_trbs, gfp_t mem_flags)
  {
  	unsigned int num_trbs_needed;
@@ -68577,7 +68414,7 @@ index 89044e610..4b755e473 100644
  
  	/* Make sure the endpoint has been added to xHC schedule */
  	switch (ep_state) {
-@@ -3102,7 +3282,19 @@ static int prepare_ring(struct xhci_hcd *xhci, struct xhci_ring *ep_ring,
+@@ -3148,7 +3294,19 @@ static int prepare_ring(struct xhci_hcd *xhci, struct xhci_ring *ep_ring,
  
  		ep_ring->enq_seg = ep_ring->enq_seg->next;
  		ep_ring->enqueue = ep_ring->enq_seg->trbs;
@@ -68597,7 +68434,7 @@ index 89044e610..4b755e473 100644
  	return 0;
  }
  
-@@ -3121,7 +3313,8 @@ static int prepare_transfer(struct xhci_hcd *xhci,
+@@ -3167,7 +3325,8 @@ static int prepare_transfer(struct xhci_hcd *xhci,
  	struct xhci_ring *ep_ring;
  	struct xhci_ep_ctx *ep_ctx = xhci_get_ep_ctx(xhci, xdev->out_ctx, ep_index);
  
@@ -68607,69 +68444,15 @@ index 89044e610..4b755e473 100644
  	if (!ep_ring) {
  		xhci_dbg(xhci, "Can't prepare ring for bad stream ID %u\n",
  				stream_id);
-@@ -3490,7 +3683,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 			field |= TRB_IOC;
- 			more_trbs_coming = false;
- 			td->last_trb = ring->enqueue;
--
-+			td->last_trb_seg = ring->enq_seg;
- 			if (xhci_urb_suitable_for_idt(urb)) {
- 				memcpy(&send_addr, urb->transfer_buffer,
- 				       trb_buff_len);
-@@ -3516,7 +3709,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 				upper_32_bits(send_addr),
- 				length_field,
- 				field);
--
-+		td->num_trbs++;
- 		addr += trb_buff_len;
- 		sent_len = trb_buff_len;
+@@ -3486,6 +3645,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
+ 		need_zero_pkt = true;
  
-@@ -3540,8 +3733,10 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 				       ep_index, urb->stream_id,
- 				       1, urb, 1, mem_flags);
- 		urb_priv->td[1].last_trb = ring->enqueue;
-+		urb_priv->td[1].last_trb_seg = ring->enq_seg;
- 		field = TRB_TYPE(TRB_NORMAL) | ring->cycle_state | TRB_IOC;
- 		queue_trb(xhci, ring, 0, 0, 0, TRB_INTR_TARGET(0), field);
-+		urb_priv->td[1].num_trbs++;
- 	}
- 
- 	check_trb_math(urb, enqd_len);
-@@ -3592,6 +3787,7 @@ int xhci_queue_ctrl_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 
- 	urb_priv = urb->hcpriv;
  	td = &urb_priv->td[0];
 +	td->num_trbs = num_trbs;
  
  	/*
  	 * Don't give the first TRB to the hardware (by toggling the cycle bit)
-@@ -3664,6 +3860,7 @@ int xhci_queue_ctrl_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 
- 	/* Save the DMA address of the last TRB in the TD */
- 	td->last_trb = ep_ring->enqueue;
-+	td->last_trb_seg = ep_ring->enq_seg;
- 
- 	/* Queue status TRB - see Table 7 and sections 4.11.2.2 and 6.4.1.2.3 */
- 	/* If the device sent data, the status stage is an OUT transfer */
-@@ -3908,7 +4105,7 @@ static int xhci_queue_isoc_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 			goto cleanup;
- 		}
- 		td = &urb_priv->td[i];
--
-+		td->num_trbs = trbs_per_td;
- 		/* use SIA as default, if frame id is used overwrite it */
- 		sia_frame_id = TRB_SIA;
- 		if (!(urb->transfer_flags & URB_ISO_ASAP) &&
-@@ -3951,6 +4148,7 @@ static int xhci_queue_isoc_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
- 			} else {
- 				more_trbs_coming = false;
- 				td->last_trb = ep_ring->enqueue;
-+				td->last_trb_seg = ep_ring->enq_seg;
- 				field |= TRB_IOC;
- 				if (trb_block_event_intr(xhci, num_tds, i))
- 					field |= TRB_BEI;
-@@ -4233,71 +4431,7 @@ int xhci_queue_stop_endpoint(struct xhci_hcd *xhci, struct xhci_command *cmd,
+@@ -4284,71 +4444,7 @@ int xhci_queue_stop_endpoint(struct xhci_hcd *xhci, struct xhci_command *cmd,
  	return queue_command(xhci, cmd, 0, 0, 0,
  			trb_slot_id | trb_ep_index | type | trb_suspend, false);
  }
@@ -68754,10 +68537,10 @@ index d0070814d..c4178357b 100644
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_handle_transfer);
 +EXPORT_TRACEPOINT_SYMBOL_GPL(xhci_urb_giveback);
 diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-index 473b0b64d..611401723 100644
+index 19914d08f..430369ef6 100644
 --- a/drivers/usb/host/xhci.c
 +++ b/drivers/usb/host/xhci.c
-@@ -20,7 +20,6 @@
+@@ -21,7 +21,6 @@
  
  #include "xhci.h"
  #include "xhci-trace.h"
@@ -68765,191 +68548,7 @@ index 473b0b64d..611401723 100644
  #include "xhci-debugfs.h"
  #include "xhci-dbgcap.h"
  
-@@ -66,7 +65,7 @@ static bool td_on_ring(struct xhci_td *td, struct xhci_ring *ring)
-  * handshake done).  There are two failure modes:  "usec" have passed (major
-  * hardware flakeout), or the register reads as all-ones (hardware removed).
-  */
--int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us)
-+int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, int usec)
- {
- 	u32	result;
- 	int	ret;
-@@ -74,7 +73,7 @@ int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us)
- 	ret = readl_poll_timeout_atomic(ptr, result,
- 					(result & mask) == done ||
- 					result == U32_MAX,
--					1, timeout_us);
-+					1, usec);
- 	if (result == U32_MAX)		/* card removed */
- 		return -ENODEV;
- 
-@@ -149,11 +148,9 @@ int xhci_start(struct xhci_hcd *xhci)
- 		xhci_err(xhci, "Host took too long to start, "
- 				"waited %u microseconds.\n",
- 				XHCI_MAX_HALT_USEC);
--	if (!ret) {
-+	if (!ret)
- 		/* clear state flags. Including dying, halted or removing */
- 		xhci->xhc_state = 0;
--		xhci->run_graceperiod = jiffies + msecs_to_jiffies(500);
--	}
- 
- 	return ret;
- }
-@@ -165,7 +162,7 @@ int xhci_start(struct xhci_hcd *xhci)
-  * Transactions will be terminated immediately, and operational registers
-  * will be set to their defaults.
-  */
--int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
-+int xhci_reset(struct xhci_hcd *xhci)
- {
- 	u32 command;
- 	u32 state;
-@@ -198,7 +195,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
- 	if (xhci->quirks & XHCI_INTEL_HOST)
- 		udelay(1000);
- 
--	ret = xhci_handshake(&xhci->op_regs->command, CMD_RESET, 0, timeout_us);
-+	ret = xhci_handshake(&xhci->op_regs->command,
-+			CMD_RESET, 0, 10 * 1000 * 1000);
- 	if (ret)
- 		return ret;
- 
-@@ -211,7 +209,8 @@ int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us)
- 	 * xHCI cannot write to any doorbells or operational registers other
- 	 * than status until the "Controller Not Ready" flag is cleared.
- 	 */
--	ret = xhci_handshake(&xhci->op_regs->status, STS_CNR, 0, timeout_us);
-+	ret = xhci_handshake(&xhci->op_regs->status,
-+			STS_CNR, 0, 10 * 1000 * 1000);
- 
- 	xhci->usb2_rhub.bus_state.port_c_suspend = 0;
- 	xhci->usb2_rhub.bus_state.suspended_ports = 0;
-@@ -696,8 +695,6 @@ int xhci_run(struct usb_hcd *hcd)
- 	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
- 			"Finished xhci_run for USB2 roothub");
- 
--	set_bit(HCD_FLAG_DEFER_RH_REGISTER, &hcd->flags);
--
- 	xhci_dbc_init(xhci);
- 
- 	xhci_debugfs_init(xhci);
-@@ -734,7 +731,7 @@ static void xhci_stop(struct usb_hcd *hcd)
- 	xhci->xhc_state |= XHCI_STATE_HALTED;
- 	xhci->cmd_ring_state = CMD_RING_STATE_STOPPED;
- 	xhci_halt(xhci);
--	xhci_reset(xhci, XHCI_RESET_SHORT_USEC);
-+	xhci_reset(xhci);
- 	spin_unlock_irq(&xhci->lock);
- 
- 	xhci_cleanup_msix(xhci);
-@@ -783,28 +780,11 @@ void xhci_shutdown(struct usb_hcd *hcd)
- 	if (xhci->quirks & XHCI_SPURIOUS_REBOOT)
- 		usb_disable_xhci_ports(to_pci_dev(hcd->self.sysdev));
- 
--	/* Don't poll the roothubs after shutdown. */
--	xhci_dbg(xhci, "%s: stopping usb%d port polling.\n",
--			__func__, hcd->self.busnum);
--	clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
--	del_timer_sync(&hcd->rh_timer);
--
--	if (xhci->shared_hcd) {
--		clear_bit(HCD_FLAG_POLL_RH, &xhci->shared_hcd->flags);
--		del_timer_sync(&xhci->shared_hcd->rh_timer);
--	}
--
- 	spin_lock_irq(&xhci->lock);
- 	xhci_halt(xhci);
--
--	/*
--	 * Workaround for spurious wakeps at shutdown with HSW, and for boot
--	 * firmware delay in ADL-P PCH if port are left in U3 at shutdown
--	 */
--	if (xhci->quirks & XHCI_SPURIOUS_WAKEUP ||
--	    xhci->quirks & XHCI_RESET_TO_DEFAULT)
--		xhci_reset(xhci, XHCI_RESET_SHORT_USEC);
--
-+	/* Workaround for spurious wakeups at shutdown with HSW */
-+	if (xhci->quirks & XHCI_SPURIOUS_WAKEUP)
-+		xhci_reset(xhci);
- 	spin_unlock_irq(&xhci->lock);
- 
- 	xhci_cleanup_msix(xhci);
-@@ -1013,7 +993,8 @@ int xhci_suspend(struct xhci_hcd *xhci, bool do_wakeup)
- 	xhci_dbc_suspend(xhci);
- 
- 	/* Don't poll the roothubs on bus suspend. */
--	xhci_dbg(xhci, "%s: stopping port polling.\n", __func__);
-+	xhci_dbg(xhci, "%s: stopping usb%d port polling.\n",
-+		 __func__, hcd->self.busnum);
- 	clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
- 	del_timer_sync(&hcd->rh_timer);
- 	clear_bit(HCD_FLAG_POLL_RH, &xhci->shared_hcd->flags);
-@@ -1110,7 +1091,6 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
- 	int			retval = 0;
- 	bool			comp_timer_running = false;
- 	bool			pending_portevent = false;
--	bool			reinit_xhc = false;
- 
- 	if (!hcd->state)
- 		return 0;
-@@ -1127,11 +1107,10 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
- 	set_bit(HCD_FLAG_HW_ACCESSIBLE, &xhci->shared_hcd->flags);
- 
- 	spin_lock_irq(&xhci->lock);
-+	if ((xhci->quirks & XHCI_RESET_ON_RESUME) || xhci->broken_suspend)
-+		hibernated = true;
- 
--	if (hibernated || xhci->quirks & XHCI_RESET_ON_RESUME || xhci->broken_suspend)
--		reinit_xhc = true;
--
--	if (!reinit_xhc) {
-+	if (!hibernated) {
- 		/*
- 		 * Some controllers might lose power during suspend, so wait
- 		 * for controller not ready bit to clear, just as in xHC init.
-@@ -1164,18 +1143,12 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
- 			spin_unlock_irq(&xhci->lock);
- 			return -ETIMEDOUT;
- 		}
-+		temp = readl(&xhci->op_regs->status);
- 	}
- 
--	temp = readl(&xhci->op_regs->status);
--
--	/* re-initialize the HC on Restore Error, or Host Controller Error */
--	if (temp & (STS_SRE | STS_HCE)) {
--		reinit_xhc = true;
--		if (!xhci->broken_suspend)
--			xhci_warn(xhci, "xHC error in resume, USBSTS 0x%x, Reinit\n", temp);
--	}
-+	/* If restore operation fails, re-initialize the HC during resume */
-+	if ((temp & STS_SRE) || hibernated) {
- 
--	if (reinit_xhc) {
- 		if ((xhci->quirks & XHCI_COMP_MODE_QUIRK) &&
- 				!(xhci_all_ports_seen_u0(xhci))) {
- 			del_timer_sync(&xhci->comp_mode_recovery_timer);
-@@ -1190,7 +1163,7 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
- 		xhci_dbg(xhci, "Stop HCD\n");
- 		xhci_halt(xhci);
- 		xhci_zero_64b_regs(xhci);
--		retval = xhci_reset(xhci, XHCI_RESET_LONG_USEC);
-+		retval = xhci_reset(xhci);
- 		spin_unlock_irq(&xhci->lock);
- 		if (retval)
- 			return retval;
-@@ -1285,7 +1258,8 @@ int xhci_resume(struct xhci_hcd *xhci, bool hibernated)
- 		usb_asmedia_modifyflowcontrol(to_pci_dev(hcd->self.controller));
- 
- 	/* Re-enable port polling. */
--	xhci_dbg(xhci, "%s: starting port polling.\n", __func__);
-+	xhci_dbg(xhci, "%s: starting usb%d port polling.\n",
-+		 __func__, hcd->self.busnum);
- 	set_bit(HCD_FLAG_POLL_RH, &xhci->shared_hcd->flags);
- 	usb_hcd_poll_rh_status(xhci->shared_hcd);
- 	set_bit(HCD_FLAG_POLL_RH, &hcd->flags);
-@@ -1333,6 +1307,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
+@@ -1337,6 +1336,7 @@ unsigned int xhci_get_endpoint_index(struct usb_endpoint_descriptor *desc)
  			(usb_endpoint_dir_in(desc) ? 1 : 0) - 1;
  	return index;
  }
@@ -68957,7 +68556,7 @@ index 473b0b64d..611401723 100644
  
  /* The reverse operation to xhci_get_endpoint_index. Calculate the USB endpoint
   * address from the XHCI endpoint index.
-@@ -1343,6 +1318,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
+@@ -1347,6 +1347,7 @@ unsigned int xhci_get_endpoint_address(unsigned int ep_index)
  	unsigned int direction = ep_index % 2 ? USB_DIR_OUT : USB_DIR_IN;
  	return direction | number;
  }
@@ -68965,7 +68564,7 @@ index 473b0b64d..611401723 100644
  
  /* Find the flag for this endpoint (for use in the control context).  Use the
   * endpoint index to create a bitmask.  The slot context is bit 0, endpoint 0 is
-@@ -1353,15 +1329,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
+@@ -1357,15 +1358,6 @@ static unsigned int xhci_get_endpoint_flag(struct usb_endpoint_descriptor *desc)
  	return 1 << (xhci_get_endpoint_index(desc) + 1);
  }
  
@@ -68981,22 +68580,7 @@ index 473b0b64d..611401723 100644
  /* Compute the last valid endpoint context index.  Basically, this is the
   * endpoint index plus one.  For slot contexts with more than valid endpoint,
   * we find the most significant bit set in the added contexts flags.
-@@ -1507,12 +1474,9 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
- 	struct urb_priv	*urb_priv;
- 	int num_tds;
- 
--	if (!urb)
-+	if (!urb || xhci_check_args(hcd, urb->dev, urb->ep,
-+					true, true, __func__) <= 0)
- 		return -EINVAL;
--	ret = xhci_check_args(hcd, urb->dev, urb->ep,
--					true, true, __func__);
--	if (ret <= 0)
--		return ret ? ret : -EINVAL;
- 
- 	slot_id = urb->dev->slot_id;
- 	ep_index = xhci_get_endpoint_index(&urb->ep->desc);
-@@ -1528,6 +1492,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
+@@ -1532,6 +1524,11 @@ static int xhci_urb_enqueue(struct usb_hcd *hcd, struct urb *urb, gfp_t mem_flag
  		return -ENODEV;
  	}
  
@@ -69008,7 +68592,7 @@ index 473b0b64d..611401723 100644
  	if (usb_endpoint_xfer_isoc(&urb->ep->desc))
  		num_tds = urb->number_of_packets;
  	else if (usb_endpoint_is_bulk_out(&urb->ep->desc) &&
-@@ -1728,7 +1697,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1732,7 +1729,12 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
  
  	for (; i < urb_priv->num_tds; i++) {
  		td = &urb_priv->td[i];
@@ -69022,7 +68606,7 @@ index 473b0b64d..611401723 100644
  	}
  
  	/* Queue a stop endpoint command, but only if this is
-@@ -1774,8 +1748,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
+@@ -1778,8 +1780,8 @@ static int xhci_urb_dequeue(struct usb_hcd *hcd, struct urb *urb, int status)
   * disabled, so there's no need for mutual exclusion to protect
   * the xhci->devs[slot_id] structure.
   */
@@ -69033,7 +68617,7 @@ index 473b0b64d..611401723 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx, *out_ctx;
-@@ -1835,9 +1809,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1839,9 +1841,6 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  
  	xhci_endpoint_zero(xhci, xhci->devs[udev->slot_id], ep);
  
@@ -69043,7 +68627,7 @@ index 473b0b64d..611401723 100644
  	xhci_dbg(xhci, "drop ep 0x%x, slot id %d, new drop flags = %#x, new add flags = %#x\n",
  			(unsigned int) ep->desc.bEndpointAddress,
  			udev->slot_id,
-@@ -1845,6 +1816,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1849,6 +1848,7 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69051,7 +68635,7 @@ index 473b0b64d..611401723 100644
  
  /* Add an endpoint to a new possible bandwidth configuration for this device.
   * Only one call to this function is allowed per endpoint before
-@@ -1859,8 +1831,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1863,8 +1863,8 @@ static int xhci_drop_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
   * configuration or alt setting is installed in the device, so there's no need
   * for mutual exclusion to protect the xhci->devs[slot_id] structure.
   */
@@ -69062,7 +68646,7 @@ index 473b0b64d..611401723 100644
  {
  	struct xhci_hcd *xhci;
  	struct xhci_container_ctx *in_ctx;
-@@ -1934,15 +1906,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1938,15 +1938,6 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  		return -ENOMEM;
  	}
  
@@ -69078,7 +68662,7 @@ index 473b0b64d..611401723 100644
  	ctrl_ctx->add_flags |= cpu_to_le32(added_ctxs);
  	new_add_flags = le32_to_cpu(ctrl_ctx->add_flags);
  
-@@ -1967,6 +1930,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -1971,6 +1962,7 @@ static int xhci_add_endpoint(struct usb_hcd *hcd, struct usb_device *udev,
  			(unsigned int) new_add_flags);
  	return 0;
  }
@@ -69086,7 +68670,7 @@ index 473b0b64d..611401723 100644
  
  static void xhci_zero_in_ctx(struct xhci_hcd *xhci, struct xhci_virt_device *virt_dev)
  {
-@@ -2876,6 +2840,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
+@@ -2880,6 +2872,14 @@ static int xhci_configure_endpoint(struct xhci_hcd *xhci,
  			xhci_finish_resource_reservation(xhci, ctrl_ctx);
  		spin_unlock_irqrestore(&xhci->lock, flags);
  	}
@@ -69101,7 +68685,7 @@ index 473b0b64d..611401723 100644
  	return ret;
  }
  
-@@ -3000,6 +2972,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3004,6 +3004,7 @@ int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  
  	return ret;
  }
@@ -69109,7 +68693,7 @@ index 473b0b64d..611401723 100644
  
  void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -3018,12 +2991,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -3022,12 +3023,17 @@ void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev)
  	for (i = 0; i < 31; i++) {
  		if (virt_dev->eps[i].new_ring) {
  			xhci_debugfs_remove_endpoint(xhci, virt_dev, i);
@@ -69128,7 +68712,7 @@ index 473b0b64d..611401723 100644
  
  static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  		struct xhci_container_ctx *in_ctx,
-@@ -3037,84 +3015,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
+@@ -3041,84 +3047,6 @@ static void xhci_setup_input_ctx_for_config_ep(struct xhci_hcd *xhci,
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  }
  
@@ -69213,7 +68797,7 @@ index 473b0b64d..611401723 100644
  static void xhci_endpoint_disable(struct usb_hcd *hcd,
  				  struct usb_host_endpoint *host_ep)
  {
-@@ -3260,6 +3160,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3264,6 +3192,13 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(stop_cmd->completion);
  
@@ -69227,7 +68811,7 @@ index 473b0b64d..611401723 100644
  	spin_lock_irqsave(&xhci->lock, flags);
  
  	/* config ep command clears toggle if add and drop ep flags are set */
-@@ -3291,6 +3198,11 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
+@@ -3295,6 +3230,11 @@ static void xhci_endpoint_reset(struct usb_hcd *hcd,
  
  	wait_for_completion(cfg_cmd->completion);
  
@@ -69239,16 +68823,7 @@ index 473b0b64d..611401723 100644
  	xhci_free_command(xhci, cfg_cmd);
  cleanup:
  	xhci_free_command(xhci, stop_cmd);
-@@ -3312,7 +3224,7 @@ static int xhci_check_streams_endpoint(struct xhci_hcd *xhci,
- 		return -EINVAL;
- 	ret = xhci_check_args(xhci_to_hcd(xhci), udev, ep, 1, true, __func__);
- 	if (ret <= 0)
--		return ret ? ret : -EINVAL;
-+		return -EINVAL;
- 	if (usb_ss_max_streams(&ep->ss_ep_comp) == 0) {
- 		xhci_warn(xhci, "WARN: SuperSpeed Endpoint Companion"
- 				" descriptor for ep 0x%x does not support streams\n",
-@@ -3836,6 +3748,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
+@@ -3840,6 +3780,13 @@ static int xhci_discover_or_reset_device(struct usb_hcd *hcd,
  	/* Wait for the Reset Device command to finish */
  	wait_for_completion(reset_device_cmd->completion);
  
@@ -69262,27 +68837,7 @@ index 473b0b64d..611401723 100644
  	/* The Reset Device command can't fail, according to the 0.95/0.96 spec,
  	 * unless we tried to reset a slot ID that wasn't enabled,
  	 * or the device wasn't in the addressed or configured state.
-@@ -3921,7 +3840,6 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
- 	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
- 	struct xhci_virt_device *virt_dev;
- 	struct xhci_slot_ctx *slot_ctx;
--	unsigned long flags;
- 	int i, ret;
- 
- 	/*
-@@ -3950,11 +3868,7 @@ static void xhci_free_dev(struct usb_hcd *hcd, struct usb_device *udev)
- 	}
- 	virt_dev->udev = NULL;
- 	xhci_disable_slot(xhci, udev->slot_id);
--
--	spin_lock_irqsave(&xhci->lock, flags);
- 	xhci_free_virt_device(xhci, udev->slot_id);
--	spin_unlock_irqrestore(&xhci->lock, flags);
--
- }
- 
- int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id)
-@@ -4086,6 +4000,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
+@@ -4090,6 +4037,14 @@ int xhci_alloc_dev(struct usb_hcd *hcd, struct usb_device *udev)
  		xhci_warn(xhci, "Could not allocate xHCI USB device data structures\n");
  		goto disable_slot;
  	}
@@ -69297,7 +68852,7 @@ index 473b0b64d..611401723 100644
  	vdev = xhci->devs[slot_id];
  	slot_ctx = xhci_get_slot_ctx(xhci, vdev->out_ctx);
  	trace_xhci_alloc_dev(slot_ctx);
-@@ -4216,6 +4138,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4220,6 +4175,13 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	/* ctrl tx can take up to 5 sec; XXX: need more time for xHC? */
  	wait_for_completion(command->completion);
  
@@ -69311,7 +68866,7 @@ index 473b0b64d..611401723 100644
  	/* FIXME: From section 4.3.4: "Software shall be responsible for timing
  	 * the SetAddress() "recovery interval" required by USB and aborting the
  	 * command on a timeout.
-@@ -4300,10 +4229,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
+@@ -4306,10 +4268,11 @@ static int xhci_setup_device(struct usb_hcd *hcd, struct usb_device *udev,
  	return ret;
  }
  
@@ -69324,7 +68879,7 @@ index 473b0b64d..611401723 100644
  
  static int xhci_enable_device(struct usb_hcd *hcd, struct usb_device *udev)
  {
-@@ -4363,6 +4293,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4369,6 +4332,14 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  		return -ENOMEM;
  	}
  
@@ -69339,7 +68894,7 @@ index 473b0b64d..611401723 100644
  	xhci_slot_copy(xhci, command->in_ctx, virt_dev->out_ctx);
  	spin_unlock_irqrestore(&xhci->lock, flags);
  
-@@ -4387,6 +4325,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
+@@ -4393,6 +4364,30 @@ static int __maybe_unused xhci_change_max_exit_latency(struct xhci_hcd *xhci,
  	return ret;
  }
  
@@ -69370,38 +68925,7 @@ index 473b0b64d..611401723 100644
  #ifdef CONFIG_PM
  
  /* BESL to HIRD Encoding array for USB2 LPM */
-@@ -5011,7 +4973,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
- 			struct usb_device *udev, enum usb3_link_state state)
- {
- 	struct xhci_hcd	*xhci;
--	struct xhci_port *port;
- 	u16 hub_encoded_timeout;
- 	int mel;
- 	int ret;
-@@ -5025,13 +4986,6 @@ static int xhci_enable_usb3_lpm_timeout(struct usb_hcd *hcd,
- 			!xhci->devs[udev->slot_id])
- 		return USB3_LPM_DISABLED;
- 
--	/* If connected to root port then check port can handle lpm */
--	if (udev->parent && !udev->parent->parent) {
--		port = xhci->usb3_rhub.ports[udev->portnum - 1];
--		if (port->lpm_incapable)
--			return USB3_LPM_DISABLED;
--	}
--
- 	hub_encoded_timeout = xhci_calculate_lpm_timeout(hcd, udev, state);
- 	mel = calculate_max_exit_latency(udev, state, hub_encoded_timeout);
- 	if (mel < 0) {
-@@ -5091,7 +5045,7 @@ static int xhci_disable_usb3_lpm_timeout(struct usb_hcd *hcd,
- /* Once a hub descriptor is fetched for a device, we need to update the xHC's
-  * internal data structures for the device.
-  */
--int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
-+static int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
- 			struct usb_tt *tt, gfp_t mem_flags)
- {
- 	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
-@@ -5134,6 +5088,15 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+@@ -5140,6 +5135,15 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
  		return -ENOMEM;
  	}
  
@@ -69417,24 +68941,7 @@ index 473b0b64d..611401723 100644
  	xhci_slot_copy(xhci, config_cmd->in_ctx, vdev->out_ctx);
  	ctrl_ctx->add_flags |= cpu_to_le32(SLOT_FLAG);
  	slot_ctx = xhci_get_slot_ctx(xhci, config_cmd->in_ctx);
-@@ -5191,7 +5154,6 @@ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
- 	xhci_free_command(xhci, config_cmd);
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(xhci_update_hub_device);
- 
- static int xhci_get_frame(struct usb_hcd *hcd)
- {
-@@ -5310,7 +5272,7 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks)
- 
- 	xhci_dbg(xhci, "Resetting HCD\n");
- 	/* Reset the internal HC memory state and registers. */
--	retval = xhci_reset(xhci, XHCI_RESET_LONG_USEC);
-+	retval = xhci_reset(xhci);
- 	if (retval)
- 		return retval;
- 	xhci_dbg(xhci, "Reset complete\n");
-@@ -5458,12 +5420,20 @@ void xhci_init_driver(struct hc_driver *drv,
+@@ -5464,10 +5468,20 @@ void xhci_init_driver(struct hc_driver *drv,
  			drv->reset = over->reset;
  		if (over->start)
  			drv->start = over->start;
@@ -69446,40 +68953,20 @@ index 473b0b64d..611401723 100644
  			drv->check_bandwidth = over->check_bandwidth;
  		if (over->reset_bandwidth)
  			drv->reset_bandwidth = over->reset_bandwidth;
--		if (over->update_hub_device)
--			drv->update_hub_device = over->update_hub_device;
 +		if (over->address_device)
 +			drv->address_device = over->address_device;
 +		if (over->bus_suspend)
 +			drv->bus_suspend = over->bus_suspend;
 +		if (over->bus_resume)
 +			drv->bus_resume = over->bus_resume;
+ 		if (over->update_hub_device)
+ 			drv->update_hub_device = over->update_hub_device;
  	}
- }
- EXPORT_SYMBOL_GPL(xhci_init_driver);
 diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
-index c7749f6e3..b4462aafb 100644
+index c6e6d73fa..4c8d2adae 100644
 --- a/drivers/usb/host/xhci.h
 +++ b/drivers/usb/host/xhci.h
-@@ -229,9 +229,6 @@ struct xhci_op_regs {
- #define CMD_ETE		(1 << 14)
- /* bits 15:31 are reserved (and should be preserved on writes). */
- 
--#define XHCI_RESET_LONG_USEC		(10 * 1000 * 1000)
--#define XHCI_RESET_SHORT_USEC		(250 * 1000)
--
- /* IMAN - Interrupt Management Register */
- #define IMAN_IE		(1 << 1)
- #define IMAN_IP		(1 << 0)
-@@ -933,7 +930,6 @@ struct xhci_virt_ep {
- 	 * have to restore the device state to the previous state
- 	 */
- 	struct xhci_ring		*new_ring;
--	unsigned int			err_count;
- 	unsigned int			ep_state;
- #define SET_DEQ_PENDING		(1 << 0)
- #define EP_HALTED		(1 << 1)	/* For stall handling */
-@@ -1422,7 +1418,7 @@ union xhci_trb {
+@@ -1422,7 +1422,7 @@ union xhci_trb {
  /* MFINDEX Wrap Event - microframe counter wrapped */
  #define TRB_MFINDEX_WRAP	39
  /* TRB IDs 40-47 reserved, 48-63 is vendor-defined */
@@ -69488,7 +68975,7 @@ index c7749f6e3..b4462aafb 100644
  /* Nec vendor-specific command completion event. */
  #define	TRB_NEC_CMD_COMP	48
  /* Get NEC firmware revision. */
-@@ -1542,17 +1538,27 @@ struct xhci_segment {
+@@ -1542,10 +1542,18 @@ struct xhci_segment {
  	unsigned int		bounce_len;
  };
  
@@ -69507,16 +68994,7 @@ index c7749f6e3..b4462aafb 100644
  	struct urb		*urb;
  	struct xhci_segment	*start_seg;
  	union xhci_trb		*first_trb;
- 	union xhci_trb		*last_trb;
-+	struct xhci_segment	*last_trb_seg;
- 	struct xhci_segment	*bounce_seg;
- 	/* actual_length of the URB has already been set */
- 	bool			urb_length_set;
-+	unsigned int		num_trbs;
- };
- 
- /* xHCI command default timeout value */
-@@ -1564,13 +1570,6 @@ struct xhci_cd {
+@@ -1567,13 +1575,6 @@ struct xhci_cd {
  	union xhci_trb		*cmd_trb;
  };
  
@@ -69530,52 +69008,15 @@ index c7749f6e3..b4462aafb 100644
  enum xhci_ring_type {
  	TYPE_CTRL = 0,
  	TYPE_ISOC,
-@@ -1617,6 +1616,7 @@ struct xhci_ring {
- 	 * if we own the TRB (if we are the consumer).  See section 4.9.1.
- 	 */
- 	u32			cycle_state;
-+	unsigned int            err_count;
- 	unsigned int		stream_id;
- 	unsigned int		num_segs;
- 	unsigned int		num_trbs_free;
-@@ -1728,7 +1728,6 @@ struct xhci_port {
- 	int			hcd_portnum;
- 	struct xhci_hub		*rhub;
- 	struct xhci_port_cap	*port_cap;
--	unsigned int		lpm_incapable:1;
- };
- 
- struct xhci_hub {
-@@ -1821,7 +1820,7 @@ struct xhci_hcd {
- 
- 	/* Host controller watchdog timer structures */
- 	unsigned int		xhc_state;
--	unsigned long		run_graceperiod;
-+
- 	u32			command;
- 	struct s3_save		s3;
- /* Host controller is dying - not responding to commands. "I'm not dead yet!"
-@@ -1893,8 +1892,7 @@ struct xhci_hcd {
- #define XHCI_SG_TRB_CACHE_SIZE_QUIRK	BIT_ULL(39)
- #define XHCI_NO_SOFT_RETRY	BIT_ULL(40)
- #define XHCI_EP_CTX_BROKEN_DCS	BIT_ULL(42)
--#define XHCI_SUSPEND_RESUME_CLKS	BIT_ULL(43)
--#define XHCI_RESET_TO_DEFAULT	BIT_ULL(44)
-+#define XHCI_U2_BROKEN_SUSPEND	BIT_ULL(43)
- 
- 	unsigned int		num_active_eps;
- 	unsigned int		limit_active_eps;
-@@ -1923,6 +1921,9 @@ struct xhci_hcd {
+@@ -1928,6 +1929,7 @@ struct xhci_hcd {
  	struct list_head	regset_list;
  
  	void			*dbc;
-+
 +	struct xhci_vendor_ops *vendor_ops;
-+
  	/* platform-specific data -- must come last */
  	unsigned long		priv[] __aligned(sizeof(s64));
  };
-@@ -1932,10 +1933,15 @@ struct xhci_driver_overrides {
+@@ -1937,8 +1939,15 @@ struct xhci_driver_overrides {
  	size_t extra_priv_size;
  	int (*reset)(struct usb_hcd *hcd);
  	int (*start)(struct usb_hcd *hcd);
@@ -69585,15 +69026,13 @@ index c7749f6e3..b4462aafb 100644
 +			     struct usb_host_endpoint *ep);
  	int (*check_bandwidth)(struct usb_hcd *, struct usb_device *);
  	void (*reset_bandwidth)(struct usb_hcd *, struct usb_device *);
--	int (*update_hub_device)(struct usb_hcd *hcd, struct usb_device *hdev,
--			    struct usb_tt *tt, gfp_t mem_flags);
 +	int (*address_device)(struct usb_hcd *hcd, struct usb_device *udev);
 +	int (*bus_suspend)(struct usb_hcd *hcd);
 +	int (*bus_resume)(struct usb_hcd *hcd);
+ 	int (*update_hub_device)(struct usb_hcd *hcd, struct usb_device *hdev,
+ 			    struct usb_tt *tt, gfp_t mem_flags);
  };
- 
- #define	XHCI_CFC_DELAY		10
-@@ -2062,10 +2068,6 @@ void xhci_free_device_endpoint_resources(struct xhci_hcd *xhci,
+@@ -2067,10 +2076,6 @@ void xhci_free_device_endpoint_resources(struct xhci_hcd *xhci,
  struct xhci_ring *xhci_dma_to_transfer_ring(
  		struct xhci_virt_ep *ep,
  		u64 address);
@@ -69604,19 +69043,7 @@ index c7749f6e3..b4462aafb 100644
  struct xhci_command *xhci_alloc_command(struct xhci_hcd *xhci,
  		bool allocate_completion, gfp_t mem_flags);
  struct xhci_command *xhci_alloc_command_with_ctx(struct xhci_hcd *xhci,
-@@ -2080,20 +2082,23 @@ void xhci_free_container_ctx(struct xhci_hcd *xhci,
- 
- /* xHCI host controller glue */
- typedef void (*xhci_get_quirks_t)(struct device *, struct xhci_hcd *);
--int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, u64 timeout_us);
-+int xhci_handshake(void __iomem *ptr, u32 mask, u32 done, int usec);
- void xhci_quiesce(struct xhci_hcd *xhci);
- int xhci_halt(struct xhci_hcd *xhci);
- int xhci_start(struct xhci_hcd *xhci);
--int xhci_reset(struct xhci_hcd *xhci, u64 timeout_us);
-+int xhci_reset(struct xhci_hcd *xhci);
- int xhci_run(struct usb_hcd *hcd);
- int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
+@@ -2095,8 +2100,13 @@ int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks);
  void xhci_shutdown(struct usb_hcd *hcd);
  void xhci_init_driver(struct hc_driver *drv,
  		      const struct xhci_driver_overrides *over);
@@ -69626,13 +69053,11 @@ index c7749f6e3..b4462aafb 100644
 +		       struct usb_host_endpoint *ep);
  int xhci_check_bandwidth(struct usb_hcd *hcd, struct usb_device *udev);
  void xhci_reset_bandwidth(struct usb_hcd *hcd, struct usb_device *udev);
--int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
--			   struct usb_tt *tt, gfp_t mem_flags);
 +int xhci_address_device(struct usb_hcd *hcd, struct usb_device *udev);
+ int xhci_update_hub_device(struct usb_hcd *hcd, struct usb_device *hdev,
+ 			   struct usb_tt *tt, gfp_t mem_flags);
  int xhci_disable_slot(struct xhci_hcd *xhci, u32 slot_id);
- int xhci_ext_cap_init(struct xhci_hcd *xhci);
- 
-@@ -2141,13 +2146,6 @@ int xhci_queue_reset_ep(struct xhci_hcd *xhci, struct xhci_command *cmd,
+@@ -2146,13 +2156,6 @@ int xhci_queue_reset_ep(struct xhci_hcd *xhci, struct xhci_command *cmd,
  		enum xhci_ep_reset_type reset_type);
  int xhci_queue_reset_device(struct xhci_hcd *xhci, struct xhci_command *cmd,
  		u32 slot_id);
@@ -69646,7 +69071,7 @@ index c7749f6e3..b4462aafb 100644
  void xhci_cleanup_stalled_ring(struct xhci_hcd *xhci, unsigned int slot_id,
  			       unsigned int ep_index, unsigned int stream_id,
  			       struct xhci_td *td);
-@@ -2208,6 +2206,53 @@ static inline struct xhci_ring *xhci_urb_to_transfer_ring(struct xhci_hcd *xhci,
+@@ -2213,6 +2216,53 @@ static inline struct xhci_ring *xhci_urb_to_transfer_ring(struct xhci_hcd *xhci,
  					urb->stream_id);
  }
  
@@ -69700,42 +69125,11 @@ index c7749f6e3..b4462aafb 100644
  /*
   * TODO: As per spec Isochronous IDT transmissions are supported. We bypass
   * them anyways as we where unable to find a device that matches the
-@@ -2392,7 +2437,7 @@ static inline const char *xhci_decode_trb(char *str, size_t size,
- 			field3 & TRB_CYCLE ? 'C' : 'c');
- 		break;
- 	case TRB_STOP_RING:
--		snprintf(str, size,
-+		sprintf(str,
- 			"%s: slot %d sp %d ep %d flags %c",
- 			xhci_trb_type_string(type),
- 			TRB_TO_SLOT_ID(field3),
-@@ -2469,8 +2514,6 @@ static inline const char *xhci_decode_ctrl_ctx(char *str,
- 	unsigned int	bit;
- 	int		ret = 0;
- 
--	str[0] = '\0';
--
- 	if (drop) {
- 		ret = sprintf(str, "Drop:");
- 		for_each_set_bit(bit, &drop, 32)
-@@ -2628,11 +2671,8 @@ static inline const char *xhci_decode_usbsts(char *str, u32 usbsts)
- {
- 	int ret = 0;
- 
--	ret = sprintf(str, " 0x%08x", usbsts);
--
- 	if (usbsts == ~(u32)0)
--		return str;
--
-+		return " 0xffffffff";
- 	if (usbsts & STS_HALT)
- 		ret += sprintf(str + ret, " HCHalted");
- 	if (usbsts & STS_FATAL)
 diff --git a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
-index 9ee0fa775..57e54064f 100644
+index d161b6441..4a8120fd0 100644
 --- a/drivers/usb/serial/cp210x.c
 +++ b/drivers/usb/serial/cp210x.c
-@@ -245,7 +245,6 @@ static const struct usb_device_id id_table[] = {
+@@ -247,7 +247,6 @@ static const struct usb_device_id id_table[] = {
  	{ USB_DEVICE(0x1FB9, 0x0602) }, /* Lake Shore Model 648 Magnet Power Supply */
  	{ USB_DEVICE(0x1FB9, 0x0700) }, /* Lake Shore Model 737 VSM Controller */
  	{ USB_DEVICE(0x1FB9, 0x0701) }, /* Lake Shore Model 776 Hall Matrix */
@@ -69743,7 +69137,7 @@ index 9ee0fa775..57e54064f 100644
  	{ USB_DEVICE(0x2626, 0xEA60) }, /* Aruba Networks 7xxx USB Serial Console */
  	{ USB_DEVICE(0x3195, 0xF190) }, /* Link Instruments MSO-19 */
  	{ USB_DEVICE(0x3195, 0xF280) }, /* Link Instruments MSO-28 */
-@@ -269,7 +268,6 @@ struct cp210x_serial_private {
+@@ -271,7 +270,6 @@ struct cp210x_serial_private {
  	speed_t			min_speed;
  	speed_t			max_speed;
  	bool			use_actual_rate;
@@ -69751,7 +69145,7 @@ index 9ee0fa775..57e54064f 100644
  };
  
  enum cp210x_event_state {
-@@ -1341,16 +1339,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
+@@ -1343,16 +1341,12 @@ static void cp210x_change_speed(struct tty_struct *tty,
  
  static void cp210x_enable_event_mode(struct usb_serial_port *port)
  {
@@ -69768,7 +69162,7 @@ index 9ee0fa775..57e54064f 100644
  	port_priv->event_state = ES_DATA;
  	port_priv->event_mode = true;
  
-@@ -1758,8 +1752,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1760,8 +1754,6 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  
  	/*  2 banks of GPIO - One for the pins taken from each serial port */
  	if (intf_num == 0) {
@@ -69777,7 +69171,7 @@ index 9ee0fa775..57e54064f 100644
  		if (mode.eci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1770,9 +1762,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1772,9 +1764,8 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_ECI_GPIO_MODE_MASK) >>
  						CP210X_ECI_GPIO_MODE_OFFSET);
@@ -69788,7 +69182,7 @@ index 9ee0fa775..57e54064f 100644
  		if (mode.sci == CP210X_PIN_MODE_MODEM) {
  			/* mark all GPIOs of this interface as reserved */
  			priv->gpio_altfunc = 0xff;
-@@ -1783,6 +1774,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
+@@ -1785,6 +1776,7 @@ static int cp2105_gpioconf_init(struct usb_serial *serial)
  		priv->gpio_pushpull = (u8)((le16_to_cpu(config.gpio_mode) &
  						CP210X_SCI_GPIO_MODE_MASK) >>
  						CP210X_SCI_GPIO_MODE_OFFSET);
@@ -69796,7 +69190,7 @@ index 9ee0fa775..57e54064f 100644
  	} else {
  		return -ENODEV;
  	}
-@@ -2102,46 +2094,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
+@@ -2104,46 +2096,6 @@ static void cp210x_init_max_speed(struct usb_serial *serial)
  	priv->use_actual_rate = use_actual_rate;
  }
  
@@ -69843,7 +69237,7 @@ index 9ee0fa775..57e54064f 100644
  static int cp210x_attach(struct usb_serial *serial)
  {
  	int result;
-@@ -2162,7 +2114,6 @@ static int cp210x_attach(struct usb_serial *serial)
+@@ -2164,7 +2116,6 @@ static int cp210x_attach(struct usb_serial *serial)
  
  	usb_set_serial_data(serial, priv);
  
@@ -69852,283 +69246,29 @@ index 9ee0fa775..57e54064f 100644
  
  	result = cp210x_gpio_init(serial);
 diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index 14a7af7f3..21b1488fe 100644
+index 43e8cb17b..daa80dae6 100644
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
-@@ -162,8 +162,6 @@ static void option_instat_callback(struct urb *urb);
- #define NOVATELWIRELESS_PRODUCT_G2		0xA010
- #define NOVATELWIRELESS_PRODUCT_MC551		0xB001
- 
--#define UBLOX_VENDOR_ID				0x1546
--
- /* AMOI PRODUCTS */
- #define AMOI_VENDOR_ID				0x1614
- #define AMOI_PRODUCT_H01			0x0800
-@@ -200,8 +198,6 @@ static void option_instat_callback(struct urb *urb);
- 
- #define DELL_PRODUCT_5821E			0x81d7
- #define DELL_PRODUCT_5821E_ESIM			0x81e0
--#define DELL_PRODUCT_5829E_ESIM			0x81e4
--#define DELL_PRODUCT_5829E			0x81e6
- 
- #define KYOCERA_VENDOR_ID			0x0c88
- #define KYOCERA_PRODUCT_KPC650			0x17da
-@@ -242,6 +238,7 @@ static void option_instat_callback(struct urb *urb);
- #define QUECTEL_PRODUCT_UC15			0x9090
- /* These u-blox products use Qualcomm's vendor ID */
- #define UBLOX_PRODUCT_R410M			0x90b2
-+#define UBLOX_PRODUCT_R6XX			0x90fa
- /* These Yuga products use Qualcomm's vendor ID */
- #define YUGA_PRODUCT_CLM920_NC5			0x9625
- 
-@@ -253,21 +250,10 @@ static void option_instat_callback(struct urb *urb);
- #define QUECTEL_PRODUCT_EG95			0x0195
- #define QUECTEL_PRODUCT_BG96			0x0296
- #define QUECTEL_PRODUCT_EP06			0x0306
--#define QUECTEL_PRODUCT_EM05G			0x030a
--#define QUECTEL_PRODUCT_EM060K			0x030b
--#define QUECTEL_PRODUCT_EM05G_CS		0x030c
--#define QUECTEL_PRODUCT_EM05CN_SG		0x0310
+@@ -264,7 +264,7 @@ static void option_instat_callback(struct urb *urb);
+ #define QUECTEL_PRODUCT_EM05G_CS		0x030c
+ #define QUECTEL_PRODUCT_EM05GV2			0x030e
+ #define QUECTEL_PRODUCT_EM05CN_SG		0x0310
 -#define QUECTEL_PRODUCT_EM05G_SG		0x0311
--#define QUECTEL_PRODUCT_EM05CN			0x0312
--#define QUECTEL_PRODUCT_EM05G_GR		0x0313
--#define QUECTEL_PRODUCT_EM05G_RS		0x0314
- #define QUECTEL_PRODUCT_EM12			0x0512
- #define QUECTEL_PRODUCT_RM500Q			0x0800
--#define QUECTEL_PRODUCT_RM520N			0x0801
--#define QUECTEL_PRODUCT_EC200U			0x0901
- #define QUECTEL_PRODUCT_EC200S_CN		0x6002
- #define QUECTEL_PRODUCT_EC200T			0x6026
--#define QUECTEL_PRODUCT_RM500K			0x7001
- 
- #define CMOTECH_VENDOR_ID			0x16d8
- #define CMOTECH_PRODUCT_6001			0x6001
-@@ -402,8 +388,6 @@ static void option_instat_callback(struct urb *urb);
- #define LONGCHEER_VENDOR_ID			0x1c9e
- 
- /* 4G Systems products */
--/* This one was sold as the VW and Skoda "Carstick LTE" */
--#define FOUR_G_SYSTEMS_PRODUCT_CARSTICK_LTE	0x7605
- /* This is the 4G XS Stick W14 a.k.a. Mobilcom Debitel Surf-Stick *
-  * It seems to contain a Qualcomm QSC6240/6290 chipset            */
- #define FOUR_G_SYSTEMS_PRODUCT_W14		0x9603
-@@ -446,12 +430,6 @@ static void option_instat_callback(struct urb *urb);
- #define CINTERION_PRODUCT_CLS8			0x00b0
- #define CINTERION_PRODUCT_MV31_MBIM		0x00b3
- #define CINTERION_PRODUCT_MV31_RMNET		0x00b7
--#define CINTERION_PRODUCT_MV31_2_MBIM		0x00b8
--#define CINTERION_PRODUCT_MV31_2_RMNET		0x00b9
--#define CINTERION_PRODUCT_MV32_WA		0x00f1
--#define CINTERION_PRODUCT_MV32_WB		0x00f2
--#define CINTERION_PRODUCT_MV32_WA_RMNET		0x00f3
--#define CINTERION_PRODUCT_MV32_WB_RMNET		0x00f4
- 
- /* Olivetti products */
- #define OLIVETTI_VENDOR_ID			0x0b3c
-@@ -587,13 +565,6 @@ static void option_instat_callback(struct urb *urb);
- #define WETELECOM_PRODUCT_6802			0x6802
- #define WETELECOM_PRODUCT_WMD300		0x6803
- 
--/* OPPO products */
--#define OPPO_VENDOR_ID				0x22d9
--#define OPPO_PRODUCT_R11			0x276c
--
--/* Sierra Wireless products */
--#define SIERRA_VENDOR_ID			0x1199
--#define SIERRA_PRODUCT_EM9191			0x90d3
- 
- /* Device flags */
- 
-@@ -1092,10 +1063,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5821E_ESIM),
- 	  .driver_info = RSVD(0) | RSVD(1) | RSVD(6) },
--	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5829E),
--	  .driver_info = RSVD(0) | RSVD(6) },
--	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5829E_ESIM),
--	  .driver_info = RSVD(0) | RSVD(6) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/* ADU-E100, ADU-310 */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
-@@ -1137,16 +1104,8 @@ static const struct usb_device_id option_ids[] = {
- 	/* u-blox products using Qualcomm vendor ID */
- 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R410M),
- 	  .driver_info = RSVD(1) | RSVD(3) },
--	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x908b),	/* u-blox LARA-R6 00B */
--	  .driver_info = RSVD(4) },
--	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x90fa),
-+	{ USB_DEVICE(QUALCOMM_VENDOR_ID, UBLOX_PRODUCT_R6XX),
- 	  .driver_info = RSVD(3) },
--	/* u-blox products */
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1341) },	/* u-blox LARA-L6 */
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1342),		/* u-blox LARA-L6 (RMNET) */
--	  .driver_info = RSVD(4) },
--	{ USB_DEVICE(UBLOX_VENDOR_ID, 0x1343),		/* u-blox LARA-L6 (ECM) */
--	  .driver_info = RSVD(4) },
- 	/* Quectel products using Quectel vendor ID */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC21, 0xff, 0xff, 0xff),
- 	  .driver_info = NUMEP2 },
-@@ -1160,48 +1119,22 @@ static const struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0xff, 0xff),
- 	  .driver_info = NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EG95, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, 0x0203, 0xff), /* BG95-M3 */
--	  .driver_info = ZLP },
- 	{ USB_DEVICE(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_BG96),
- 	  .driver_info = RSVD(4) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EP06, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) | RSVD(2) | RSVD(3) | RSVD(4) | NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EP06, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05CN, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05CN_SG, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_GR, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_CS, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_RS, 0xff),
--	  .driver_info = RSVD(6) | ZLP },
++
+ #define QUECTEL_PRODUCT_EM05CN			0x0312
+ #define QUECTEL_PRODUCT_EM05G_GR		0x0313
+ #define QUECTEL_PRODUCT_EM05G_RS		0x0314
+@@ -1205,8 +1205,6 @@ static const struct usb_device_id option_ids[] = {
+ 	  .driver_info = RSVD(6) | ZLP },
+ 	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_RS, 0xff),
+ 	  .driver_info = RSVD(6) | ZLP },
 -	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM05G_SG, 0xff),
 -	  .driver_info = RSVD(6) | ZLP },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0x00, 0x40) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x40) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) | RSVD(2) | RSVD(3) | RSVD(4) | NUMEP2 },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM12, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0xff, 0x30) },	/* EM160R-GL */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, 0x0620, 0xff, 0, 0) },
--	{ USB_DEVICE_INTERFACE_CLASS(QUECTEL_VENDOR_ID, 0x0700, 0xff), /* BG95 */
--	  .driver_info = RSVD(3) | ZLP },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x30) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500Q, 0xff, 0xff, 0x10),
- 	  .driver_info = ZLP },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0x40) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM520N, 0xff, 0, 0) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200U, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200S_CN, 0xff, 0, 0) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EC200T, 0xff, 0, 0) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_RM500K, 0xff, 0x00, 0x00) },
- 
- 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_6001) },
- 	{ USB_DEVICE(CMOTECH_VENDOR_ID, CMOTECH_PRODUCT_CMU_300) },
-@@ -1278,10 +1211,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(0) | RSVD(1) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1056, 0xff),	/* Telit FD980 */
- 	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1057, 0xff),	/* Telit FN980 */
--	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1058, 0xff),	/* Telit FN980 (PCIe) */
--	  .driver_info = NCTRL(0) | RSVD(1) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1060, 0xff),	/* Telit LN920 (rmnet) */
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1061, 0xff),	/* Telit LN920 (MBIM) */
-@@ -1298,8 +1227,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(2) | RSVD(3) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1073, 0xff),	/* Telit FN990 (ECM) */
- 	  .driver_info = NCTRL(0) | RSVD(1) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1075, 0xff),	/* Telit FN990 (PCIe) */
--	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(3) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_ME910_DUAL_MODEM),
-@@ -1334,7 +1261,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x1231, 0xff),	/* Telit LE910Cx (RNDIS) */
- 	  .driver_info = NCTRL(2) | RSVD(3) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(TELIT_VENDOR_ID, 0x1250, 0xff, 0x00, 0x00) },	/* Telit LE910Cx (rmnet) */
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1260),
- 	  .driver_info = NCTRL(0) | RSVD(1) | RSVD(2) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x1261),
-@@ -1347,16 +1273,10 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = NCTRL(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x7011, 0xff),	/* Telit LE910-S1 (ECM) */
- 	  .driver_info = NCTRL(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x701a, 0xff),	/* Telit LE910R1 (RNDIS) */
--	  .driver_info = NCTRL(2) },
--	{ USB_DEVICE_INTERFACE_CLASS(TELIT_VENDOR_ID, 0x701b, 0xff),	/* Telit LE910R1 (ECM) */
--	  .driver_info = NCTRL(2) },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9010),				/* Telit SBL FN980 flashing device */
- 	  .driver_info = NCTRL(0) | ZLP },
- 	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9200),				/* Telit LE910S1 flashing device */
- 	  .driver_info = NCTRL(0) | ZLP },
--	{ USB_DEVICE(TELIT_VENDOR_ID, 0x9201),				/* Telit LE910R1 flashing device */
--	  .driver_info = NCTRL(0) | ZLP },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622, 0xff, 0xff, 0xff) }, /* ZTE WCDMA products */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x0002, 0xff, 0xff, 0xff),
- 	  .driver_info = RSVD(1) },
-@@ -1729,8 +1649,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(2) },
- 	{ USB_DEVICE_INTERFACE_CLASS(ZTE_VENDOR_ID, 0x1476, 0xff) },	/* GosunCn ZTE WeLink ME3630 (ECM/NCM mode) */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1481, 0xff, 0x00, 0x00) }, /* ZTE MF871A */
--	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1485, 0xff, 0xff, 0xff),  /* ZTE MF286D */
--	  .driver_info = RSVD(5) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1533, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1534, 0xff, 0xff, 0xff) },
- 	{ USB_DEVICE_AND_INTERFACE_INFO(ZTE_VENDOR_ID, 0x1535, 0xff, 0xff, 0xff) },
-@@ -1978,8 +1896,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(2) },
- 	{ USB_DEVICE(AIRPLUS_VENDOR_ID, AIRPLUS_PRODUCT_MCD650) },
- 	{ USB_DEVICE(TLAYTECH_VENDOR_ID, TLAYTECH_PRODUCT_TEU800) },
--	{ USB_DEVICE(LONGCHEER_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_CARSTICK_LTE),
--	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(LONGCHEER_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W14),
- 	  .driver_info = NCTRL(0) | NCTRL(1) },
- 	{ USB_DEVICE(LONGCHEER_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W100),
-@@ -2039,18 +1955,6 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(3)},
- 	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_RMNET, 0xff),
- 	  .driver_info = RSVD(0)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_2_MBIM, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV31_2_RMNET, 0xff),
--	  .driver_info = RSVD(0)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WA, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WA_RMNET, 0xff),
--	  .driver_info = RSVD(0) },
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WB, 0xff),
--	  .driver_info = RSVD(3)},
--	{ USB_DEVICE_INTERFACE_CLASS(CINTERION_VENDOR_ID, CINTERION_PRODUCT_MV32_WB_RMNET, 0xff),
--	  .driver_info = RSVD(0) },
- 	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD100),
- 	  .driver_info = RSVD(4) },
- 	{ USB_DEVICE(OLIVETTI_VENDOR_ID, OLIVETTI_PRODUCT_OLICARD120),
-@@ -2193,17 +2097,12 @@ static const struct usb_device_id option_ids[] = {
- 	  .driver_info = RSVD(3) },
- 	{ USB_DEVICE(0x1508, 0x1001),						/* Fibocom NL668 (IOT version) */
- 	  .driver_info = RSVD(4) | RSVD(5) | RSVD(6) },
--	{ USB_DEVICE(0x1782, 0x4d10) },						/* Fibocom L610 (AT mode) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x1782, 0x4d11, 0xff) },			/* Fibocom L610 (ECM/RNDIS mode) */
- 	{ USB_DEVICE(0x2cb7, 0x0104),						/* Fibocom NL678 series */
- 	  .driver_info = RSVD(4) | RSVD(5) },
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0105, 0xff),			/* Fibocom NL678 series */
- 	  .driver_info = RSVD(6) },
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0106, 0xff) },			/* Fibocom MA510 (ECM mode w/ diag intf.) */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x010a, 0xff) },			/* Fibocom MA510 (ECM mode) */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0xff, 0x30) },	/* Fibocom FG150 Diag */
- 	{ USB_DEVICE_AND_INTERFACE_INFO(0x2cb7, 0x010b, 0xff, 0, 0) },		/* Fibocom FG150 AT */
--	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x0111, 0xff) },			/* Fibocom FM160 (MBIM mode) */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a0, 0xff) },			/* Fibocom NL668-AM/NL652-EU (laptop MBIM) */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a2, 0xff) },			/* Fibocom FM101-GL (laptop MBIM) */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x2cb7, 0x01a4, 0xff),			/* Fibocom FM101-GL (laptop MBIM) */
-@@ -2212,9 +2111,6 @@ static const struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1404, 0xff) },			/* GosunCn GM500 RNDIS */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1405, 0xff) },			/* GosunCn GM500 MBIM */
- 	{ USB_DEVICE_INTERFACE_CLASS(0x305a, 0x1406, 0xff) },			/* GosunCn GM500 ECM/NCM */
--	{ USB_DEVICE_AND_INTERFACE_INFO(OPPO_VENDOR_ID, OPPO_PRODUCT_R11, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0xff, 0x30) },
--	{ USB_DEVICE_AND_INTERFACE_INFO(SIERRA_VENDOR_ID, SIERRA_PRODUCT_EM9191, 0xff, 0, 0) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0x00, 0x40) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x30) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(QUECTEL_VENDOR_ID, QUECTEL_PRODUCT_EM060K, 0xff, 0xff, 0x40) },
 diff --git a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
-index b1e844bf3..c81f70530 100644
+index 703a9c563..234e71144 100644
 --- a/drivers/usb/serial/qcserial.c
 +++ b/drivers/usb/serial/qcserial.c
 @@ -165,9 +165,6 @@ static const struct usb_device_id id_table[] = {
@@ -70142,7 +69282,7 @@ index b1e844bf3..c81f70530 100644
  	{DEVICE_SWI(0x413c, 0x81a3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card */
  	{DEVICE_SWI(0x413c, 0x81a4)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card */
 diff --git a/drivers/usb/storage/scsiglue.c b/drivers/usb/storage/scsiglue.c
-index e5a971b83..a345f2982 100644
+index b8e1109f0..9cffdd43c 100644
 --- a/drivers/usb/storage/scsiglue.c
 +++ b/drivers/usb/storage/scsiglue.c
 @@ -102,6 +102,10 @@ static int slave_configure(struct scsi_device *sdev)
@@ -70226,7 +69366,7 @@ index 20dcbccb2..8d3848322 100644
  		"ST",
  		"2A",
 diff --git a/drivers/usb/storage/unusual_uas.h b/drivers/usb/storage/unusual_uas.h
-index c7b763d6d..34c6c33ae 100644
+index 1f8c9b16a..1e9b8efe4 100644
 --- a/drivers/usb/storage/unusual_uas.h
 +++ b/drivers/usb/storage/unusual_uas.h
 @@ -50,7 +50,7 @@ UNUSUAL_DEV(0x059f, 0x1061, 0x0000, 0x9999,
@@ -70251,9 +69391,9 @@ index c7b763d6d..34c6c33ae 100644
  /* Reported-by: David Webb <djw@noc.ac.uk> */
  UNUSUAL_DEV(0x0bc2, 0x331a, 0x0000, 0x9999,
  		"Seagate",
-@@ -111,6 +117,12 @@ UNUSUAL_DEV(0x152d, 0x0578, 0x0000, 0x9999,
+@@ -118,6 +124,12 @@ UNUSUAL_DEV(0x152d, 0x0583, 0x0000, 0x9999,
  		USB_SC_DEVICE, USB_PR_DEVICE, NULL,
- 		US_FL_BROKEN_FUA),
+ 		US_FL_NO_REPORT_OPCODES),
  
 +UNUSUAL_DEV(0x152d, 0x0583, 0x0000, 0x9999,
 +		"JMicron",
@@ -70264,7 +69404,7 @@ index c7b763d6d..34c6c33ae 100644
  /* Reported-by: Thinh Nguyen <thinhn@synopsys.com> */
  UNUSUAL_DEV(0x154b, 0xf00b, 0x0000, 0x9999,
  		"PNY",
-@@ -132,6 +144,12 @@ UNUSUAL_DEV(0x17ef, 0x3899, 0x0000, 0x9999,
+@@ -139,6 +151,12 @@ UNUSUAL_DEV(0x17ef, 0x3899, 0x0000, 0x9999,
  		USB_SC_DEVICE, USB_PR_DEVICE, NULL,
  		US_FL_IGNORE_UAS),
  
@@ -70277,30 +69417,12 @@ index c7b763d6d..34c6c33ae 100644
  /* Reported-by: Hans de Goede <hdegoede@redhat.com> */
  UNUSUAL_DEV(0x2109, 0x0711, 0x0000, 0x9999,
  		"VIA",
-diff --git a/drivers/usb/typec/altmodes/Kconfig b/drivers/usb/typec/altmodes/Kconfig
-index 60d375e9c..1a6b5e872 100644
---- a/drivers/usb/typec/altmodes/Kconfig
-+++ b/drivers/usb/typec/altmodes/Kconfig
-@@ -4,6 +4,7 @@ menu "USB Type-C Alternate Mode drivers"
- 
- config TYPEC_DP_ALTMODE
- 	tristate "DisplayPort Alternate Mode driver"
-+	depends on DRM
- 	help
- 	  DisplayPort USB Type-C Alternate Mode allows DisplayPort
- 	  displays and adapters to be attached to the USB Type-C
 diff --git a/drivers/usb/typec/altmodes/displayport.c b/drivers/usb/typec/altmodes/displayport.c
-index e8eaca5a8..8769cab04 100644
+index def903e9d..8769cab04 100644
 --- a/drivers/usb/typec/altmodes/displayport.c
 +++ b/drivers/usb/typec/altmodes/displayport.c
-@@ -11,12 +11,14 @@
- #include <linux/delay.h>
- #include <linux/mutex.h>
- #include <linux/module.h>
-+#include <linux/property.h>
- #include <linux/usb/pd_vdo.h>
- #include <linux/usb/typec_dp.h>
-+#include <drm/drm_connector.h>
+@@ -17,8 +17,8 @@
+ #include <drm/drm_connector.h>
  #include "displayport.h"
  
 -#define DP_HEADER(_dp, cmd)		(VDO((_dp)->alt->svid, 1, cmd) | \
@@ -70310,7 +69432,7 @@ index e8eaca5a8..8769cab04 100644
  
  enum {
  	DP_CONF_USB,
-@@ -45,6 +47,17 @@ enum {
+@@ -47,6 +47,17 @@ enum {
  					 BIT(DP_PIN_ASSIGN_D) | \
  					 BIT(DP_PIN_ASSIGN_F))
  
@@ -70328,21 +69450,7 @@ index e8eaca5a8..8769cab04 100644
  enum dp_state {
  	DP_STATE_IDLE,
  	DP_STATE_ENTER,
-@@ -57,11 +70,13 @@ struct dp_altmode {
- 	struct typec_displayport_data data;
- 
- 	enum dp_state state;
-+	bool hpd;
- 
- 	struct mutex lock; /* device lock */
- 	struct work_struct work;
- 	struct typec_altmode *alt;
- 	const struct typec_altmode *port;
-+	struct fwnode_handle *connector_fwnode;
- };
- 
- static int dp_altmode_notify(struct dp_altmode *dp)
-@@ -82,14 +97,10 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
+@@ -86,14 +97,10 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
  		return 0;
  	case DP_STATUS_CON_DFP_D:
  		conf |= DP_CONF_UFP_U_AS_DFP_D;
@@ -70357,7 +69465,7 @@ index e8eaca5a8..8769cab04 100644
  		break;
  	default:
  		break;
-@@ -97,6 +108,8 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
+@@ -101,16 +108,21 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
  
  	/* Determining the initial pin assignment. */
  	if (!DP_CONF_GET_PIN_ASSIGN(dp->data.conf)) {
@@ -70366,41 +69474,25 @@ index e8eaca5a8..8769cab04 100644
  		/* Is USB together with DP preferred */
  		if (dp->data.status & DP_STATUS_PREFER_MULTI_FUNC &&
  		    pin_assign & DP_PIN_ASSIGN_MULTI_FUNC_MASK)
-@@ -104,6 +117,13 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
- 		else if (pin_assign & DP_PIN_ASSIGN_DP_ONLY_MASK)
+ 			pin_assign &= DP_PIN_ASSIGN_MULTI_FUNC_MASK;
+-		else if (pin_assign & DP_PIN_ASSIGN_DP_ONLY_MASK) {
++		else if (pin_assign & DP_PIN_ASSIGN_DP_ONLY_MASK)
  			pin_assign &= DP_PIN_ASSIGN_DP_ONLY_MASK;
- 
+-			/* Default to pin assign C if available */
+-			if (pin_assign & BIT(DP_PIN_ASSIGN_C))
+-				pin_assign = BIT(DP_PIN_ASSIGN_C);
+-		}
++
 +		/*
 +		 * DFP_U never selects Pin Assignment E when Pin Assignment C
 +		 * and possibly Pin Assignment D are offered by the UFP_U.
 +		 */
 +		if (pin_assign & (BIT(DP_PIN_ASSIGN_C) | BIT(DP_PIN_ASSIGN_D)))
 +			pin_assign &= ~BIT(DP_PIN_ASSIGN_E);
-+
+ 
  		if (!pin_assign)
  			return -EINVAL;
- 
-@@ -118,6 +138,7 @@ static int dp_altmode_configure(struct dp_altmode *dp, u8 con)
- static int dp_altmode_status_update(struct dp_altmode *dp)
- {
- 	bool configured = !!DP_CONF_GET_PIN_ASSIGN(dp->data.conf);
-+	bool hpd = !!(dp->data.status & DP_STATUS_HPD_STATE);
- 	u8 con = DP_STATUS_CONNECTION(dp->data.status);
- 	int ret = 0;
- 
-@@ -130,6 +151,11 @@ static int dp_altmode_status_update(struct dp_altmode *dp)
- 		ret = dp_altmode_configure(dp, con);
- 		if (!ret)
- 			dp->state = DP_STATE_CONFIGURE;
-+	} else {
-+		if (dp->hpd != hpd) {
-+			drm_connector_oob_hotplug_event(dp->connector_fwnode);
-+			dp->hpd = hpd;
-+		}
- 	}
- 
- 	return ret;
-@@ -156,9 +182,14 @@ static int dp_altmode_configured(struct dp_altmode *dp)
+@@ -170,9 +182,14 @@ static int dp_altmode_configured(struct dp_altmode *dp)
  
  static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
  {
@@ -70416,7 +69508,7 @@ index e8eaca5a8..8769cab04 100644
  	ret = typec_altmode_notify(dp->alt, TYPEC_STATE_SAFE, &dp->data);
  	if (ret) {
  		dev_err(&dp->alt->dev,
-@@ -181,6 +212,7 @@ static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
+@@ -195,6 +212,7 @@ static int dp_altmode_configure_vdm(struct dp_altmode *dp, u32 conf)
  static void dp_altmode_work(struct work_struct *work)
  {
  	struct dp_altmode *dp = container_of(work, struct dp_altmode, work);
@@ -70424,7 +69516,7 @@ index e8eaca5a8..8769cab04 100644
  	u32 header;
  	u32 vdo;
  	int ret;
-@@ -194,7 +226,10 @@ static void dp_altmode_work(struct work_struct *work)
+@@ -208,7 +226,10 @@ static void dp_altmode_work(struct work_struct *work)
  			dev_err(&dp->alt->dev, "failed to enter mode\n");
  		break;
  	case DP_STATE_UPDATE:
@@ -70436,7 +69528,19 @@ index e8eaca5a8..8769cab04 100644
  		vdo = 1;
  		ret = typec_altmode_vdm(dp->alt, header, &vdo, 2);
  		if (ret)
-@@ -409,18 +444,6 @@ static const char * const pin_assignments[] = {
+@@ -285,11 +306,6 @@ static int dp_altmode_vdm(struct typec_altmode *alt,
+ 		case CMD_EXIT_MODE:
+ 			dp->data.status = 0;
+ 			dp->data.conf = 0;
+-			if (dp->hpd) {
+-				drm_connector_oob_hotplug_event(dp->connector_fwnode);
+-				dp->hpd = false;
+-				sysfs_notify(&dp->alt->dev.kobj, "displayport", "hpd");
+-			}
+ 			break;
+ 		case DP_CMD_STATUS_UPDATE:
+ 			dp->data.status = *vdo;
+@@ -428,18 +444,6 @@ static const char * const pin_assignments[] = {
  	[DP_PIN_ASSIGN_F] = "F",
  };
  
@@ -70455,7 +69559,7 @@ index e8eaca5a8..8769cab04 100644
  static ssize_t
  pin_assignment_store(struct device *dev, struct device_attribute *attr,
  		     const char *buf, size_t size)
-@@ -447,7 +470,7 @@ pin_assignment_store(struct device *dev, struct device_attribute *attr,
+@@ -466,7 +470,7 @@ pin_assignment_store(struct device *dev, struct device_attribute *attr,
  		goto out_unlock;
  	}
  
@@ -70464,7 +69568,7 @@ index e8eaca5a8..8769cab04 100644
  
  	if (!(DP_CONF_GET_PIN_ASSIGN(conf) & assignments)) {
  		ret = -EINVAL;
-@@ -484,7 +507,7 @@ static ssize_t pin_assignment_show(struct device *dev,
+@@ -503,7 +507,7 @@ static ssize_t pin_assignment_show(struct device *dev,
  
  	cur = get_count_order(DP_CONF_GET_PIN_ASSIGN(dp->data.conf));
  
@@ -70473,14 +69577,18 @@ index e8eaca5a8..8769cab04 100644
  
  	for (i = 0; assignments; assignments >>= 1, i++) {
  		if (assignments & 1) {
-@@ -518,16 +541,17 @@ static const struct attribute_group dp_altmode_group = {
- int dp_altmode_probe(struct typec_altmode *alt)
- {
- 	const struct typec_altmode *port = typec_altmode_get_partner(alt);
-+	struct fwnode_handle *fwnode;
- 	struct dp_altmode *dp;
- 	int ret;
+@@ -518,10 +522,6 @@ static ssize_t pin_assignment_show(struct device *dev,
  
+ 	mutex_unlock(&dp->lock);
+ 
+-	/* get_current_pin_assignments can return 0 when no matching pin assignments are found */
+-	if (len == 0)
+-		len++;
+-
+ 	buf[len - 1] = '\n';
+ 	return len;
+ }
+@@ -548,10 +548,10 @@ int dp_altmode_probe(struct typec_altmode *alt)
  	/* FIXME: Port can only be DFP_U. */
  
  	/* Make sure we have compatiple pin configurations */
@@ -70495,34 +69603,8 @@ index e8eaca5a8..8769cab04 100644
  		return -ENODEV;
  
  	ret = sysfs_create_group(&alt->dev.kobj, &dp_altmode_group);
-@@ -546,6 +570,11 @@ int dp_altmode_probe(struct typec_altmode *alt)
- 	alt->desc = "DisplayPort";
- 	alt->ops = &dp_altmode_ops;
- 
-+	fwnode = dev_fwnode(alt->dev.parent->parent); /* typec_port fwnode */
-+	dp->connector_fwnode = fwnode_find_reference(fwnode, "displayport", 0);
-+	if (IS_ERR(dp->connector_fwnode))
-+		dp->connector_fwnode = NULL;
-+
- 	typec_altmode_set_drvdata(alt, dp);
- 
- 	dp->state = DP_STATE_ENTER;
-@@ -561,6 +590,13 @@ void dp_altmode_remove(struct typec_altmode *alt)
- 
- 	sysfs_remove_group(&alt->dev.kobj, &dp_altmode_group);
- 	cancel_work_sync(&dp->work);
-+
-+	if (dp->connector_fwnode) {
-+		if (dp->hpd)
-+			drm_connector_oob_hotplug_event(dp->connector_fwnode);
-+
-+		fwnode_handle_put(dp->connector_fwnode);
-+	}
- }
- EXPORT_SYMBOL_GPL(dp_altmode_remove);
- 
 diff --git a/drivers/usb/typec/class.c b/drivers/usb/typec/class.c
-index 9d3a35b20..cb32a838e 100644
+index dec83edb0..4f8ac8c85 100644
 --- a/drivers/usb/typec/class.c
 +++ b/drivers/usb/typec/class.c
 @@ -11,6 +11,8 @@
@@ -70730,7 +69812,7 @@ index 9d3a35b20..cb32a838e 100644
  /* ------------------------------------------------------------------------- */
  /* Alternate Modes */
  
-@@ -382,7 +513,7 @@ static umode_t typec_altmode_attr_is_visible(struct kobject *kobj,
+@@ -384,7 +515,7 @@ static umode_t typec_altmode_attr_is_visible(struct kobject *kobj,
  	return attr->mode;
  }
  
@@ -70739,7 +69821,7 @@ index 9d3a35b20..cb32a838e 100644
  	.is_visible = typec_altmode_attr_is_visible,
  	.attrs = typec_altmode_attrs,
  };
-@@ -484,6 +615,10 @@ typec_register_altmode(struct device *parent,
+@@ -490,6 +621,10 @@ typec_register_altmode(struct device *parent,
  	if (is_typec_partner(parent))
  		alt->adev.dev.bus = &typec_bus;
  
@@ -70750,7 +69832,7 @@ index 9d3a35b20..cb32a838e 100644
  	ret = device_register(&alt->adev.dev);
  	if (ret) {
  		dev_err(parent, "failed to register alternate mode (%d)\n",
-@@ -534,12 +669,61 @@ static ssize_t supports_usb_power_delivery_show(struct device *dev,
+@@ -540,12 +675,61 @@ static ssize_t supports_usb_power_delivery_show(struct device *dev,
  }
  static DEVICE_ATTR_RO(supports_usb_power_delivery);
  
@@ -70813,7 +69895,7 @@ index 9d3a35b20..cb32a838e 100644
  
  static void typec_partner_release(struct device *dev)
  {
-@@ -572,6 +756,61 @@ int typec_partner_set_identity(struct typec_partner *partner)
+@@ -578,6 +762,61 @@ int typec_partner_set_identity(struct typec_partner *partner)
  }
  EXPORT_SYMBOL_GPL(typec_partner_set_identity);
  
@@ -70875,7 +69957,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_partner_register_altmode - Register USB Type-C Partner Alternate Mode
   * @partner: USB Type-C Partner that supports the alternate mode
-@@ -592,6 +831,20 @@ typec_partner_register_altmode(struct typec_partner *partner,
+@@ -598,6 +837,20 @@ typec_partner_register_altmode(struct typec_partner *partner,
  }
  EXPORT_SYMBOL_GPL(typec_partner_register_altmode);
  
@@ -70896,7 +69978,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_register_partner - Register a USB Type-C Partner
   * @port: The USB Type-C Port the partner is connected to
-@@ -614,6 +867,9 @@ struct typec_partner *typec_register_partner(struct typec_port *port,
+@@ -620,6 +873,9 @@ struct typec_partner *typec_register_partner(struct typec_port *port,
  	ida_init(&partner->mode_ids);
  	partner->usb_pd = desc->usb_pd;
  	partner->accessory = desc->accessory;
@@ -70906,7 +69988,7 @@ index 9d3a35b20..cb32a838e 100644
  
  	if (desc->identity) {
  		/*
-@@ -664,11 +920,70 @@ static void typec_plug_release(struct device *dev)
+@@ -670,11 +926,70 @@ static void typec_plug_release(struct device *dev)
  	kfree(plug);
  }
  
@@ -70977,7 +70059,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_plug_register_altmode - Register USB Type-C Cable Plug Alternate Mode
   * @plug: USB Type-C Cable Plug that supports the alternate mode
-@@ -714,6 +1029,7 @@ struct typec_plug *typec_register_plug(struct typec_cable *cable,
+@@ -720,6 +1035,7 @@ struct typec_plug *typec_register_plug(struct typec_cable *cable,
  	sprintf(name, "plug%d", desc->index);
  
  	ida_init(&plug->mode_ids);
@@ -70985,7 +70067,7 @@ index 9d3a35b20..cb32a838e 100644
  	plug->index = desc->index;
  	plug->dev.class = typec_class;
  	plug->dev.parent = &cable->dev;
-@@ -746,15 +1062,6 @@ EXPORT_SYMBOL_GPL(typec_unregister_plug);
+@@ -752,15 +1068,6 @@ EXPORT_SYMBOL_GPL(typec_unregister_plug);
  
  /* Type-C Cables */
  
@@ -71001,7 +70083,7 @@ index 9d3a35b20..cb32a838e 100644
  static const char * const typec_plug_types[] = {
  	[USB_PLUG_NONE]		= "unknown",
  	[USB_PLUG_TYPE_A]	= "type-a",
-@@ -775,6 +1082,7 @@ static DEVICE_ATTR_RO(plug_type);
+@@ -781,6 +1088,7 @@ static DEVICE_ATTR_RO(plug_type);
  static struct attribute *typec_cable_attrs[] = {
  	&dev_attr_type.attr,
  	&dev_attr_plug_type.attr,
@@ -71009,7 +70091,7 @@ index 9d3a35b20..cb32a838e 100644
  	NULL
  };
  ATTRIBUTE_GROUPS(typec_cable);
-@@ -877,6 +1185,7 @@ struct typec_cable *typec_register_cable(struct typec_port *port,
+@@ -883,6 +1191,7 @@ struct typec_cable *typec_register_cable(struct typec_port *port,
  
  	cable->type = desc->type;
  	cable->active = desc->active;
@@ -71017,7 +70099,7 @@ index 9d3a35b20..cb32a838e 100644
  
  	if (desc->identity) {
  		/*
-@@ -1246,11 +1555,23 @@ static ssize_t usb_power_delivery_revision_show(struct device *dev,
+@@ -1252,11 +1561,23 @@ static ssize_t usb_power_delivery_revision_show(struct device *dev,
  						struct device_attribute *attr,
  						char *buf)
  {
@@ -71044,7 +70126,7 @@ index 9d3a35b20..cb32a838e 100644
  
  static ssize_t orientation_show(struct device *dev,
  				   struct device_attribute *attr,
-@@ -1311,7 +1632,7 @@ static umode_t typec_attr_is_visible(struct kobject *kobj,
+@@ -1317,7 +1638,7 @@ static umode_t typec_attr_is_visible(struct kobject *kobj,
  	return attr->mode;
  }
  
@@ -71053,7 +70135,7 @@ index 9d3a35b20..cb32a838e 100644
  	.is_visible = typec_attr_is_visible,
  	.attrs = typec_attrs,
  };
-@@ -1354,6 +1675,11 @@ const struct device_type typec_port_dev_type = {
+@@ -1360,6 +1681,11 @@ const struct device_type typec_port_dev_type = {
  /* --------------------------------------- */
  /* Driver callbacks to report role updates */
  
@@ -71065,7 +70147,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_set_data_role - Report data role change
   * @port: The USB Type-C Port where the role was changed
-@@ -1363,12 +1689,23 @@ const struct device_type typec_port_dev_type = {
+@@ -1369,12 +1695,23 @@ const struct device_type typec_port_dev_type = {
   */
  void typec_set_data_role(struct typec_port *port, enum typec_data_role role)
  {
@@ -71089,7 +70171,7 @@ index 9d3a35b20..cb32a838e 100644
  }
  EXPORT_SYMBOL_GPL(typec_set_data_role);
  
-@@ -1409,11 +1746,6 @@ void typec_set_vconn_role(struct typec_port *port, enum typec_role role)
+@@ -1415,11 +1752,6 @@ void typec_set_vconn_role(struct typec_port *port, enum typec_role role)
  }
  EXPORT_SYMBOL_GPL(typec_set_vconn_role);
  
@@ -71101,7 +70183,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_set_pwr_opmode - Report changed power operation mode
   * @port: The USB Type-C Port where the mode was changed
-@@ -1584,6 +1916,33 @@ EXPORT_SYMBOL_GPL(typec_set_mode);
+@@ -1590,6 +1922,33 @@ EXPORT_SYMBOL_GPL(typec_set_mode);
  
  /* --------------------------------------- */
  
@@ -71135,7 +70217,7 @@ index 9d3a35b20..cb32a838e 100644
  /**
   * typec_get_drvdata - Return private driver data pointer
   * @port: USB Type-C port
-@@ -1625,6 +1984,62 @@ typec_port_register_altmode(struct typec_port *port,
+@@ -1631,6 +1990,62 @@ typec_port_register_altmode(struct typec_port *port,
  }
  EXPORT_SYMBOL_GPL(typec_port_register_altmode);
  
@@ -71526,7 +70608,7 @@ index bda8aa7c2..f89b0476a 100644
  
  #endif /* __DW_MIPI_DSI__ */
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 928136556..f8cd5d8e5 100644
+index 03d39532c..f8cd5d8e5 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
 @@ -175,6 +175,48 @@ struct drm_scdc {
@@ -71596,14 +70678,51 @@ index 928136556..f8cd5d8e5 100644
  };
  
  /**
-@@ -1596,6 +1649,7 @@ drm_connector_is_unregistered(struct drm_connector *connector)
- 		DRM_CONNECTOR_UNREGISTERED;
- }
+@@ -1030,14 +1083,6 @@ struct drm_connector_funcs {
+ 	 */
+ 	void (*atomic_print_state)(struct drm_printer *p,
+ 				   const struct drm_connector_state *state);
+-
+-	/**
+-	 * @oob_hotplug_event:
+-	 *
+-	 * This will get called when a hotplug-event for a drm-connector
+-	 * has been received from a source outside the display driver / device.
+-	 */
+-	void (*oob_hotplug_event)(struct drm_connector *connector);
+ };
  
-+void drm_connector_oob_hotplug_event(struct fwnode_handle *connector_fwnode);
- const char *drm_get_connector_type_name(unsigned int connector_type);
- const char *drm_get_connector_status_name(enum drm_connector_status status);
- const char *drm_get_subpixel_order_name(enum subpixel_order order);
+ /**
+@@ -1182,14 +1227,6 @@ struct drm_connector {
+ 	struct device *kdev;
+ 	/** @attr: sysfs attributes */
+ 	struct device_attribute *attr;
+-	/**
+-	 * @fwnode: associated fwnode supplied by platform firmware
+-	 *
+-	 * Drivers can set this to associate a fwnode with a connector, drivers
+-	 * are expected to get a reference on the fwnode when setting this.
+-	 * drm_connector_cleanup() will call fwnode_handle_put() on this.
+-	 */
+-	struct fwnode_handle *fwnode;
+ 
+ 	/**
+ 	 * @head:
+@@ -1201,14 +1238,6 @@ struct drm_connector {
+ 	 */
+ 	struct list_head head;
+ 
+-	/**
+-	 * @global_connector_list_entry:
+-	 *
+-	 * Connector entry in the global connector-list, used by
+-	 * drm_connector_find_by_fwnode().
+-	 */
+-	struct list_head global_connector_list_entry;
+-
+ 	/** @base: base KMS object */
+ 	struct drm_mode_object base;
+ 
 diff --git a/include/drm/drm_crtc.h b/include/drm/drm_crtc.h
 index 59b51a09c..3a3d9d887 100644
 --- a/include/drm/drm_crtc.h
@@ -71712,7 +70831,7 @@ index 42d04607d..726cfe0ff 100644
  struct file *mock_drm_getfile(struct drm_minor *minor, unsigned int flags);
  
 diff --git a/include/drm/drm_mipi_dsi.h b/include/drm/drm_mipi_dsi.h
-index 31ba85a41..05592c17d 100644
+index 3c0d1495c..57abc8d5f 100644
 --- a/include/drm/drm_mipi_dsi.h
 +++ b/include/drm/drm_mipi_dsi.h
 @@ -19,12 +19,18 @@ struct drm_dsc_picture_parameter_set;
@@ -71802,638 +70921,36 @@ index 0f69f9fbf..a9d0c6b08 100644
 +int drm_gem_dmabuf_get_uuid(struct dma_buf *dma_buf, uuid_t *uuid);
  
  #endif /* __DRM_PRIME_H__ */
-diff --git a/include/dt-bindings/soc/rockchip,boot-mode.h b/include/dt-bindings/soc/rockchip,boot-mode.h
-index 4b0914c09..1436e1d32 100644
---- a/include/dt-bindings/soc/rockchip,boot-mode.h
-+++ b/include/dt-bindings/soc/rockchip,boot-mode.h
-@@ -10,7 +10,15 @@
- #define BOOT_BL_DOWNLOAD	(REBOOT_FLAG + 1)
- /* enter recovery */
- #define BOOT_RECOVERY		(REBOOT_FLAG + 3)
-- /* enter fastboot mode */
-+/* reboot by panic */
-+#define BOOT_PANIC		(REBOOT_FLAG + 7)
-+/* reboot by watchdog */
-+#define BOOT_WATCHDOG		(REBOOT_FLAG + 8)
-+/* enter fastboot mode */
- #define BOOT_FASTBOOT		(REBOOT_FLAG + 9)
-+/* enter charging mode */
-+#define BOOT_CHARGING		(REBOOT_FLAG + 11)
-+/* enter usb mass storage mode */
-+#define BOOT_UMS		(REBOOT_FLAG + 12)
- 
- #endif
-diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 03a5de5f9..e22088f27 100644
---- a/include/linux/clk-provider.h
-+++ b/include/linux/clk-provider.h
-@@ -32,6 +32,7 @@
- #define CLK_OPS_PARENT_ENABLE	BIT(12)
- /* duty cycle call may be forwarded to the parent clock */
- #define CLK_DUTY_CYCLE_PARENT	BIT(13)
-+#define CLK_DONT_HOLD_STATE	BIT(14) /* Don't hold state */
- 
- struct clk;
- struct clk_hw;
-@@ -252,6 +253,12 @@ struct clk_ops {
- 	int		(*init)(struct clk_hw *hw);
- 	void		(*terminate)(struct clk_hw *hw);
- 	void		(*debug_init)(struct clk_hw *hw, struct dentry *dentry);
-+	int		(*pre_rate_change)(struct clk_hw *hw,
-+					   unsigned long rate,
-+					   unsigned long new_rate);
-+	int		(*post_rate_change)(struct clk_hw *hw,
-+					    unsigned long old_rate,
-+					    unsigned long rate);
- };
- 
- /**
-@@ -599,6 +606,7 @@ struct clk_divider {
- 	u8		shift;
- 	u8		width;
- 	u8		flags;
-+	unsigned long	max_prate;
- 	const struct clk_div_table	*table;
- 	spinlock_t	*lock;
- };
-@@ -947,6 +955,7 @@ struct clk_fractional_divider {
- 	u8		nwidth;
- 	u32		nmask;
- 	u8		flags;
-+	unsigned long	max_prate;
- 	void		(*approximation)(struct clk_hw *hw,
- 				unsigned long rate, unsigned long *parent_rate,
- 				unsigned long *m, unsigned long *n);
-@@ -957,6 +966,7 @@ struct clk_fractional_divider {
- 
- #define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
- #define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
-+#define CLK_FRAC_DIVIDER_NO_LIMIT		BIT(2)
- 
- extern const struct clk_ops clk_fractional_divider_ops;
- struct clk *clk_register_fractional_divider(struct device *dev,
-@@ -1028,6 +1038,7 @@ struct clk_composite {
- 	struct clk_hw	*mux_hw;
- 	struct clk_hw	*rate_hw;
- 	struct clk_hw	*gate_hw;
-+	struct clk_hw	*brother_hw;
- 
- 	const struct clk_ops	*mux_ops;
- 	const struct clk_ops	*rate_ops;
-@@ -1076,6 +1087,7 @@ void devm_clk_unregister(struct device *dev, struct clk *clk);
- 
- void clk_hw_unregister(struct clk_hw *hw);
- void devm_clk_hw_unregister(struct device *dev, struct clk_hw *hw);
-+void clk_sync_state(struct device *dev);
- 
- /* helper functions */
- const char *__clk_get_name(const struct clk *clk);
-@@ -1088,6 +1100,9 @@ static inline struct clk_hw *__clk_get_hw(struct clk *clk)
- 	return (struct clk_hw *)clk;
- }
- #endif
-+struct clk *clk_hw_get_clk(struct clk_hw *hw, const char *con_id);
-+struct clk *devm_clk_hw_get_clk(struct device *dev, struct clk_hw *hw,
-+				const char *con_id);
- unsigned int clk_hw_get_num_parents(const struct clk_hw *hw);
- struct clk_hw *clk_hw_get_parent(const struct clk_hw *hw);
- struct clk_hw *clk_hw_get_parent_by_index(const struct clk_hw *hw,
-diff --git a/include/linux/dma-buf.h b/include/linux/dma-buf.h
-index 0c5706abb..b17991437 100644
---- a/include/linux/dma-buf.h
-+++ b/include/linux/dma-buf.h
-@@ -209,6 +209,40 @@ struct dma_buf_ops {
- 	 */
- 	int (*begin_cpu_access)(struct dma_buf *, enum dma_data_direction);
- 
-+	/**
-+	 * @begin_cpu_access_partial:
-+	 *
-+	 * This is called from dma_buf_begin_cpu_access_partial() and allows the
-+	 * exporter to ensure that the memory specified in the range is
-+	 * available for cpu access - the exporter might need to allocate or
-+	 * swap-in and pin the backing storage.
-+	 * The exporter also needs to ensure that cpu access is
-+	 * coherent for the access direction. The direction can be used by the
-+	 * exporter to optimize the cache flushing, i.e. access with a different
-+	 * direction (read instead of write) might return stale or even bogus
-+	 * data (e.g. when the exporter needs to copy the data to temporary
-+	 * storage).
-+	 *
-+	 * This callback is optional.
-+	 *
-+	 * FIXME: This is both called through the DMA_BUF_IOCTL_SYNC command
-+	 * from userspace (where storage shouldn't be pinned to avoid handing
-+	 * de-factor mlock rights to userspace) and for the kernel-internal
-+	 * users of the various kmap interfaces, where the backing storage must
-+	 * be pinned to guarantee that the atomic kmap calls can succeed. Since
-+	 * there's no in-kernel users of the kmap interfaces yet this isn't a
-+	 * real problem.
-+	 *
-+	 * Returns:
-+	 *
-+	 * 0 on success or a negative error code on failure. This can for
-+	 * example fail when the backing storage can't be allocated. Can also
-+	 * return -ERESTARTSYS or -EINTR when the call has been interrupted and
-+	 * needs to be restarted.
-+	 */
-+	int (*begin_cpu_access_partial)(struct dma_buf *dmabuf,
-+					enum dma_data_direction,
-+					unsigned int offset, unsigned int len);
- 	/**
- 	 * @end_cpu_access:
- 	 *
-@@ -227,6 +261,9 @@ struct dma_buf_ops {
- 	 * to be restarted.
- 	 */
- 	int (*end_cpu_access)(struct dma_buf *, enum dma_data_direction);
-+	int (*end_cpu_access_partial)(struct dma_buf *dmabuf,
-+				      enum dma_data_direction,
-+				      unsigned int offset, unsigned int len);
- 
- 	/**
- 	 * @mmap:
-@@ -267,7 +304,12 @@ struct dma_buf_ops {
- 
- 	void *(*vmap)(struct dma_buf *);
- 	void (*vunmap)(struct dma_buf *, void *vaddr);
-+	int (*get_uuid)(struct dma_buf *dmabuf, uuid_t *uuid);
-+	int (*get_flags)(struct dma_buf *dmabuf, unsigned long *flags);
- };
-+#ifdef CONFIG_NO_GKI
-+typedef int (*dma_buf_destructor)(struct dma_buf *dmabuf, void *dtor_data);
-+#endif
- 
- /**
-  * struct dma_buf - shared buffer object
-@@ -343,6 +385,10 @@ struct dma_buf {
- 		struct dma_buf *dmabuf;
- 	} *sysfs_entry;
- #endif
-+#ifdef CONFIG_NO_GKI
-+	dma_buf_destructor dtor;
-+	void *dtor_data;
-+#endif
- };
- 
- /**
-@@ -412,6 +458,7 @@ struct dma_buf_attachment {
- 	const struct dma_buf_attach_ops *importer_ops;
- 	void *importer_priv;
- 	void *priv;
-+	unsigned long dma_map_attrs;
- };
- 
- /**
-@@ -489,6 +536,9 @@ dma_buf_attachment_is_dynamic(struct dma_buf_attachment *attach)
- 	return !!attach->importer_ops;
- }
- 
-+int get_each_dmabuf(int (*callback)(const struct dma_buf *dmabuf,
-+		    void *private), void *private);
-+int is_dma_buf_file(struct file *file);
- struct dma_buf_attachment *dma_buf_attach(struct dma_buf *dmabuf,
- 					  struct device *dev);
- struct dma_buf_attachment *
-@@ -513,13 +563,22 @@ void dma_buf_unmap_attachment(struct dma_buf_attachment *, struct sg_table *,
- void dma_buf_move_notify(struct dma_buf *dma_buf);
- int dma_buf_begin_cpu_access(struct dma_buf *dma_buf,
- 			     enum dma_data_direction dir);
-+int dma_buf_begin_cpu_access_partial(struct dma_buf *dma_buf,
-+				     enum dma_data_direction dir,
-+				     unsigned int offset, unsigned int len);
- int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
- 			   enum dma_data_direction dir);
-+int dma_buf_end_cpu_access_partial(struct dma_buf *dma_buf,
-+				     enum dma_data_direction dir,
-+				     unsigned int offset, unsigned int len);
- 
- int dma_buf_mmap(struct dma_buf *, struct vm_area_struct *,
- 		 unsigned long);
- void *dma_buf_vmap(struct dma_buf *);
- void dma_buf_vunmap(struct dma_buf *, void *vaddr);
-+long dma_buf_set_name(struct dma_buf *dmabuf, const char *name);
-+int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags);
-+int dma_buf_get_uuid(struct dma_buf *dmabuf, uuid_t *uuid);
- 
- #ifdef CONFIG_DMABUF_PROCESS_INFO
- /**
-@@ -532,4 +591,20 @@ void dma_buf_vunmap(struct dma_buf *, void *vaddr);
-  */
- struct dma_buf *get_dma_buf_from_file(struct file *f);
- #endif /* CONFIG_DMABUF_PROCESS_INFO */
-+
-+#ifdef CONFIG_NO_GKI
-+/**
-+ * dma_buf_set_destructor - set the dma-buf's destructor
-+ * @dmabuf:		[in]	pointer to dma-buf
-+ * @dma_buf_destructor	[in]	the destructor function
-+ * @dtor_data:		[in]	destructor data associated with this buffer
-+ */
-+static inline void dma_buf_set_destructor(struct dma_buf *dmabuf,
-+					  dma_buf_destructor dtor,
-+					  void *dtor_data)
-+{
-+	dmabuf->dtor = dtor;
-+	dmabuf->dtor_data = dtor_data;
-+}
-+#endif
- #endif /* __DMA_BUF_H__ */
-diff --git a/include/linux/dma-fence.h b/include/linux/dma-fence.h
-index 09e23adb3..9f12efaaa 100644
---- a/include/linux/dma-fence.h
-+++ b/include/linux/dma-fence.h
-@@ -372,6 +372,9 @@ static inline void __dma_fence_might_wait(void) {}
- 
- int dma_fence_signal(struct dma_fence *fence);
- int dma_fence_signal_locked(struct dma_fence *fence);
-+int dma_fence_signal_timestamp(struct dma_fence *fence, ktime_t timestamp);
-+int dma_fence_signal_timestamp_locked(struct dma_fence *fence,
-+				      ktime_t timestamp);
- signed long dma_fence_default_wait(struct dma_fence *fence,
- 				   bool intr, signed long timeout);
- int dma_fence_add_callback(struct dma_fence *fence,
-diff --git a/include/linux/dma-heap.h b/include/linux/dma-heap.h
-index 83b8cfb2d..b5c6f60ef 100644
---- a/include/linux/dma-heap.h
-+++ b/include/linux/dma-heap.h
-@@ -16,15 +16,17 @@ struct dma_heap;
- 
- /**
-  * struct dma_heap_ops - ops to operate on a given heap
-- * @allocate:		allocate dmabuf and return fd
-+ * @allocate:		allocate dmabuf and return struct dma_buf ptr
-+ * @get_pool_size:	if heap maintains memory pools, get pool size in bytes
-  *
-- * allocate returns dmabuf fd  on success, -errno on error.
-+ * allocate returns dmabuf on success, ERR_PTR(-errno) on error.
-  */
- struct dma_heap_ops {
--	int (*allocate)(struct dma_heap *heap,
-+	struct dma_buf *(*allocate)(struct dma_heap *heap,
- 			unsigned long len,
- 			unsigned long fd_flags,
- 			unsigned long heap_flags);
-+	long (*get_pool_size)(struct dma_heap *heap);
- };
- 
- /**
-@@ -59,10 +61,73 @@ void *dma_heap_get_drvdata(struct dma_heap *heap);
-  */
- const char *dma_heap_get_name(struct dma_heap *heap);
- 
-+/**
-+ * dma_heap_get_dev() - get device struct for the heap
-+ * @heap: DMA-Heap to retrieve device struct from
-+ *
-+ * Returns:
-+ * The device struct for the heap.
-+ */
-+struct device *dma_heap_get_dev(struct dma_heap *heap);
-+
-+/**
-+ * dma_heap_get_name() - get heap name
-+ * @heap: DMA-Heap to retrieve private data for
-+ *
-+ * Returns:
-+ * The char* for the heap name.
-+ */
-+const char *dma_heap_get_name(struct dma_heap *heap);
-+
- /**
-  * dma_heap_add - adds a heap to dmabuf heaps
-  * @exp_info:		information needed to register this heap
-  */
- struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info);
- 
-+/**
-+ * dma_heap_put - drops a reference to a dmabuf heaps, potentially freeing it
-+ * @heap:		heap pointer
-+ */
-+void dma_heap_put(struct dma_heap *heap);
-+
-+/**
-+ * dma_heap_find - Returns the registered dma_heap with the specified name
-+ * @name: Name of the heap to find
-+ *
-+ * NOTE: dma_heaps returned from this function MUST be released
-+ * using dma_heap_put() when the user is done.
-+ */
-+struct dma_heap *dma_heap_find(const char *name);
-+
-+/**
-+ * dma_heap_buffer_alloc - Allocate dma-buf from a dma_heap
-+ * @heap:	dma_heap to allocate from
-+ * @len:	size to allocate
-+ * @fd_flags:	flags to set on returned dma-buf fd
-+ * @heap_flags:	flags to pass to the dma heap
-+ *
-+ * This is for internal dma-buf allocations only.
-+ */
-+struct dma_buf *dma_heap_buffer_alloc(struct dma_heap *heap, size_t len,
-+				      unsigned int fd_flags,
-+				      unsigned int heap_flags);
-+
-+/** dma_heap_buffer_free - Free dma_buf allocated by dma_heap_buffer_alloc
-+ * @dma_buf:	dma_buf to free
-+ *
-+ * This is really only a simple wrapper to dma_buf_put()
-+ */
-+void dma_heap_buffer_free(struct dma_buf *);
-+
-+/**
-+ * dma_heap_bufferfd_alloc - Allocate dma-buf fd from a dma_heap
-+ * @heap:	dma_heap to allocate from
-+ * @len:	size to allocate
-+ * @fd_flags:	flags to set on returned dma-buf fd
-+ * @heap_flags:	flags to pass to the dma heap
-+ */
-+int dma_heap_bufferfd_alloc(struct dma_heap *heap, size_t len,
-+			    unsigned int fd_flags,
-+			    unsigned int heap_flags);
- #endif /* _DMA_HEAPS_H */
-diff --git a/include/linux/dma-iommu.h b/include/linux/dma-iommu.h
-index 2112f21f7..f51561eda 100644
---- a/include/linux/dma-iommu.h
-+++ b/include/linux/dma-iommu.h
-@@ -37,6 +37,11 @@ void iommu_dma_compose_msi_msg(struct msi_desc *desc,
- 
- void iommu_dma_get_resv_regions(struct device *dev, struct list_head *list);
- 
-+int iommu_dma_reserve_iova(struct device *dev, dma_addr_t base,
-+			   u64 size);
-+
-+int iommu_dma_enable_best_fit_algo(struct device *dev);
-+
- #else /* CONFIG_IOMMU_DMA */
- 
- struct iommu_domain;
-@@ -78,5 +83,16 @@ static inline void iommu_dma_get_resv_regions(struct device *dev, struct list_he
- {
- }
- 
-+static inline int iommu_dma_reserve_iova(struct device *dev, dma_addr_t base,
-+					 u64 size)
-+{
-+	return -ENODEV;
-+}
-+
-+static inline int iommu_dma_enable_best_fit_algo(struct device *dev)
-+{
-+	return -ENODEV;
-+}
-+
- #endif	/* CONFIG_IOMMU_DMA */
- #endif	/* __DMA_IOMMU_H */
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index a7d70cdee..7270f12e2 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -61,6 +61,23 @@
-  */
- #define DMA_ATTR_PRIVILEGED		(1UL << 9)
- 
+diff --git a/include/dt-bindings/clock/rk3588-cru.h b/include/dt-bindings/clock/rk3588-cru.h
+new file mode 100755
+index 000000000..09a6a54ae
+--- /dev/null
++++ b/include/dt-bindings/clock/rk3588-cru.h
+@@ -0,0 +1,1497 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
 +/*
-+ * DMA_ATTR_SYS_CACHE_ONLY: used to indicate that the buffer should be mapped
-+ * with the correct memory attributes so that it can be cached in the system
-+ * or last level cache. This is useful for buffers that are being mapped for
-+ * devices that are non-coherent, but can use the system cache.
++ * Copyright (c) 2021 Rockchip Electronics Co. Ltd.
++ * Author: Elaine Zhang <zhangqing@rock-chips.com>
 + */
-+#define DMA_ATTR_SYS_CACHE_ONLY		(1UL << 10)
 +
-+/*
-+ * DMA_ATTR_SYS_CACHE_ONLY_NWA: used to indicate that the buffer should be
-+ * mapped with the correct memory attributes so that it can be cached in the
-+ * system or last level cache, with a no write allocate cache policy. This is
-+ * useful for buffers that are being mapped for devices that are non-coherent,
-+ * but can use the system cache.
-+ */
-+#define DMA_ATTR_SYS_CACHE_ONLY_NWA	(1UL << 11)
++#ifndef _DT_BINDINGS_CLK_ROCKCHIP_RK3588_H
++#define _DT_BINDINGS_CLK_ROCKCHIP_RK3588_H
 +
- /*
-  * A dma_addr_t can hold any valid DMA or bus address for the platform.  It can
-  * be given to a device to use as a DMA source or target.  It is specific to a
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index 5f04a2b35..9ca1ea02f 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -29,6 +29,8 @@ struct em_perf_state {
-  * em_perf_domain - Performance domain
-  * @table:		List of performance states, in ascending order
-  * @nr_perf_states:	Number of performance states
-+ * @milliwatts:		Flag indicating the power values are in milli-Watts
-+ *			or some other scale.
-  * @cpus:		Cpumask covering the CPUs of the domain. It's here
-  *			for performance reasons to avoid potential cache
-  *			misses during energy calculations in the scheduler
-@@ -43,6 +45,7 @@ struct em_perf_state {
- struct em_perf_domain {
- 	struct em_perf_state *table;
- 	int nr_perf_states;
-+	int milliwatts;
- 	unsigned long cpus[];
- };
- 
-@@ -95,7 +98,8 @@ struct em_data_callback {
- struct em_perf_domain *em_cpu_get(int cpu);
- struct em_perf_domain *em_pd_get(struct device *dev);
- int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
--				struct em_data_callback *cb, cpumask_t *span);
-+				struct em_data_callback *cb, cpumask_t *span,
-+				bool milliwatts);
- void em_dev_unregister_perf_domain(struct device *dev);
- 
- /**
-@@ -119,6 +123,9 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 	struct em_perf_state *ps;
- 	int i, cpu;
- 
-+	if (!sum_util)
-+		return 0;
++/* cru-clocks indices */
 +
- 	/*
- 	 * In order to predict the performance state, map the utilization of
- 	 * the most utilized CPU of the performance domain to a requested
-@@ -202,7 +209,8 @@ struct em_data_callback {};
- 
- static inline
- int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
--				struct em_data_callback *cb, cpumask_t *span)
-+				struct em_data_callback *cb, cpumask_t *span,
-+				bool milliwatts)
- {
- 	return -EINVAL;
- }
-diff --git a/include/linux/extcon.h b/include/linux/extcon.h
-index fa1e431ee..6f851be8c 100644
---- a/include/linux/extcon.h
-+++ b/include/linux/extcon.h
-@@ -37,6 +37,7 @@
- /* USB external connector */
- #define EXTCON_USB		1
- #define EXTCON_USB_HOST		2
-+#define EXTCON_USB_VBUS_EN	3
- 
- /*
-  * Charging external connector
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 27828145c..cd57fd734 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -27,6 +27,10 @@ static inline bool frozen(struct task_struct *p)
- 	return p->flags & PF_FROZEN;
- }
- 
-+static inline bool frozen_or_skipped(struct task_struct *p)
-+{
-+	return p->flags & (PF_FROZEN | PF_FREEZER_SKIP);
-+}
- extern bool freezing_slow_path(struct task_struct *p);
- 
- /*
-@@ -270,6 +274,7 @@ static inline int freezable_schedule_hrtimeout_range(ktime_t *expires,
- 
- #else /* !CONFIG_FREEZER */
- static inline bool frozen(struct task_struct *p) { return false; }
-+static inline bool frozen_or_skipped(struct task_struct *p) { return false; }
- static inline bool freezing(struct task_struct *p) { return false; }
- static inline void __thaw_task(struct task_struct *t) {}
- 
-diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index e90c267e7..2476f1a97 100644
---- a/include/linux/iommu.h
-+++ b/include/linux/iommu.h
-@@ -31,6 +31,18 @@
-  * if the IOMMU page table format is equivalent.
-  */
- #define IOMMU_PRIV	(1 << 5)
-+/*
-+ * Allow caching in a transparent outer level of cache, also known as
-+ * the last-level or system cache, with a read/write allocation policy.
-+ * Does not depend on IOMMU_CACHE. Incompatible with IOMMU_SYS_CACHE_NWA.
-+ */
-+#define IOMMU_SYS_CACHE	(1 << 6)
-+/*
-+ * Allow caching in a transparent outer level of cache, also known as
-+ * the last-level or system cache, with a read allocation policy.
-+ * Does not depend on IOMMU_CACHE. Incompatible with IOMMU_SYS_CACHE.
-+ */
-+#define IOMMU_SYS_CACHE_NWA (1 << 7)
- 
- struct iommu_ops;
- struct iommu_group;
-@@ -190,7 +202,12 @@ struct iommu_iotlb_gather {
-  * @attach_dev: attach device to an iommu domain
-  * @detach_dev: detach device from an iommu domain
-  * @map: map a physically contiguous memory region to an iommu domain
-+ * @map_pages: map a physically contiguous set of pages of the same size to
-+ *             an iommu domain.
-+ * @map_sg: map a scatter-gather list of physically contiguous chunks to
-+ *          an iommu domain.
-  * @unmap: unmap a physically contiguous memory region from an iommu domain
-+ * @unmap_pages: unmap a number of pages of the same size from an iommu domain
-  * @flush_iotlb_all: Synchronously flush all hardware TLBs for this domain
-  * @iotlb_sync_map: Sync mappings created recently using @map to the hardware
-  * @iotlb_sync: Flush all queued ranges from the hardware TLBs and empty flush
-@@ -241,10 +258,20 @@ struct iommu_ops {
- 	void (*detach_dev)(struct iommu_domain *domain, struct device *dev);
- 	int (*map)(struct iommu_domain *domain, unsigned long iova,
- 		   phys_addr_t paddr, size_t size, int prot, gfp_t gfp);
-+	int (*map_pages)(struct iommu_domain *domain, unsigned long iova,
-+			 phys_addr_t paddr, size_t pgsize, size_t pgcount,
-+			 int prot, gfp_t gfp, size_t *mapped);
-+	int (*map_sg)(struct iommu_domain *domain, unsigned long iova,
-+		      struct scatterlist *sg, unsigned int nents, int prot,
-+		      gfp_t gfp, size_t *mapped);
- 	size_t (*unmap)(struct iommu_domain *domain, unsigned long iova,
- 		     size_t size, struct iommu_iotlb_gather *iotlb_gather);
-+	size_t (*unmap_pages)(struct iommu_domain *domain, unsigned long iova,
-+			      size_t pgsize, size_t pgcount,
-+			      struct iommu_iotlb_gather *iotlb_gather);
- 	void (*flush_iotlb_all)(struct iommu_domain *domain);
--	void (*iotlb_sync_map)(struct iommu_domain *domain);
-+	void (*iotlb_sync_map)(struct iommu_domain *domain, unsigned long iova,
-+			       size_t size);
- 	void (*iotlb_sync)(struct iommu_domain *domain,
- 			   struct iommu_iotlb_gather *iotlb_gather);
- 	phys_addr_t (*iova_to_phys)(struct iommu_domain *domain, dma_addr_t iova);
-@@ -561,6 +588,8 @@ static inline void iommu_iotlb_gather_add_page(struct iommu_domain *domain,
- extern struct iommu_group *pci_device_group(struct device *dev);
- /* Generic device grouping function */
- extern struct iommu_group *generic_device_group(struct device *dev);
-+extern void rk_iommu_mask_irq(struct device *dev);
-+extern void rk_iommu_unmask_irq(struct device *dev);
- /* FSL-MC device grouping function */
- struct iommu_group *fsl_mc_device_group(struct device *dev);
- 
-@@ -1069,6 +1098,14 @@ static inline struct iommu_fwspec *dev_iommu_fwspec_get(struct device *dev)
- {
- 	return NULL;
- }
-+
-+static inline void rk_iommu_mask_irq(struct device *dev)
-+{
-+}
-+
-+static inline void rk_iommu_unmask_irq(struct device *dev)
-+{
-+}
- #endif /* CONFIG_IOMMU_API */
- 
- /**
-diff --git a/include/linux/iova.h b/include/linux/iova.h
-index 6c19b09e9..0394d44f7 100644
---- a/include/linux/iova.h
-+++ b/include/linux/iova.h
-@@ -95,6 +95,7 @@ struct iova_domain {
- 						   flush-queues */
- 	atomic_t fq_timer_on;			/* 1 when timer is active, 0
- 						   when not */
-+	bool best_fit;
- };
- 
- static inline unsigned long iova_size(struct iova *iova)
-@@ -163,6 +164,7 @@ void put_iova_domain(struct iova_domain *iovad);
- struct iova *split_and_remove_iova(struct iova_domain *iovad,
- 	struct iova *iova, unsigned long pfn_lo, unsigned long pfn_hi);
- void free_cpu_cached_iovas(unsigned int cpu, struct iova_domain *iovad);
-+void free_global_cached_iovas(struct iova_domain *iovad);
- #else
- static inline int iova_cache_get(void)
- {
-@@ -270,6 +272,11 @@ static inline void free_cpu_cached_iovas(unsigned int cpu,
- 					 struct iova_domain *iovad)
- {
- }
-+
-+static inline void free_global_cached_iovas(struct iova_domain *iovad)
-+{
-+}
-+
- #endif
- 
- #endif
-diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
-index f6d092fdb..43348c487 100644
---- a/include/linux/irqchip/arm-gic-v3.h
-+++ b/include/linux/irqchip/arm-gic-v3.h
-@@ -693,6 +693,20 @@ int its_init(struct fwnode_handle *handle, struct rdists *rdists,
- 	     struct irq_domain *domain);
- int mbi_init(struct fwnode_handle *fwnode, struct irq_domain *parent);
- 
-+struct gic_chip_data {
-+	struct fwnode_handle	*fwnode;
-+	void __iomem		*dist_base;
-+	struct redist_region	*redist_regions;
-+	struct rdists		rdists;
-+	struct irq_domain	*domain;
-+	u64			redist_stride;
-+	u32			nr_redist_regions;
-+	u64			flags;
-+	bool			has_rss;
-+	unsigned int		ppi_nr;
-+	struct partition_desc	**ppi_descs;
-+};
++/* cru plls */
++#define PLL_B0PLL			1
++#define PLL_B1PLL			2
++#define PLL_LPLL			3
++#define PLL_V0PLL			4
++#define PLL_AUPLL			5
++#define PLL_CPLL			6
++#define PLL_GPLL			7
++#define PLL_NPLL			8
++#define PLL_PPLL			9
++#define ARMCLK_L			10
++#define ARMCLK_B01			11
++#define ARMCLK_B23			12
 +
  static inline bool gic_enable_sre(void)
  {
