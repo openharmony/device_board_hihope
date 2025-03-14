@@ -73955,708 +73955,1306 @@ index 000000000..936febd57
 +#define RKPM_VCCIO6_RET_EN		BIT(6)
 +#define RKPM_PMUIO2_RET_EN		BIT(7)
 +#endif
- 	padata_init();
- 	page_alloc_init_late();
- 	/* Initialize page ext after all struct pages are initialized. */
-@@ -1532,6 +1543,9 @@ static noinline void __init kernel_init_freeable(void)
- 	do_basic_setup();
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index 6fa85be64..c3027f534 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -32,6 +32,7 @@
+ #define CLK_OPS_PARENT_ENABLE	BIT(12)
+ /* duty cycle call may be forwarded to the parent clock */
+ #define CLK_DUTY_CYCLE_PARENT	BIT(13)
++#define CLK_DONT_HOLD_STATE	BIT(14) /* Don't hold state */
  
- 	kunit_run_all_tests();
-+#if IS_BUILTIN(CONFIG_INITRD_ASYNC)
-+	async_synchronize_full();
+ struct clk;
+ struct clk_hw;
+@@ -252,6 +253,12 @@ struct clk_ops {
+ 	int		(*init)(struct clk_hw *hw);
+ 	void		(*terminate)(struct clk_hw *hw);
+ 	void		(*debug_init)(struct clk_hw *hw, struct dentry *dentry);
++	int		(*pre_rate_change)(struct clk_hw *hw,
++					   unsigned long rate,
++					   unsigned long new_rate);
++	int		(*post_rate_change)(struct clk_hw *hw,
++					    unsigned long old_rate,
++					    unsigned long rate);
+ };
+ 
+ /**
+@@ -626,6 +633,7 @@ struct clk_divider {
+ 	u8		shift;
+ 	u8		width;
+ 	u8		flags;
++	unsigned long	max_prate;
+ 	const struct clk_div_table	*table;
+ 	spinlock_t	*lock;
+ };
+@@ -982,6 +990,7 @@ struct clk_fractional_divider {
+ 	u8		nwidth;
+ 	u32		nmask;
+ 	u8		flags;
++	unsigned long	max_prate;
+ 	void		(*approximation)(struct clk_hw *hw,
+ 				unsigned long rate, unsigned long *parent_rate,
+ 				unsigned long *m, unsigned long *n);
+@@ -992,6 +1001,7 @@ struct clk_fractional_divider {
+ 
+ #define CLK_FRAC_DIVIDER_ZERO_BASED		BIT(0)
+ #define CLK_FRAC_DIVIDER_BIG_ENDIAN		BIT(1)
++#define CLK_FRAC_DIVIDER_NO_LIMIT		BIT(2)
+ 
+ extern const struct clk_ops clk_fractional_divider_ops;
+ struct clk *clk_register_fractional_divider(struct device *dev,
+@@ -1063,6 +1073,7 @@ struct clk_composite {
+ 	struct clk_hw	*mux_hw;
+ 	struct clk_hw	*rate_hw;
+ 	struct clk_hw	*gate_hw;
++	struct clk_hw	*brother_hw;
+ 
+ 	const struct clk_ops	*mux_ops;
+ 	const struct clk_ops	*rate_ops;
+@@ -1111,6 +1122,7 @@ void devm_clk_unregister(struct device *dev, struct clk *clk);
+ 
+ void clk_hw_unregister(struct clk_hw *hw);
+ void devm_clk_hw_unregister(struct device *dev, struct clk_hw *hw);
++void clk_sync_state(struct device *dev);
+ 
+ /* helper functions */
+ const char *__clk_get_name(const struct clk *clk);
+@@ -1123,6 +1135,9 @@ static inline struct clk_hw *__clk_get_hw(struct clk *clk)
+ 	return (struct clk_hw *)clk;
+ }
+ #endif
++struct clk *clk_hw_get_clk(struct clk_hw *hw, const char *con_id);
++struct clk *devm_clk_hw_get_clk(struct device *dev, struct clk_hw *hw,
++				const char *con_id);
+ unsigned int clk_hw_get_num_parents(const struct clk_hw *hw);
+ struct clk_hw *clk_hw_get_parent(const struct clk_hw *hw);
+ struct clk_hw *clk_hw_get_parent_by_index(const struct clk_hw *hw,
+diff --git a/include/linux/dma-buf.h b/include/linux/dma-buf.h
+index 0c5706abb..b17991437 100644
+--- a/include/linux/dma-buf.h
++++ b/include/linux/dma-buf.h
+@@ -209,6 +209,40 @@ struct dma_buf_ops {
+ 	 */
+ 	int (*begin_cpu_access)(struct dma_buf *, enum dma_data_direction);
+ 
++	/**
++	 * @begin_cpu_access_partial:
++	 *
++	 * This is called from dma_buf_begin_cpu_access_partial() and allows the
++	 * exporter to ensure that the memory specified in the range is
++	 * available for cpu access - the exporter might need to allocate or
++	 * swap-in and pin the backing storage.
++	 * The exporter also needs to ensure that cpu access is
++	 * coherent for the access direction. The direction can be used by the
++	 * exporter to optimize the cache flushing, i.e. access with a different
++	 * direction (read instead of write) might return stale or even bogus
++	 * data (e.g. when the exporter needs to copy the data to temporary
++	 * storage).
++	 *
++	 * This callback is optional.
++	 *
++	 * FIXME: This is both called through the DMA_BUF_IOCTL_SYNC command
++	 * from userspace (where storage shouldn't be pinned to avoid handing
++	 * de-factor mlock rights to userspace) and for the kernel-internal
++	 * users of the various kmap interfaces, where the backing storage must
++	 * be pinned to guarantee that the atomic kmap calls can succeed. Since
++	 * there's no in-kernel users of the kmap interfaces yet this isn't a
++	 * real problem.
++	 *
++	 * Returns:
++	 *
++	 * 0 on success or a negative error code on failure. This can for
++	 * example fail when the backing storage can't be allocated. Can also
++	 * return -ERESTARTSYS or -EINTR when the call has been interrupted and
++	 * needs to be restarted.
++	 */
++	int (*begin_cpu_access_partial)(struct dma_buf *dmabuf,
++					enum dma_data_direction,
++					unsigned int offset, unsigned int len);
+ 	/**
+ 	 * @end_cpu_access:
+ 	 *
+@@ -227,6 +261,9 @@ struct dma_buf_ops {
+ 	 * to be restarted.
+ 	 */
+ 	int (*end_cpu_access)(struct dma_buf *, enum dma_data_direction);
++	int (*end_cpu_access_partial)(struct dma_buf *dmabuf,
++				      enum dma_data_direction,
++				      unsigned int offset, unsigned int len);
+ 
+ 	/**
+ 	 * @mmap:
+@@ -267,7 +304,12 @@ struct dma_buf_ops {
+ 
+ 	void *(*vmap)(struct dma_buf *);
+ 	void (*vunmap)(struct dma_buf *, void *vaddr);
++	int (*get_uuid)(struct dma_buf *dmabuf, uuid_t *uuid);
++	int (*get_flags)(struct dma_buf *dmabuf, unsigned long *flags);
+ };
++#ifdef CONFIG_NO_GKI
++typedef int (*dma_buf_destructor)(struct dma_buf *dmabuf, void *dtor_data);
 +#endif
  
- 	console_on_rootfs();
- 
-diff --git a/ipc/msg.c b/ipc/msg.c
-index 8ded6b8f1..6e6c8e0c9 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -147,7 +147,7 @@ static int newque(struct ipc_namespace *ns, struct ipc_params *params)
- 	key_t key = params->key;
- 	int msgflg = params->flg;
- 
--	msq = kvmalloc(sizeof(*msq), GFP_KERNEL_ACCOUNT);
-+	msq = kvmalloc(sizeof(*msq), GFP_KERNEL);
- 	if (unlikely(!msq))
- 		return -ENOMEM;
- 
-diff --git a/ipc/namespace.c b/ipc/namespace.c
-index c94c05846..24e7b4532 100644
---- a/ipc/namespace.c
-+++ b/ipc/namespace.c
-@@ -42,7 +42,7 @@ static struct ipc_namespace *create_ipc_ns(struct user_namespace *user_ns,
- 		goto fail;
- 
- 	err = -ENOMEM;
--	ns = kzalloc(sizeof(struct ipc_namespace), GFP_KERNEL_ACCOUNT);
-+	ns = kzalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
- 	if (ns == NULL)
- 		goto fail_dec;
- 
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 916f7a90b..d735cecd9 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -511,7 +511,7 @@ static struct sem_array *sem_alloc(size_t nsems)
- 	if (nsems > (INT_MAX - sizeof(*sma)) / sizeof(sma->sems[0]))
- 		return NULL;
- 
--	sma = kvzalloc(struct_size(sma, sems, nsems), GFP_KERNEL_ACCOUNT);
-+	sma = kvzalloc(struct_size(sma, sems, nsems), GFP_KERNEL);
- 	if (unlikely(!sma))
- 		return NULL;
- 
-@@ -1852,7 +1852,7 @@ static inline int get_undo_list(struct sem_undo_list **undo_listp)
- 
- 	undo_list = current->sysvsem.undo_list;
- 	if (!undo_list) {
--		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL_ACCOUNT);
-+		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL);
- 		if (undo_list == NULL)
- 			return -ENOMEM;
- 		spin_lock_init(&undo_list->lock);
-@@ -1937,7 +1937,7 @@ static struct sem_undo *find_alloc_undo(struct ipc_namespace *ns, int semid)
- 	rcu_read_unlock();
- 
- 	/* step 2: allocate new undo structure */
--	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL_ACCOUNT);
-+	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL);
- 	if (!new) {
- 		ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
- 		return ERR_PTR(-ENOMEM);
-diff --git a/ipc/shm.c b/ipc/shm.c
-index b418731d6..471ac3e74 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -711,7 +711,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
- 			ns->shm_tot + numpages > ns->shm_ctlall)
- 		return -ENOSPC;
- 
--	shp = kvmalloc(sizeof(*shp), GFP_KERNEL_ACCOUNT);
-+	shp = kvmalloc(sizeof(*shp), GFP_KERNEL);
- 	if (unlikely(!shp))
- 		return -ENOMEM;
- 
-diff --git a/ipc/util.c b/ipc/util.c
-index 7c3601dad..bbb5190af 100644
---- a/ipc/util.c
-+++ b/ipc/util.c
-@@ -754,13 +754,21 @@ struct pid_namespace *ipc_seq_pid_ns(struct seq_file *s)
- static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
- 					      loff_t *new_pos)
- {
--	struct kern_ipc_perm *ipc = NULL;
--	int max_idx = ipc_get_maxidx(ids);
-+	struct kern_ipc_perm *ipc;
-+	int total, id;
-+
-+	total = 0;
-+	for (id = 0; id < pos && total < ids->in_use; id++) {
-+		ipc = idr_find(&ids->ipcs_idr, id);
-+		if (ipc != NULL)
-+			total++;
-+	}
- 
--	if (max_idx == -1 || pos > max_idx)
-+	ipc = NULL;
-+	if (total >= ids->in_use)
- 		goto out;
- 
--	for (; pos <= max_idx; pos++) {
-+	for (; pos < ipc_mni; pos++) {
- 		ipc = idr_find(&ids->ipcs_idr, pos);
- 		if (ipc != NULL) {
- 			rcu_read_lock();
-diff --git a/kernel/cgroup/legacy_freezer.c b/kernel/cgroup/legacy_freezer.c
-index 08236798d..081d026f1 100644
---- a/kernel/cgroup/legacy_freezer.c
-+++ b/kernel/cgroup/legacy_freezer.c
-@@ -479,3 +479,4 @@ struct cgroup_subsys freezer_cgrp_subsys = {
- 	.fork		= freezer_fork,
- 	.legacy_cftypes	= files,
+ /**
+  * struct dma_buf - shared buffer object
+@@ -343,6 +385,10 @@ struct dma_buf {
+ 		struct dma_buf *dmabuf;
+ 	} *sysfs_entry;
+ #endif
++#ifdef CONFIG_NO_GKI
++	dma_buf_destructor dtor;
++	void *dtor_data;
++#endif
  };
-+EXPORT_SYMBOL_GPL(freezer_cgrp_subsys);
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 2cda6a3ef..7b8933e78 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -275,11 +275,13 @@ void cpu_maps_update_begin(void)
- {
- 	mutex_lock(&cpu_add_remove_lock);
+ 
+ /**
+@@ -412,6 +458,7 @@ struct dma_buf_attachment {
+ 	const struct dma_buf_attach_ops *importer_ops;
+ 	void *importer_priv;
+ 	void *priv;
++	unsigned long dma_map_attrs;
+ };
+ 
+ /**
+@@ -489,6 +536,9 @@ dma_buf_attachment_is_dynamic(struct dma_buf_attachment *attach)
+ 	return !!attach->importer_ops;
  }
-+EXPORT_SYMBOL_GPL(cpu_maps_update_begin);
  
- void cpu_maps_update_done(void)
- {
- 	mutex_unlock(&cpu_add_remove_lock);
- }
-+EXPORT_SYMBOL_GPL(cpu_maps_update_done);
++int get_each_dmabuf(int (*callback)(const struct dma_buf *dmabuf,
++		    void *private), void *private);
++int is_dma_buf_file(struct file *file);
+ struct dma_buf_attachment *dma_buf_attach(struct dma_buf *dmabuf,
+ 					  struct device *dev);
+ struct dma_buf_attachment *
+@@ -513,13 +563,22 @@ void dma_buf_unmap_attachment(struct dma_buf_attachment *, struct sg_table *,
+ void dma_buf_move_notify(struct dma_buf *dma_buf);
+ int dma_buf_begin_cpu_access(struct dma_buf *dma_buf,
+ 			     enum dma_data_direction dir);
++int dma_buf_begin_cpu_access_partial(struct dma_buf *dma_buf,
++				     enum dma_data_direction dir,
++				     unsigned int offset, unsigned int len);
+ int dma_buf_end_cpu_access(struct dma_buf *dma_buf,
+ 			   enum dma_data_direction dir);
++int dma_buf_end_cpu_access_partial(struct dma_buf *dma_buf,
++				     enum dma_data_direction dir,
++				     unsigned int offset, unsigned int len);
  
- /*
-  * If set, cpu_up and cpu_down will return -EBUSY and do nothing.
-@@ -1054,7 +1056,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen,
- 	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
- 	int prev_state, ret = 0;
+ int dma_buf_mmap(struct dma_buf *, struct vm_area_struct *,
+ 		 unsigned long);
+ void *dma_buf_vmap(struct dma_buf *);
+ void dma_buf_vunmap(struct dma_buf *, void *vaddr);
++long dma_buf_set_name(struct dma_buf *dmabuf, const char *name);
++int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags);
++int dma_buf_get_uuid(struct dma_buf *dmabuf, uuid_t *uuid);
  
--	if (num_online_cpus() == 1)
-+	if (num_active_cpus() == 1 && cpu_active(cpu))
- 		return -EBUSY;
- 
- 	if (!cpu_present(cpu))
-diff --git a/kernel/irq/generic-chip.c b/kernel/irq/generic-chip.c
-index e2999a070..79cb6d063 100644
---- a/kernel/irq/generic-chip.c
-+++ b/kernel/irq/generic-chip.c
-@@ -200,6 +200,7 @@ int irq_gc_set_wake(struct irq_data *d, unsigned int on)
- 	irq_gc_unlock(gc);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(irq_gc_set_wake);
- 
- static u32 irq_readl_be(void __iomem *addr)
- {
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 5899260a8..f5b51d8fe 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -17,4 +17,5 @@ obj-$(CONFIG_PM_WAKELOCKS)	+= wakelock.o
- 
- obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
- 
-+
- obj-$(CONFIG_ENERGY_MODEL)	+= energy_model.o
-diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-index 119b929dc..41430128d 100644
---- a/kernel/power/energy_model.c
-+++ b/kernel/power/energy_model.c
-@@ -52,6 +52,17 @@ static int em_debug_cpus_show(struct seq_file *s, void *unused)
- }
- DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
- 
-+static int em_debug_units_show(struct seq_file *s, void *unused)
-+{
-+	struct em_perf_domain *pd = s->private;
-+	char *units = pd->milliwatts ? "milliWatts" : "bogoWatts";
-+
-+	seq_printf(s, "%s\n", units);
-+
-+	return 0;
-+}
-+DEFINE_SHOW_ATTRIBUTE(em_debug_units);
-+
- static void em_debug_create_pd(struct device *dev)
- {
- 	struct dentry *d;
-@@ -64,6 +75,8 @@ static void em_debug_create_pd(struct device *dev)
- 		debugfs_create_file("cpus", 0444, d, dev->em_pd->cpus,
- 				    &em_debug_cpus_fops);
- 
-+	debugfs_create_file("units", 0444, d, dev->em_pd, &em_debug_units_fops);
-+
- 	/* Create a sub-directory for each performance state */
- 	for (i = 0; i < dev->em_pd->nr_perf_states; i++)
- 		em_debug_create_ps(&dev->em_pd->table[i], d);
-@@ -245,17 +258,24 @@ EXPORT_SYMBOL_GPL(em_cpu_get);
-  * @cpus	: Pointer to cpumask_t, which in case of a CPU device is
-  *		obligatory. It can be taken from i.e. 'policy->cpus'. For other
-  *		type of devices this should be set to NULL.
-+ * @milliwatts	: Flag indicating that the power values are in milliWatts or
-+ *		in some other scale. It must be set properly.
-  *
-  * Create Energy Model tables for a performance domain using the callbacks
-  * defined in cb.
-  *
-+ * The @milliwatts is important to set with correct value. Some kernel
-+ * sub-systems might rely on this flag and check if all devices in the EM are
-+ * using the same scale.
-+ *
-  * If multiple clients register the same performance domain, all but the first
-  * registration will be ignored.
-  *
-  * Return 0 on success
+ #ifdef CONFIG_DMABUF_PROCESS_INFO
+ /**
+@@ -532,4 +591,20 @@ void dma_buf_vunmap(struct dma_buf *, void *vaddr);
   */
+ struct dma_buf *get_dma_buf_from_file(struct file *f);
+ #endif /* CONFIG_DMABUF_PROCESS_INFO */
++
++#ifdef CONFIG_NO_GKI
++/**
++ * dma_buf_set_destructor - set the dma-buf's destructor
++ * @dmabuf:		[in]	pointer to dma-buf
++ * @dma_buf_destructor	[in]	the destructor function
++ * @dtor_data:		[in]	destructor data associated with this buffer
++ */
++static inline void dma_buf_set_destructor(struct dma_buf *dmabuf,
++					  dma_buf_destructor dtor,
++					  void *dtor_data)
++{
++	dmabuf->dtor = dtor;
++	dmabuf->dtor_data = dtor_data;
++}
++#endif
+ #endif /* __DMA_BUF_H__ */
+diff --git a/include/linux/dma-fence.h b/include/linux/dma-fence.h
+index 09e23adb3..9f12efaaa 100644
+--- a/include/linux/dma-fence.h
++++ b/include/linux/dma-fence.h
+@@ -372,6 +372,9 @@ static inline void __dma_fence_might_wait(void) {}
+ 
+ int dma_fence_signal(struct dma_fence *fence);
+ int dma_fence_signal_locked(struct dma_fence *fence);
++int dma_fence_signal_timestamp(struct dma_fence *fence, ktime_t timestamp);
++int dma_fence_signal_timestamp_locked(struct dma_fence *fence,
++				      ktime_t timestamp);
+ signed long dma_fence_default_wait(struct dma_fence *fence,
+ 				   bool intr, signed long timeout);
+ int dma_fence_add_callback(struct dma_fence *fence,
+diff --git a/include/linux/dma-heap.h b/include/linux/dma-heap.h
+index 83b8cfb2d..b5c6f60ef 100644
+--- a/include/linux/dma-heap.h
++++ b/include/linux/dma-heap.h
+@@ -16,15 +16,17 @@ struct dma_heap;
+ 
+ /**
+  * struct dma_heap_ops - ops to operate on a given heap
+- * @allocate:		allocate dmabuf and return fd
++ * @allocate:		allocate dmabuf and return struct dma_buf ptr
++ * @get_pool_size:	if heap maintains memory pools, get pool size in bytes
+  *
+- * allocate returns dmabuf fd  on success, -errno on error.
++ * allocate returns dmabuf on success, ERR_PTR(-errno) on error.
+  */
+ struct dma_heap_ops {
+-	int (*allocate)(struct dma_heap *heap,
++	struct dma_buf *(*allocate)(struct dma_heap *heap,
+ 			unsigned long len,
+ 			unsigned long fd_flags,
+ 			unsigned long heap_flags);
++	long (*get_pool_size)(struct dma_heap *heap);
+ };
+ 
+ /**
+@@ -59,10 +61,73 @@ void *dma_heap_get_drvdata(struct dma_heap *heap);
+  */
+ const char *dma_heap_get_name(struct dma_heap *heap);
+ 
++/**
++ * dma_heap_get_dev() - get device struct for the heap
++ * @heap: DMA-Heap to retrieve device struct from
++ *
++ * Returns:
++ * The device struct for the heap.
++ */
++struct device *dma_heap_get_dev(struct dma_heap *heap);
++
++/**
++ * dma_heap_get_name() - get heap name
++ * @heap: DMA-Heap to retrieve private data for
++ *
++ * Returns:
++ * The char* for the heap name.
++ */
++const char *dma_heap_get_name(struct dma_heap *heap);
++
+ /**
+  * dma_heap_add - adds a heap to dmabuf heaps
+  * @exp_info:		information needed to register this heap
+  */
+ struct dma_heap *dma_heap_add(const struct dma_heap_export_info *exp_info);
+ 
++/**
++ * dma_heap_put - drops a reference to a dmabuf heaps, potentially freeing it
++ * @heap:		heap pointer
++ */
++void dma_heap_put(struct dma_heap *heap);
++
++/**
++ * dma_heap_find - Returns the registered dma_heap with the specified name
++ * @name: Name of the heap to find
++ *
++ * NOTE: dma_heaps returned from this function MUST be released
++ * using dma_heap_put() when the user is done.
++ */
++struct dma_heap *dma_heap_find(const char *name);
++
++/**
++ * dma_heap_buffer_alloc - Allocate dma-buf from a dma_heap
++ * @heap:	dma_heap to allocate from
++ * @len:	size to allocate
++ * @fd_flags:	flags to set on returned dma-buf fd
++ * @heap_flags:	flags to pass to the dma heap
++ *
++ * This is for internal dma-buf allocations only.
++ */
++struct dma_buf *dma_heap_buffer_alloc(struct dma_heap *heap, size_t len,
++				      unsigned int fd_flags,
++				      unsigned int heap_flags);
++
++/** dma_heap_buffer_free - Free dma_buf allocated by dma_heap_buffer_alloc
++ * @dma_buf:	dma_buf to free
++ *
++ * This is really only a simple wrapper to dma_buf_put()
++ */
++void dma_heap_buffer_free(struct dma_buf *);
++
++/**
++ * dma_heap_bufferfd_alloc - Allocate dma-buf fd from a dma_heap
++ * @heap:	dma_heap to allocate from
++ * @len:	size to allocate
++ * @fd_flags:	flags to set on returned dma-buf fd
++ * @heap_flags:	flags to pass to the dma heap
++ */
++int dma_heap_bufferfd_alloc(struct dma_heap *heap, size_t len,
++			    unsigned int fd_flags,
++			    unsigned int heap_flags);
+ #endif /* _DMA_HEAPS_H */
+diff --git a/include/linux/dma-iommu.h b/include/linux/dma-iommu.h
+index 2112f21f7..f51561eda 100644
+--- a/include/linux/dma-iommu.h
++++ b/include/linux/dma-iommu.h
+@@ -37,6 +37,11 @@ void iommu_dma_compose_msi_msg(struct msi_desc *desc,
+ 
+ void iommu_dma_get_resv_regions(struct device *dev, struct list_head *list);
+ 
++int iommu_dma_reserve_iova(struct device *dev, dma_addr_t base,
++			   u64 size);
++
++int iommu_dma_enable_best_fit_algo(struct device *dev);
++
+ #else /* CONFIG_IOMMU_DMA */
+ 
+ struct iommu_domain;
+@@ -78,5 +83,16 @@ static inline void iommu_dma_get_resv_regions(struct device *dev, struct list_he
+ {
+ }
+ 
++static inline int iommu_dma_reserve_iova(struct device *dev, dma_addr_t base,
++					 u64 size)
++{
++	return -ENODEV;
++}
++
++static inline int iommu_dma_enable_best_fit_algo(struct device *dev)
++{
++	return -ENODEV;
++}
++
+ #endif	/* CONFIG_IOMMU_DMA */
+ #endif	/* __DMA_IOMMU_H */
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index a7d70cdee..7270f12e2 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -61,6 +61,23 @@
+  */
+ #define DMA_ATTR_PRIVILEGED		(1UL << 9)
+ 
++/*
++ * DMA_ATTR_SYS_CACHE_ONLY: used to indicate that the buffer should be mapped
++ * with the correct memory attributes so that it can be cached in the system
++ * or last level cache. This is useful for buffers that are being mapped for
++ * devices that are non-coherent, but can use the system cache.
++ */
++#define DMA_ATTR_SYS_CACHE_ONLY		(1UL << 10)
++
++/*
++ * DMA_ATTR_SYS_CACHE_ONLY_NWA: used to indicate that the buffer should be
++ * mapped with the correct memory attributes so that it can be cached in the
++ * system or last level cache, with a no write allocate cache policy. This is
++ * useful for buffers that are being mapped for devices that are non-coherent,
++ * but can use the system cache.
++ */
++#define DMA_ATTR_SYS_CACHE_ONLY_NWA	(1UL << 11)
++
+ /*
+  * A dma_addr_t can hold any valid DMA or bus address for the platform.  It can
+  * be given to a device to use as a DMA source or target.  It is specific to a
+diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
+index 5f04a2b35..9ca1ea02f 100644
+--- a/include/linux/energy_model.h
++++ b/include/linux/energy_model.h
+@@ -29,6 +29,8 @@ struct em_perf_state {
+  * em_perf_domain - Performance domain
+  * @table:		List of performance states, in ascending order
+  * @nr_perf_states:	Number of performance states
++ * @milliwatts:		Flag indicating the power values are in milli-Watts
++ *			or some other scale.
+  * @cpus:		Cpumask covering the CPUs of the domain. It's here
+  *			for performance reasons to avoid potential cache
+  *			misses during energy calculations in the scheduler
+@@ -43,6 +45,7 @@ struct em_perf_state {
+ struct em_perf_domain {
+ 	struct em_perf_state *table;
+ 	int nr_perf_states;
++	int milliwatts;
+ 	unsigned long cpus[];
+ };
+ 
+@@ -95,7 +98,8 @@ struct em_data_callback {
+ struct em_perf_domain *em_cpu_get(int cpu);
+ struct em_perf_domain *em_pd_get(struct device *dev);
  int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
--				struct em_data_callback *cb, cpumask_t *cpus)
-+				struct em_data_callback *cb, cpumask_t *cpus,
+-				struct em_data_callback *cb, cpumask_t *span);
++				struct em_data_callback *cb, cpumask_t *span,
++				bool milliwatts);
+ void em_dev_unregister_perf_domain(struct device *dev);
+ 
+ /**
+@@ -119,6 +123,9 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
+ 	struct em_perf_state *ps;
+ 	int i, cpu;
+ 
++	if (!sum_util)
++		return 0;
++
+ 	/*
+ 	 * In order to predict the performance state, map the utilization of
+ 	 * the most utilized CPU of the performance domain to a requested
+@@ -202,7 +209,8 @@ struct em_data_callback {};
+ 
+ static inline
+ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+-				struct em_data_callback *cb, cpumask_t *span)
++				struct em_data_callback *cb, cpumask_t *span,
 +				bool milliwatts)
  {
- 	unsigned long cap, prev_cap = 0;
- 	int cpu, ret;
-@@ -308,6 +328,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
- 	if (ret)
- 		goto unlock;
+ 	return -EINVAL;
+ }
+diff --git a/include/linux/extcon.h b/include/linux/extcon.h
+index fa1e431ee..6f851be8c 100644
+--- a/include/linux/extcon.h
++++ b/include/linux/extcon.h
+@@ -37,6 +37,7 @@
+ /* USB external connector */
+ #define EXTCON_USB		1
+ #define EXTCON_USB_HOST		2
++#define EXTCON_USB_VBUS_EN	3
  
-+	dev->em_pd->milliwatts = milliwatts;
+ /*
+  * Charging external connector
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 27828145c..cd57fd734 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -27,6 +27,10 @@ static inline bool frozen(struct task_struct *p)
+ 	return p->flags & PF_FROZEN;
+ }
+ 
++static inline bool frozen_or_skipped(struct task_struct *p)
++{
++	return p->flags & (PF_FROZEN | PF_FREEZER_SKIP);
++}
+ extern bool freezing_slow_path(struct task_struct *p);
+ 
+ /*
+@@ -270,6 +274,7 @@ static inline int freezable_schedule_hrtimeout_range(ktime_t *expires,
+ 
+ #else /* !CONFIG_FREEZER */
+ static inline bool frozen(struct task_struct *p) { return false; }
++static inline bool frozen_or_skipped(struct task_struct *p) { return false; }
+ static inline bool freezing(struct task_struct *p) { return false; }
+ static inline void __thaw_task(struct task_struct *t) {}
+ 
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index e90c267e7..2476f1a97 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -31,6 +31,18 @@
+  * if the IOMMU page table format is equivalent.
+  */
+ #define IOMMU_PRIV	(1 << 5)
++/*
++ * Allow caching in a transparent outer level of cache, also known as
++ * the last-level or system cache, with a read/write allocation policy.
++ * Does not depend on IOMMU_CACHE. Incompatible with IOMMU_SYS_CACHE_NWA.
++ */
++#define IOMMU_SYS_CACHE	(1 << 6)
++/*
++ * Allow caching in a transparent outer level of cache, also known as
++ * the last-level or system cache, with a read allocation policy.
++ * Does not depend on IOMMU_CACHE. Incompatible with IOMMU_SYS_CACHE.
++ */
++#define IOMMU_SYS_CACHE_NWA (1 << 7)
+ 
+ struct iommu_ops;
+ struct iommu_group;
+@@ -190,7 +202,12 @@ struct iommu_iotlb_gather {
+  * @attach_dev: attach device to an iommu domain
+  * @detach_dev: detach device from an iommu domain
+  * @map: map a physically contiguous memory region to an iommu domain
++ * @map_pages: map a physically contiguous set of pages of the same size to
++ *             an iommu domain.
++ * @map_sg: map a scatter-gather list of physically contiguous chunks to
++ *          an iommu domain.
+  * @unmap: unmap a physically contiguous memory region from an iommu domain
++ * @unmap_pages: unmap a number of pages of the same size from an iommu domain
+  * @flush_iotlb_all: Synchronously flush all hardware TLBs for this domain
+  * @iotlb_sync_map: Sync mappings created recently using @map to the hardware
+  * @iotlb_sync: Flush all queued ranges from the hardware TLBs and empty flush
+@@ -241,10 +258,20 @@ struct iommu_ops {
+ 	void (*detach_dev)(struct iommu_domain *domain, struct device *dev);
+ 	int (*map)(struct iommu_domain *domain, unsigned long iova,
+ 		   phys_addr_t paddr, size_t size, int prot, gfp_t gfp);
++	int (*map_pages)(struct iommu_domain *domain, unsigned long iova,
++			 phys_addr_t paddr, size_t pgsize, size_t pgcount,
++			 int prot, gfp_t gfp, size_t *mapped);
++	int (*map_sg)(struct iommu_domain *domain, unsigned long iova,
++		      struct scatterlist *sg, unsigned int nents, int prot,
++		      gfp_t gfp, size_t *mapped);
+ 	size_t (*unmap)(struct iommu_domain *domain, unsigned long iova,
+ 		     size_t size, struct iommu_iotlb_gather *iotlb_gather);
++	size_t (*unmap_pages)(struct iommu_domain *domain, unsigned long iova,
++			      size_t pgsize, size_t pgcount,
++			      struct iommu_iotlb_gather *iotlb_gather);
+ 	void (*flush_iotlb_all)(struct iommu_domain *domain);
+-	void (*iotlb_sync_map)(struct iommu_domain *domain);
++	void (*iotlb_sync_map)(struct iommu_domain *domain, unsigned long iova,
++			       size_t size);
+ 	void (*iotlb_sync)(struct iommu_domain *domain,
+ 			   struct iommu_iotlb_gather *iotlb_gather);
+ 	phys_addr_t (*iova_to_phys)(struct iommu_domain *domain, dma_addr_t iova);
+@@ -561,6 +588,8 @@ static inline void iommu_iotlb_gather_add_page(struct iommu_domain *domain,
+ extern struct iommu_group *pci_device_group(struct device *dev);
+ /* Generic device grouping function */
+ extern struct iommu_group *generic_device_group(struct device *dev);
++extern void rk_iommu_mask_irq(struct device *dev);
++extern void rk_iommu_unmask_irq(struct device *dev);
+ /* FSL-MC device grouping function */
+ struct iommu_group *fsl_mc_device_group(struct device *dev);
+ 
+@@ -1069,6 +1098,14 @@ static inline struct iommu_fwspec *dev_iommu_fwspec_get(struct device *dev)
+ {
+ 	return NULL;
+ }
 +
- 	em_debug_create_pd(dev);
- 	dev_info(dev, "EM: created perf domain\n");
- 
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 24f12d534..778bf431e 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -106,7 +106,7 @@ extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
- extern int hibernate_preallocate_memory(void);
- 
--extern void clear_free_pages(void);
-+extern void clear_or_poison_free_pages(void);
++static inline void rk_iommu_mask_irq(struct device *dev)
++{
++}
++
++static inline void rk_iommu_unmask_irq(struct device *dev)
++{
++}
+ #endif /* CONFIG_IOMMU_API */
  
  /**
-  *	Auxiliary structure used for reading the snapshot image data and
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index b9faa363c..013dda3f1 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -85,23 +85,27 @@ static int try_to_freeze_tasks(bool user_only)
- 	elapsed = ktime_sub(end, start);
- 	elapsed_msecs = ktime_to_ms(elapsed);
+diff --git a/include/linux/iova.h b/include/linux/iova.h
+index 6c19b09e9..0394d44f7 100644
+--- a/include/linux/iova.h
++++ b/include/linux/iova.h
+@@ -95,6 +95,7 @@ struct iova_domain {
+ 						   flush-queues */
+ 	atomic_t fq_timer_on;			/* 1 when timer is active, 0
+ 						   when not */
++	bool best_fit;
+ };
  
--	if (todo) {
-+	if (wakeup) {
- 		pr_cont("\n");
--		pr_err("Freezing of tasks %s after %d.%03d seconds "
--		       "(%d tasks refusing to freeze, wq_busy=%d):\n",
--		       wakeup ? "aborted" : "failed",
-+		pr_err("Freezing of tasks aborted after %d.%03d seconds",
-+		       elapsed_msecs / 1000, elapsed_msecs % 1000);
-+	} else if (todo) {
-+		pr_cont("\n");
-+		pr_err("Freezing of tasks failed after %d.%03d seconds"
-+		       " (%d tasks refusing to freeze, wq_busy=%d):\n",
- 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
- 		       todo - wq_busy, wq_busy);
- 
- 		if (wq_busy)
- 			show_workqueue_state();
- 
--		if (!wakeup || pm_debug_messages_on) {
-+		if (pm_debug_messages_on) {
- 			read_lock(&tasklist_lock);
- 			for_each_process_thread(g, p) {
- 				if (p != current && !freezer_should_skip(p)
--				    && freezing(p) && !frozen(p))
-+				    && freezing(p) && !frozen(p)) {
- 					sched_show_task(p);
-+				}
- 			}
- 			read_unlock(&tasklist_lock);
- 		}
-@@ -134,7 +138,7 @@ int freeze_processes(void)
- 	if (!pm_freezing)
- 		atomic_inc(&system_freezing_cnt);
- 
--	pm_wakeup_clear(0);
-+	pm_wakeup_clear(true);
- 	pr_info("Freezing user space processes ... ");
- 	pm_freezing = true;
- 	error = try_to_freeze_tasks(true);
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 4aa4d5d39..545958377 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -30,6 +30,7 @@
- #include <trace/events/power.h>
- #include <linux/compiler.h>
- #include <linux/moduleparam.h>
-+#include <linux/wakeup_reason.h>
- 
- #include "power.h"
- 
-@@ -138,6 +139,9 @@ static void s2idle_loop(void)
- 			break;
- 		}
- 
-+		pm_wakeup_clear(false);
-+		clear_wakeup_reasons();
-+
- 		s2idle_enter();
- 	}
- 
-@@ -357,6 +361,7 @@ static int suspend_prepare(suspend_state_t state)
- 	if (!error)
- 		return 0;
- 
-+	log_suspend_abort_reason("One or more tasks refusing to freeze");
- 	suspend_stats.failed_freeze++;
- 	dpm_save_failed_step(SUSPEND_FREEZE);
- 	pm_notifier_call_chain(PM_POST_SUSPEND);
-@@ -386,7 +391,7 @@ void __weak arch_suspend_enable_irqs(void)
-  */
- static int suspend_enter(suspend_state_t state, bool *wakeup)
+ static inline unsigned long iova_size(struct iova *iova)
+@@ -163,6 +164,7 @@ void put_iova_domain(struct iova_domain *iovad);
+ struct iova *split_and_remove_iova(struct iova_domain *iovad,
+ 	struct iova *iova, unsigned long pfn_lo, unsigned long pfn_hi);
+ void free_cpu_cached_iovas(unsigned int cpu, struct iova_domain *iovad);
++void free_global_cached_iovas(struct iova_domain *iovad);
+ #else
+ static inline int iova_cache_get(void)
  {
--	int error;
-+	int error, last_dev;
- 
- 	error = platform_suspend_prepare(state);
- 	if (error)
-@@ -394,7 +399,11 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_late(PMSG_SUSPEND);
- 	if (error) {
-+		last_dev = suspend_stats.last_failed_dev + REC_FAILED_NUM - 1;
-+		last_dev %= REC_FAILED_NUM;
- 		pr_err("late suspend of devices failed\n");
-+		log_suspend_abort_reason("late suspend of %s device failed",
-+					 suspend_stats.failed_devs[last_dev]);
- 		goto Platform_finish;
- 	}
- 	error = platform_suspend_prepare_late(state);
-@@ -403,7 +412,11 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_noirq(PMSG_SUSPEND);
- 	if (error) {
-+		last_dev = suspend_stats.last_failed_dev + REC_FAILED_NUM - 1;
-+		last_dev %= REC_FAILED_NUM;
- 		pr_err("noirq suspend of devices failed\n");
-+		log_suspend_abort_reason("noirq suspend of %s device failed",
-+					 suspend_stats.failed_devs[last_dev]);
- 		goto Platform_early_resume;
- 	}
- 	error = platform_suspend_prepare_noirq(state);
-@@ -419,8 +432,10 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 	}
- 
- 	error = suspend_disable_secondary_cpus();
--	if (error || suspend_test(TEST_CPUS))
-+	if (error || suspend_test(TEST_CPUS)) {
-+		log_suspend_abort_reason("Disabling non-boot cpus failed");
- 		goto Enable_cpus;
-+	}
- 
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
-@@ -491,6 +506,8 @@ int suspend_devices_and_enter(suspend_state_t state)
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
- 		pr_err("Some devices failed to suspend, or early wake event detected\n");
-+		log_suspend_abort_reason(
-+				"Some devices failed to suspend, or early wake event detected");
- 		goto Recover_platform;
- 	}
- 	suspend_test_finish("suspend devices");
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index af6f23d8b..240805041 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -32,7 +32,9 @@ EXPORT_SYMBOL(cad_pid);
- #define DEFAULT_REBOOT_MODE
- #endif
- enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
-+EXPORT_SYMBOL_GPL(reboot_mode);
- enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
-+EXPORT_SYMBOL_GPL(panic_reboot_mode);
- 
- /*
-  * This variable is used privately to keep track of whether or not
-@@ -215,6 +217,27 @@ void do_kernel_restart(char *cmd)
- 	atomic_notifier_call_chain(&restart_handler_list, reboot_mode, cmd);
+@@ -270,6 +272,11 @@ static inline void free_cpu_cached_iovas(unsigned int cpu,
+ 					 struct iova_domain *iovad)
+ {
  }
- 
-+#ifdef CONFIG_NO_GKI
-+static ATOMIC_NOTIFIER_HEAD(pre_restart_handler_list);
 +
-+int register_pre_restart_handler(struct notifier_block *nb)
++static inline void free_global_cached_iovas(struct iova_domain *iovad)
 +{
-+	return atomic_notifier_chain_register(&pre_restart_handler_list, nb);
 +}
-+EXPORT_SYMBOL(register_pre_restart_handler);
 +
-+int unregister_pre_restart_handler(struct notifier_block *nb)
-+{
-+	return atomic_notifier_chain_unregister(&pre_restart_handler_list, nb);
-+}
-+EXPORT_SYMBOL(unregister_pre_restart_handler);
-+
-+void do_kernel_pre_restart(char *cmd)
-+{
-+	atomic_notifier_call_chain(&pre_restart_handler_list, reboot_mode, cmd);
-+}
-+#endif
-+
- void migrate_to_reboot_cpu(void)
- {
- 	/* The boot cpu is always logical cpu 0 */
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d4ebc1d4e..c6242ad9f 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -18,6 +18,7 @@
- #include <linux/scs.h>
- #include <linux/irq.h>
- #include <linux/delay.h>
-+#include <linux/wgcm.h>
- 
- #ifdef CONFIG_QOS_CTRL
- #include <linux/sched/qos_ctrl.h>
-@@ -34,6 +35,7 @@
- #include "smp.h"
- #include "walt.h"
- #include "rtg/rtg.h"
-+#include <rtg/rtg_qos.h>
- 
- /*
-  * Export tracepoints that act as a bare tracehook (ie: have no trace event
-@@ -50,6 +52,14 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
- EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_cfs_tp);
- EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
- EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_switch);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_waking);
-+#ifdef CONFIG_SCHEDSTATS
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_sleep);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_wait);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_iowait);
-+EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_blocked);
-+#endif
- 
- DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
- 
-@@ -663,7 +673,7 @@ int get_nohz_timer_target(void)
- 	int i, cpu = smp_processor_id(), default_cpu = -1;
- 	struct sched_domain *sd;
- 
--	if (housekeeping_cpu(cpu, HK_FLAG_TIMER)) {
-+	if (housekeeping_cpu(cpu, HK_FLAG_TIMER) && cpu_active(cpu)) {
- 		if (!idle_cpu(cpu))
- 			return cpu;
- 		default_cpu = cpu;
-@@ -683,8 +693,20 @@ int get_nohz_timer_target(void)
- 		}
- 	}
- 
--	if (default_cpu == -1)
--		default_cpu = housekeeping_any_cpu(HK_FLAG_TIMER);
-+	if (default_cpu == -1) {
-+		for_each_cpu_and(i, cpu_active_mask,
-+				 housekeeping_cpumask(HK_FLAG_TIMER)) {
-+			if (cpu == i)
-+				continue;
-+			if (!idle_cpu(i)) {
-+				cpu = i;
-+				goto unlock;
-+			}
-+		}
-+		default_cpu = cpumask_any(cpu_active_mask);
-+		if (unlikely(default_cpu >= nr_cpu_ids))
-+			goto unlock;
-+	}
- 	cpu = default_cpu;
- unlock:
- 	rcu_read_unlock();
-@@ -1654,11 +1676,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
- {
- 	enqueue_task(rq, p, flags);
- 
-+	wgcm_activate_task(p);
-+
- 	p->on_rq = TASK_ON_RQ_QUEUED;
- }
- 
- void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
- {
-+	wgcm_deactivate_task(p, flags);
-+
- 	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
- 
- 	dequeue_task(rq, p, flags);
-@@ -1770,7 +1796,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
- 	if (is_per_cpu_kthread(p))
- 		return cpu_online(cpu);
- 
--	return cpu_active(cpu);
-+	if (!cpu_active(cpu))
-+		return false;
-+	return cpumask_test_cpu(cpu, task_cpu_possible_mask(p));
- }
- 
- /*
-@@ -2433,7 +2461,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
- 			}
- 			fallthrough;
- 		case possible:
--			do_set_cpus_allowed(p, cpu_possible_mask);
-+			do_set_cpus_allowed(p, task_cpu_possible_mask(p));
- 			state = fail;
- 			break;
- 
-@@ -2627,6 +2655,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
- {
- 	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
- 
-+	if (wake_flags & WF_SYNC)
-+		en_flags |= ENQUEUE_WAKEUP_SYNC;
- 	lockdep_assert_held(&rq->lock);
- 
- 	if (p->sched_contributes_to_load)
-@@ -3023,6 +3053,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
- 	if (!(p->state & state))
- 		goto unlock;
- 
-+#ifdef CONFIG_FREEZER
-+	/*
-+	 * If we're going to wake up a thread which may be frozen, then
-+	 * we can only do so if we have an active CPU which is capable of
-+	 * running it. This may not be the case when resuming from suspend,
-+	 * as the secondary CPUs may not yet be back online. See __thaw_task()
-+	 * for the actual wakeup.
-+	 */
-+	if (unlikely(frozen_or_skipped(p)) &&
-+	    !cpumask_intersects(cpu_active_mask, task_cpu_possible_mask(p)))
-+		goto unlock;
-+#endif
-+
- 	trace_sched_waking(p);
- 
- 	/* We're going to change ->state: */
-@@ -3269,6 +3312,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
- #ifdef CONFIG_SCHED_RTG
- 	p->rtg_depth = 0;
- #endif
-+
-+	wgcm_clear_child(p);
- }
- 
- DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
-@@ -5719,16 +5764,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
- {
- 	return _sched_setscheduler(p, policy, param, true);
- }
-+EXPORT_SYMBOL_GPL(sched_setscheduler);
- 
- int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
- {
- 	return __sched_setscheduler(p, attr, true, true);
- }
-+EXPORT_SYMBOL_GPL(sched_setattr);
- 
- int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
- {
- 	return __sched_setscheduler(p, attr, false, true);
- }
-+EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
- 
- /**
-  * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
-@@ -5748,6 +5796,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
- {
- 	return _sched_setscheduler(p, policy, param, false);
- }
-+EXPORT_SYMBOL_GPL(sched_setscheduler_nocheck);
- 
- /*
-  * SCHED_FIFO is a broken scheduler model; that is, it is fundamentally
-@@ -7055,6 +7104,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
- 	 */
- 	update_rq_clock(rq);
- 
-+#ifdef CONFIG_SCHED_DEBUG
-+	orf.clock_update_flags |= RQCF_UPDATED;
-+#endif
- 	for (;;) {
- 		/*
- 		 * There's this thread running, bail when that's the only
-@@ -9190,6 +9242,10 @@ void sched_exit(struct task_struct *p)
- 	sched_set_group_id(p, 0);
  #endif
  
-+#ifdef CONFIG_SCHED_RTG_QOS
-+	sched_exit_qos_list(p);
+ #endif
+diff --git a/include/linux/irqchip/arm-gic-v3.h b/include/linux/irqchip/arm-gic-v3.h
+index f6d092fdb..43348c487 100644
+--- a/include/linux/irqchip/arm-gic-v3.h
++++ b/include/linux/irqchip/arm-gic-v3.h
+@@ -693,6 +693,20 @@ int its_init(struct fwnode_handle *handle, struct rdists *rdists,
+ 	     struct irq_domain *domain);
+ int mbi_init(struct fwnode_handle *fwnode, struct irq_domain *parent);
+ 
++struct gic_chip_data {
++	struct fwnode_handle	*fwnode;
++	void __iomem		*dist_base;
++	struct redist_region	*redist_regions;
++	struct rdists		rdists;
++	struct irq_domain	*domain;
++	u64			redist_stride;
++	u32			nr_redist_regions;
++	u64			flags;
++	bool			has_rss;
++	unsigned int		ppi_nr;
++	struct partition_desc	**ppi_descs;
++};
++
+ static inline bool gic_enable_sre(void)
+ {
+ 	u32 val;
+@@ -708,6 +722,8 @@ static inline bool gic_enable_sre(void)
+ 	return !!(val & ICC_SRE_EL1_SRE);
+ }
+ 
++void gic_resume(void);
++
+ #endif
+ 
+ #endif
+diff --git a/include/linux/irqchip/arm-gic-v4.h b/include/linux/irqchip/arm-gic-v4.h
+index 74e11617b..a767453a6 100644
+--- a/include/linux/irqchip/arm-gic-v4.h
++++ b/include/linux/irqchip/arm-gic-v4.h
+@@ -39,6 +39,8 @@ struct its_vpe {
+ 	irq_hw_number_t		vpe_db_lpi;
+ 	/* VPE resident */
+ 	bool			resident;
++	/* VPT parse complete */
++	bool			ready;
+ 	union {
+ 		/* GICv4.0 implementations */
+ 		struct {
+@@ -106,6 +108,7 @@ enum its_vcpu_info_cmd_type {
+ 	PROP_UPDATE_AND_INV_VLPI,
+ 	SCHEDULE_VPE,
+ 	DESCHEDULE_VPE,
++	COMMIT_VPE,
+ 	INVALL_VPE,
+ 	PROP_UPDATE_VSGI,
+ };
+@@ -131,6 +134,7 @@ int its_alloc_vcpu_irqs(struct its_vm *vm);
+ void its_free_vcpu_irqs(struct its_vm *vm);
+ int its_make_vpe_resident(struct its_vpe *vpe, bool g0en, bool g1en);
+ int its_make_vpe_non_resident(struct its_vpe *vpe, bool db);
++int its_commit_vpe(struct its_vpe *vpe);
+ int its_invall_vpe(struct its_vpe *vpe);
+ int its_map_vlpi(int irq, struct its_vlpi_map *map);
+ int its_get_vlpi(int irq, struct its_vlpi_map *map);
+diff --git a/include/linux/mfd/rk808.h b/include/linux/mfd/rk808.h
+index e07f6e61c..7cdc5dfa4 100644
+--- a/include/linux/mfd/rk808.h
++++ b/include/linux/mfd/rk808.h
+@@ -113,6 +113,235 @@ enum rk808_reg {
+ #define RK808_INT_STS_MSK_REG2	0x4f
+ #define RK808_IO_POL_REG	0x50
+ 
++/* RK816 */
++enum rk816_reg {
++	RK816_ID_DCDC1,
++	RK816_ID_DCDC2,
++	RK816_ID_DCDC3,
++	RK816_ID_DCDC4,
++	RK816_ID_LDO1,
++	RK816_ID_LDO2,
++	RK816_ID_LDO3,
++	RK816_ID_LDO4,
++	RK816_ID_LDO5,
++	RK816_ID_LDO6,
++};
++
++/*VERSION REGISTER*/
++#define RK816_CHIP_NAME_REG			0x17
++#define RK816_CHIP_VER_REG			0x18
++#define RK816_OTP_VER_REG			0x19
++#define RK816_NUM_REGULATORS			10
++
++/*POWER ON/OFF REGISTER*/
++#define RK816_VB_MON_REG			0x21
++#define RK816_THERMAL_REG			0x22
++#define RK816_PWRON_LP_INT_TIME_REG		0x47
++#define RK816_PWRON_DB_REG			0x48
++#define RK816_DEV_CTRL_REG			0x4B
++#define RK816_ON_SOURCE_REG			0xAE
++#define RK816_OFF_SOURCE_REG			0xAF
++
++/*POWER CHANNELS ENABLE REGISTER*/
++#define RK816_DCDC_EN_REG1			0x23
++#define RK816_DCDC_EN_REG2			0x24
++#define RK816_SLP_DCDC_EN_REG			0x25
++#define RK816_SLP_LDO_EN_REG			0x26
++#define RK816_LDO_EN_REG1			0x27
++#define RK816_LDO_EN_REG2			0x28
++
++/*BUCK AND LDO CONFIG REGISTER*/
++#define RK816_BUCK1_CONFIG_REG			0x2E
++#define RK816_BUCK1_ON_VSEL_REG			0x2F
++#define RK816_BUCK1_SLP_VSEL_REG		0x30
++#define RK816_BUCK2_CONFIG_REG			0x32
++#define RK816_BUCK2_ON_VSEL_REG			0x33
++#define RK816_BUCK2_SLP_VSEL_REG		0x34
++#define RK816_BUCK3_CONFIG_REG			0x36
++#define RK816_BUCK4_CONFIG_REG			0x37
++#define RK816_BUCK4_ON_VSEL_REG			0x38
++#define RK816_BUCK4_SLP_VSEL_REG		0x39
++#define RK816_LDO1_ON_VSEL_REG			0x3B
++#define RK816_LDO1_SLP_VSEL_REG			0x3C
++#define RK816_LDO2_ON_VSEL_REG			0x3D
++#define RK816_LDO2_SLP_VSEL_REG			0x3E
++#define RK816_LDO3_ON_VSEL_REG			0x3F
++#define RK816_LDO3_SLP_VSEL_REG			0x40
++#define RK816_LDO4_ON_VSEL_REG			0x41
++#define RK816_LDO4_SLP_VSEL_REG			0x42
++#define RK816_LDO5_ON_VSEL_REG			0x43
++#define RK816_LDO5_SLP_VSEL_REG			0x44
++#define RK816_LDO6_ON_VSEL_REG			0x45
++#define RK816_LDO6_SLP_VSEL_REG			0x46
++#define RK816_GPIO_IO_POL_REG			0x50
++
++/*CHARGER BOOST AND OTG REGISTER*/
++#define RK816_OTG_BUCK_LDO_CONFIG_REG           0x2A
++#define RK816_CHRG_CONFIG_REG                   0x2B
++#define RK816_BOOST_ON_VESL_REG                 0x54
++#define RK816_BOOST_SLP_VSEL_REG                0x55
++#define RK816_CHRG_BOOST_CONFIG_REG             0x9A
++#define RK816_SUP_STS_REG                       0xA0
++#define RK816_USB_CTRL_REG                      0xA1
++#define RK816_CHRG_CTRL_REG1                    0xA3
++#define RK816_CHRG_CTRL_REG2                    0xA4
++#define RK816_CHRG_CTRL_REG3                    0xA5
++#define RK816_BAT_CTRL_REG                      0xA6
++#define RK816_BAT_HTS_TS_REG                    0xA8
++#define RK816_BAT_LTS_TS_REG                    0xA9
++
++#define RK816_TS_CTRL_REG			0xAC
++#define RK816_ADC_CTRL_REG			0xAD
++#define RK816_GGCON_REG				0xB0
++#define RK816_GGSTS_REG				0xB1
++#define RK816_ZERO_CUR_ADC_REGH			0xB2
++#define RK816_ZERO_CUR_ADC_REGL			0xB3
++#define RK816_GASCNT_CAL_REG3			0xB4
++#define RK816_GASCNT_CAL_REG2			0xB5
++#define RK816_GASCNT_CAL_REG1			0xB6
++#define RK816_GASCNT_CAL_REG0			0xB7
++#define RK816_GASCNT_REG3			0xB8
++#define RK816_GASCNT_REG2			0xB9
++#define RK816_GASCNT_REG1			0xBA
++#define RK816_GASCNT_REG0			0xBB
++#define RK816_BAT_CUR_AVG_REGH			0xBC
++#define RK816_BAT_CUR_AVG_REGL			0xBD
++#define RK816_TS_ADC_REGH			0xBE
++#define RK816_TS_ADC_REGL			0xBF
++#define RK816_USB_ADC_REGH			0xC0
++#define RK816_USB_ADC_REGL			0xC1
++#define RK816_BAT_OCV_REGH			0xC2
++#define RK816_BAT_OCV_REGL			0xC3
++#define RK816_BAT_VOL_REGH			0xC4
++#define RK816_BAT_VOL_REGL			0xC5
++#define RK816_RELAX_ENTRY_THRES_REGH		0xC6
++#define RK816_RELAX_ENTRY_THRES_REGL		0xC7
++#define RK816_RELAX_EXIT_THRES_REGH		0xC8
++#define RK816_RELAX_EXIT_THRES_REGL		0xC9
++#define RK816_RELAX_VOL1_REGH			0xCA
++#define RK816_RELAX_VOL1_REGL			0xCB
++#define RK816_RELAX_VOL2_REGH			0xCC
++#define RK816_RELAX_VOL2_REGL			0xCD
++#define RK816_RELAX_CUR1_REGH			0xCE
++#define RK816_RELAX_CUR1_REGL			0xCF
++#define RK816_RELAX_CUR2_REGH			0xD0
++#define RK816_RELAX_CUR2_REGL			0xD1
++#define RK816_CAL_OFFSET_REGH			0xD2
++#define RK816_CAL_OFFSET_REGL			0xD3
++#define RK816_NON_ACT_TIMER_CNT_REG		0xD4
++#define RK816_VCALIB0_REGH			0xD5
++#define RK816_VCALIB0_REGL			0xD6
++#define RK816_VCALIB1_REGH			0xD7
++#define RK816_VCALIB1_REGL			0xD8
++#define RK816_FCC_GASCNT_REG3			0xD9
++#define RK816_FCC_GASCNT_REG2			0xDA
++#define RK816_FCC_GASCNT_REG1			0xDB
++#define RK816_FCC_GASCNT_REG0			0xDC
++#define RK816_IOFFSET_REGH			0xDD
++#define RK816_IOFFSET_REGL			0xDE
++#define RK816_SLEEP_CON_SAMP_CUR_REG		0xDF
++
++/*DATA REGISTER*/
++#define RK816_SOC_REG				0xE0
++#define RK816_REMAIN_CAP_REG3			0xE1
++#define RK816_REMAIN_CAP_REG2			0xE2
++#define RK816_REMAIN_CAP_REG1			0xE3
++#define RK816_REMAIN_CAP_REG0			0xE4
++#define RK816_UPDATE_LEVE_REG			0xE5
++#define RK816_NEW_FCC_REG3			0xE6
++#define RK816_NEW_FCC_REG2			0xE7
++#define RK816_NEW_FCC_REG1			0xE8
++#define RK816_NEW_FCC_REG0			0xE9
++#define RK816_NON_ACT_TIMER_CNT_REG_SAVE	0xEA
++#define RK816_OCV_VOL_VALID_REG			0xEB
++#define RK816_REBOOT_CNT_REG			0xEC
++#define RK816_PCB_IOFFSET_REG			0xED
++#define RK816_MISC_MARK_REG			0xEE
++#define RK816_HALT_CNT_REG			0xEF
++#define RK816_CALC_REST_REGH			0xF0
++#define RK816_CALC_REST_REGL			0xF1
++#define DATA18_REG				0xF2
++
++/*INTERRUPT REGISTER*/
++#define RK816_INT_STS_REG1			0x49
++#define RK816_INT_STS_MSK_REG1			0x4A
++#define RK816_INT_STS_REG2			0x4C
++#define RK816_INT_STS_MSK_REG2			0x4D
++#define RK816_INT_STS_REG3			0x4E
++#define RK816_INT_STS_MSK_REG3			0x4F
++#define RK816_GPIO_IO_POL_REG			0x50
++
++#define RK816_DATA18_REG			0xF2
++
++/* IRQ Definitions */
++#define RK816_IRQ_PWRON_FALL			0
++#define RK816_IRQ_PWRON_RISE			1
++#define RK816_IRQ_VB_LOW			2
++#define RK816_IRQ_PWRON				3
++#define RK816_IRQ_PWRON_LP			4
++#define RK816_IRQ_HOTDIE			5
++#define RK816_IRQ_RTC_ALARM			6
++#define RK816_IRQ_RTC_PERIOD			7
++#define RK816_IRQ_USB_OV			8
++#define RK816_IRQ_PLUG_IN			9
++#define RK816_IRQ_PLUG_OUT			10
++#define RK816_IRQ_CHG_OK			11
++#define RK816_IRQ_CHG_TE			12
++#define RK816_IRQ_CHG_TS			13
++#define RK816_IRQ_CHG_CVTLIM			14
++#define RK816_IRQ_DISCHG_ILIM			15
++
++#define RK816_IRQ_PWRON_FALL_MSK		BIT(5)
++#define RK816_IRQ_PWRON_RISE_MSK		BIT(6)
++#define RK816_IRQ_VB_LOW_MSK			BIT(1)
++#define RK816_IRQ_PWRON_MSK			BIT(2)
++#define RK816_IRQ_PWRON_LP_MSK			BIT(3)
++#define RK816_IRQ_HOTDIE_MSK			BIT(4)
++#define RK816_IRQ_RTC_ALARM_MSK			BIT(5)
++#define RK816_IRQ_RTC_PERIOD_MSK		BIT(6)
++#define RK816_IRQ_USB_OV_MSK			BIT(7)
++#define RK816_IRQ_PLUG_IN_MSK			BIT(0)
++#define RK816_IRQ_PLUG_OUT_MSK			BIT(1)
++#define RK816_IRQ_CHG_OK_MSK			BIT(2)
++#define RK816_IRQ_CHG_TE_MSK			BIT(3)
++#define RK816_IRQ_CHG_TS_MSK			BIT(4)
++#define RK816_IRQ_CHG_CVTLIM_MSK		BIT(6)
++#define RK816_IRQ_DISCHG_ILIM_MSK		BIT(7)
++
++#define RK816_VBAT_LOW_2V8			0x00
++#define RK816_VBAT_LOW_2V9			0x01
++#define RK816_VBAT_LOW_3V0			0x02
++#define RK816_VBAT_LOW_3V1			0x03
++#define RK816_VBAT_LOW_3V2			0x04
++#define RK816_VBAT_LOW_3V3			0x05
++#define RK816_VBAT_LOW_3V4			0x06
++#define RK816_VBAT_LOW_3V5			0x07
++#define RK816_PWR_FALL_INT_STATUS		(0x1 << 5)
++#define RK816_PWR_RISE_INT_STATUS		(0x1 << 6)
++#define RK816_ALARM_INT_STATUS			(0x1 << 5)
++#define EN_VBAT_LOW_IRQ				(0x1 << 4)
++#define VBAT_LOW_ACT_MASK			(0x1 << 4)
++#define RTC_TIMER_ALARM_INT_MSK			(0x3 << 2)
++#define RTC_TIMER_ALARM_INT_DIS			(0x0 << 2)
++#define RTC_PERIOD_ALARM_INT_MSK		(0x3 << 5)
++#define RTC_PERIOD_ALARM_INT_ST			(0x3 << 5)
++#define RTC_PERIOD_ALARM_INT_DIS		(0x3 << 5)
++#define RTC_PERIOD_ALARM_INT_EN			(0x9f)
++#define REG_WRITE_MSK				0xff
++#define BUCK4_MAX_ILIMIT			0x2c
++#define BUCK_RATE_MSK				(0x3 << 3)
++#define BUCK_RATE_12_5MV_US			(0x2 << 3)
++#define ALL_INT_FLAGS_ST			0xff
++#define PLUGIN_OUT_INT_EN			0xfc
++#define RK816_PWRON_FALL_RISE_INT_EN		0x9f
++#define BUCK1_2_IMAX_MAX			(0x3 << 6)
++#define BUCK3_4_IMAX_MAX			(0x3 << 3)
++#define BOOST_DISABLE				((0x1 << 5) | (0x0 << 1))
++#define BUCK4_VRP_3PERCENT			0xc0
++#define RK816_BUCK_DVS_CONFIRM			(0x1 << 7)
++#define RK816_TYPE_ES2				0x05
++#define RK816_CHIP_VERSION_MASK			0x0f
++
+ /* RK818 */
+ #define RK818_DCDC1			0
+ #define RK818_LDO1			4
+@@ -138,6 +367,8 @@ enum rk818_reg {
+ 	RK818_ID_OTG_SWITCH,
+ };
+ 
++#define RK818_VB_MON_REG		0x21
++#define RK818_THERMAL_REG		0x22
+ #define RK818_DCDC_EN_REG		0x23
+ #define RK818_LDO_EN_REG		0x24
+ #define RK818_SLEEP_SET_OFF_REG1	0x25
+@@ -190,7 +421,84 @@ enum rk818_reg {
+ #define RK818_BOOST_LDO9_SLP_VSEL_REG	0x55
+ #define RK818_BOOST_CTRL_REG		0x56
+ #define RK818_DCDC_ILMAX		0x90
++#define RK818_CHRG_COMP_REG		0x9a
++#define RK818_SUP_STS_REG		0xa0
+ #define RK818_USB_CTRL_REG		0xa1
++#define RK818_CHRG_CTRL_REG1		0xa3
++#define RK818_CHRG_CTRL_REG2		0xa4
++#define RK818_CHRG_CTRL_REG3		0xa5
++#define RK818_BAT_CTRL_REG		0xa6
++#define RK818_BAT_HTS_TS1_REG		0xa8
++#define RK818_BAT_LTS_TS1_REG		0xa9
++#define RK818_BAT_HTS_TS2_REG		0xaa
++#define RK818_BAT_LTS_TS2_REG		0xab
++#define RK818_TS_CTRL_REG		0xac
++#define RK818_ADC_CTRL_REG		0xad
++#define RK818_ON_SOURCE_REG		0xae
++#define RK818_OFF_SOURCE_REG		0xaf
++#define RK818_GGCON_REG			0xb0
++#define RK818_GGSTS_REG			0xb1
++#define RK818_FRAME_SMP_INTERV_REG	0xb2
++#define RK818_AUTO_SLP_CUR_THR_REG	0xb3
++#define RK818_GASCNT_CAL_REG3		0xb4
++#define RK818_GASCNT_CAL_REG2		0xb5
++#define RK818_GASCNT_CAL_REG1		0xb6
++#define RK818_GASCNT_CAL_REG0		0xb7
++#define RK818_GASCNT3_REG		0xb8
++#define RK818_GASCNT2_REG		0xb9
++#define RK818_GASCNT1_REG		0xba
++#define RK818_GASCNT0_REG		0xbb
++#define RK818_BAT_CUR_AVG_REGH		0xbc
++#define RK818_BAT_CUR_AVG_REGL		0xbd
++#define RK818_TS1_ADC_REGH		0xbe
++#define RK818_TS1_ADC_REGL		0xbf
++#define RK818_TS2_ADC_REGH		0xc0
++#define RK818_TS2_ADC_REGL		0xc1
++#define RK818_BAT_OCV_REGH		0xc2
++#define RK818_BAT_OCV_REGL		0xc3
++#define RK818_BAT_VOL_REGH		0xc4
++#define RK818_BAT_VOL_REGL		0xc5
++#define RK818_RELAX_ENTRY_THRES_REGH	0xc6
++#define RK818_RELAX_ENTRY_THRES_REGL	0xc7
++#define RK818_RELAX_EXIT_THRES_REGH	0xc8
++#define RK818_RELAX_EXIT_THRES_REGL	0xc9
++#define RK818_RELAX_VOL1_REGH		0xca
++#define RK818_RELAX_VOL1_REGL		0xcb
++#define RK818_RELAX_VOL2_REGH		0xcc
++#define RK818_RELAX_VOL2_REGL		0xcd
++#define RK818_BAT_CUR_R_CALC_REGH	0xce
++#define RK818_BAT_CUR_R_CALC_REGL	0xcf
++#define RK818_BAT_VOL_R_CALC_REGH	0xd0
++#define RK818_BAT_VOL_R_CALC_REGL	0xd1
++#define RK818_CAL_OFFSET_REGH		0xd2
++#define RK818_CAL_OFFSET_REGL		0xd3
++#define RK818_NON_ACT_TIMER_CNT_REG	0xd4
++#define RK818_VCALIB0_REGH		0xd5
++#define RK818_VCALIB0_REGL		0xd6
++#define RK818_VCALIB1_REGH		0xd7
++#define RK818_VCALIB1_REGL		0xd8
++#define RK818_IOFFSET_REGH		0xdd
++#define RK818_IOFFSET_REGL		0xde
++#define RK818_SOC_REG			0xe0
++#define RK818_REMAIN_CAP_REG3		0xe1
++#define RK818_REMAIN_CAP_REG2		0xe2
++#define RK818_REMAIN_CAP_REG1		0xe3
++#define RK818_REMAIN_CAP_REG0		0xe4
++#define RK818_UPDAT_LEVE_REG		0xe5
++#define RK818_NEW_FCC_REG3		0xe6
++#define RK818_NEW_FCC_REG2		0xe7
++#define RK818_NEW_FCC_REG1		0xe8
++#define RK818_NEW_FCC_REG0		0xe9
++#define RK818_NON_ACT_TIMER_CNT_SAVE_REG	0xea
++#define RK818_OCV_VOL_VALID_REG		0xeb
++#define RK818_REBOOT_CNT_REG		0xec
++#define RK818_POFFSET_REG		0xed
++#define RK818_MISC_MARK_REG		0xee
++#define RK818_HALT_CNT_REG		0xef
++#define RK818_CALC_REST_REGH		0xf0
++#define RK818_CALC_REST_REGL		0xf1
++#define RK818_SAVE_DATA19		0xf2
++#define RK818_NUM_REGULATOR		17
+ 
+ #define RK818_H5V_EN			BIT(0)
+ #define RK818_REF_RDY_CTRL		BIT(1)
+@@ -255,14 +563,22 @@ enum rk805_reg {
+ #define RK805_PWRON_FALL_RISE_INT_MSK	0x81
+ 
+ /* RK805 IRQ Definitions */
+-#define RK805_IRQ_PWRON_RISE		0
+ #define RK805_IRQ_VB_LOW		1
+ #define RK805_IRQ_PWRON			2
+ #define RK805_IRQ_PWRON_LP		3
+ #define RK805_IRQ_HOTDIE		4
+ #define RK805_IRQ_RTC_ALARM		5
+ #define RK805_IRQ_RTC_PERIOD		6
+-#define RK805_IRQ_PWRON_FALL		7
++
++/*
++ * When PMIC irq occurs, regmap-irq.c will traverse all PMIC child
++ * interrupts from low index 0 to high index, we give fall interrupt
++ * high priority to be called earlier than rise, so that it can be
++ * override by late rise event. This can helps to solve key release
++ * glitch which make a wrongly fall event immediately after rise.
++ */
++#define RK805_IRQ_PWRON_FALL		0
++#define RK805_IRQ_PWRON_RISE		7
+ 
+ #define RK805_IRQ_PWRON_RISE_MSK	BIT(0)
+ #define RK805_IRQ_VB_LOW_MSK		BIT(1)
+@@ -289,6 +605,16 @@ enum rk805_reg {
+ #define RK805_INT_ALARM_EN		(1 << 3)
+ #define RK805_INT_TIMER_EN		(1 << 2)
+ 
++#define RK805_SLP_LDO_EN_OFFSET		-1
++#define RK805_SLP_DCDC_EN_OFFSET	2
++
++#define RK805_RAMP_RATE_OFFSET		3
++#define RK805_RAMP_RATE_MASK		(3 << RK805_RAMP_RATE_OFFSET)
++#define RK805_RAMP_RATE_3MV_PER_US	(0 << RK805_RAMP_RATE_OFFSET)
++#define RK805_RAMP_RATE_6MV_PER_US	(1 << RK805_RAMP_RATE_OFFSET)
++#define RK805_RAMP_RATE_12_5MV_PER_US	(2 << RK805_RAMP_RATE_OFFSET)
++#define RK805_RAMP_RATE_25MV_PER_US	(3 << RK805_RAMP_RATE_OFFSET)
++
+ /* RK808 IRQ Definitions */
+ #define RK808_IRQ_VOUT_LO	0
+ #define RK808_IRQ_VB_LO		1
+@@ -348,6 +674,107 @@ enum rk805_reg {
+ 
+ #define RK818_NUM_IRQ		16
+ 
++/*RK818_DCDC_EN_REG*/
++#define BUCK1_EN_MASK		BIT(0)
++#define BUCK2_EN_MASK		BIT(1)
++#define BUCK3_EN_MASK		BIT(2)
++#define BUCK4_EN_MASK		BIT(3)
++#define BOOST_EN_MASK		BIT(4)
++#define LDO9_EN_MASK		BIT(5)
++#define SWITCH_EN_MASK		BIT(6)
++#define OTG_EN_MASK		BIT(7)
++
++#define BUCK1_EN_ENABLE		BIT(0)
++#define BUCK2_EN_ENABLE		BIT(1)
++#define BUCK3_EN_ENABLE		BIT(2)
++#define BUCK4_EN_ENABLE		BIT(3)
++#define BOOST_EN_ENABLE		BIT(4)
++#define LDO9_EN_ENABLE		BIT(5)
++#define SWITCH_EN_ENABLE	BIT(6)
++#define OTG_EN_ENABLE		BIT(7)
++
++#define BUCK1_SLP_SET_MASK	BIT(0)
++#define BUCK2_SLP_SET_MASK	BIT(1)
++#define BUCK3_SLP_SET_MASK	BIT(2)
++#define BUCK4_SLP_SET_MASK	BIT(3)
++#define BOOST_SLP_SET_MASK	BIT(4)
++#define LDO9_SLP_SET_MASK	BIT(5)
++#define SWITCH_SLP_SET_MASK	BIT(6)
++#define OTG_SLP_SET_MASK	BIT(7)
++
++#define BUCK1_SLP_SET_OFF	BIT(0)
++#define BUCK2_SLP_SET_OFF	BIT(1)
++#define BUCK3_SLP_SET_OFF	BIT(2)
++#define BUCK4_SLP_SET_OFF	BIT(3)
++#define BOOST_SLP_SET_OFF	BIT(4)
++#define LDO9_SLP_SET_OFF	BIT(5)
++#define SWITCH_SLP_SET_OFF	BIT(6)
++#define OTG_SLP_SET_OFF		BIT(7)
++#define OTG_BOOST_SLP_OFF	(BOOST_SLP_SET_OFF | OTG_SLP_SET_OFF)
++
++#define BUCK1_SLP_SET_ON	BIT(0)
++#define BUCK2_SLP_SET_ON	BIT(1)
++#define BUCK3_SLP_SET_ON	BIT(2)
++#define BUCK4_SLP_SET_ON	BIT(3)
++#define BOOST_SLP_SET_ON	BIT(4)
++#define LDO9_SLP_SET_ON		BIT(5)
++#define SWITCH_SLP_SET_ON	BIT(6)
++#define OTG_SLP_SET_ON		BIT(7)
++
++#define VOUT_LO_MASK		BIT(0)
++#define VB_LO_MASK		BIT(1)
++#define PWRON_MASK		BIT(2)
++#define PWRON_LP_MASK		BIT(3)
++#define HOTDIE_MASK		BIT(4)
++#define RTC_ALARM_MASK		BIT(5)
++#define RTC_PERIOD_MASK		BIT(6)
++#define USB_OV_MASK		BIT(7)
++
++#define VOUT_LO_DISABLE		BIT(0)
++#define VB_LO_DISABLE		BIT(1)
++#define PWRON_DISABLE		BIT(2)
++#define PWRON_LP_DISABLE	BIT(3)
++#define HOTDIE_DISABLE		BIT(4)
++#define RTC_ALARM_DISABLE	BIT(5)
++#define RTC_PERIOD_DISABLE	BIT(6)
++#define USB_OV_INT_DISABLE	BIT(7)
++
++#define VOUT_LO_ENABLE		(0 << 0)
++#define VB_LO_ENABLE		(0 << 1)
++#define PWRON_ENABLE		(0 << 2)
++#define PWRON_LP_ENABLE		(0 << 3)
++#define HOTDIE_ENABLE		(0 << 4)
++#define RTC_ALARM_ENABLE	(0 << 5)
++#define RTC_PERIOD_ENABLE	(0 << 6)
++#define USB_OV_INT_ENABLE	(0 << 7)
++
++#define PLUG_IN_MASK		BIT(0)
++#define PLUG_OUT_MASK		BIT(1)
++#define CHGOK_MASK		BIT(2)
++#define CHGTE_MASK		BIT(3)
++#define CHGTS1_MASK		BIT(4)
++#define TS2_MASK		BIT(5)
++#define CHG_CVTLIM_MASK		BIT(6)
++#define DISCHG_ILIM_MASK	BIT(7)
++
++#define PLUG_IN_DISABLE		BIT(0)
++#define PLUG_OUT_DISABLE	BIT(1)
++#define CHGOK_DISABLE		BIT(2)
++#define CHGTE_DISABLE		BIT(3)
++#define CHGTS1_DISABLE		BIT(4)
++#define TS2_DISABLE		BIT(5)
++#define CHG_CVTLIM_DISABLE	BIT(6)
++#define DISCHG_ILIM_DISABLE	BIT(7)
++
++#define PLUG_IN_ENABLE		BIT(0)
++#define PLUG_OUT_ENABLE		BIT(1)
++#define CHGOK_ENABLE		BIT(2)
++#define CHGTE_ENABLE		BIT(3)
++#define CHGTS1_ENABLE		BIT(4)
++#define TS2_ENABLE		BIT(5)
++#define CHG_CVTLIM_ENABLE	BIT(6)
++#define DISCHG_ILIM_ENABLE	BIT(7)
++
+ #define RK808_VBAT_LOW_2V8	0x00
+ #define RK808_VBAT_LOW_2V9	0x01
+ #define RK808_VBAT_LOW_3V0	0x02
+@@ -381,7 +808,10 @@ enum rk805_reg {
+ 
+ #define VOUT_LO_INT	BIT(0)
+ #define CLK32KOUT2_EN	BIT(0)
++#define CLK32KOUT2_FUNC		(0 << 1)
++#define CLK32KOUT2_FUNC_MASK	BIT(1)
+ 
++#define TEMP105C			0x08
+ #define TEMP115C			0x0c
+ #define TEMP_HOTDIE_MSK			0x0c
+ #define SLP_SD_MSK			(0x3 << 2)
+@@ -391,6 +821,7 @@ enum rk805_reg {
+ #define PWM_MODE_MSK			BIT(7)
+ #define FPWM_MODE			BIT(7)
+ #define AUTO_PWM_MODE			0
++#define REGS_WMSK			0xf0
+ 
+ enum rk817_reg_id {
+ 	RK817_ID_DCDC1 = 0,
+@@ -436,6 +867,10 @@ enum rk809_reg_id {
+ #define RK817_RTC_INT_REG		0xf
+ #define RK817_RTC_COMP_LSB_REG		0x10
+ #define RK817_RTC_COMP_MSB_REG		0x11
++#define RK817_ADC_CONFIG0		0x50
++#define RK817_CURE_ADC_K0		0xb0
++#define RK817_POWER_EN_SAVE0            0x99
++#define RK817_POWER_EN_SAVE1            0xa4
+ 
+ #define RK817_POWER_EN_REG(i)		(0xb1 + (i))
+ #define RK817_POWER_SLP_EN_REG(i)	(0xb5 + (i))
+@@ -462,6 +897,9 @@ enum rk809_reg_id {
+ #define RK817_LDO_ON_VSEL_REG(idx)	(0xcc + (idx) * 2)
+ #define RK817_BOOST_OTG_CFG		(0xde)
+ 
++#define RK817_CHRG_OUT			0xe4
++#define RK817_CHRG_IN			0xe5
++#define RK817_CHRG_STS			0xeb
+ #define RK817_ID_MSB			0xed
+ #define RK817_ID_LSB			0xee
+ 
+@@ -609,16 +1047,27 @@ enum {
+ 	RK805_ID = 0x8050,
+ 	RK808_ID = 0x0000,
+ 	RK809_ID = 0x8090,
++	RK816_ID = 0x8160,
+ 	RK817_ID = 0x8170,
+ 	RK818_ID = 0x8180,
+ };
+ 
++struct rk808_pin_info {
++	struct pinctrl *p;
++	struct pinctrl_state *reset;
++	struct pinctrl_state *power_off;
++	struct pinctrl_state *sleep;
++};
++
+ struct rk808 {
+ 	struct i2c_client		*i2c;
+ 	struct regmap_irq_chip_data	*irq_data;
++	struct regmap_irq_chip_data	*battery_irq_data;
+ 	struct regmap			*regmap;
+ 	long				variant;
+ 	const struct regmap_config	*regmap_cfg;
+ 	const struct regmap_irq_chip	*regmap_irq_chip;
++	void				(*pm_pwroff_prep_fn)(void);
++	struct rk808_pin_info *pins;
+ };
+ #endif /* __LINUX_REGULATOR_RK808_H */
+diff --git a/include/linux/mmc/core.h b/include/linux/mmc/core.h
+index 29aa50711..7768c644a 100644
+--- a/include/linux/mmc/core.h
++++ b/include/linux/mmc/core.h
+@@ -162,6 +162,10 @@ struct mmc_request {
+ 	bool			cap_cmd_during_tfr;
+ 
+ 	int			tag;
++#ifdef CONFIG_MMC_CRYPTO
++	const struct bio_crypt_ctx *crypto_ctx;
++	int			crypto_key_slot;
++#endif
+ };
+ 
+ struct mmc_card;
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index fb08b86ac..ba964f85c 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -374,6 +374,11 @@ struct mmc_host {
+ #define MMC_CAP2_CQE_DCMD	(1 << 24)	/* CQE can issue a direct command */
+ #define MMC_CAP2_AVOID_3_3V	(1 << 25)	/* Host must negotiate down from 3.3V */
+ #define MMC_CAP2_MERGE_CAPABLE	(1 << 26)	/* Host can merge a segment over the segment size */
++#ifdef CONFIG_MMC_CRYPTO
++#define MMC_CAP2_CRYPTO		(1 << 27)	/* Host supports inline encryption */
++#else
++#define MMC_CAP2_CRYPTO		0
++#endif
+ 
+ 	int			fixed_drv_type;	/* fixed driver type for non-removable media */
+ 
+@@ -469,6 +474,9 @@ struct mmc_host {
+ 	bool			cqe_enabled;
+ 	bool			cqe_on;
+ 
++#ifdef CONFIG_MMC_CRYPTO
++	struct blk_keyslot_manager ksm;
++#endif
+ 	/* Host Software Queue support */
+ 	bool			hsq_enabled;
+ 
+diff --git a/include/linux/mmc/mmc.h b/include/linux/mmc/mmc.h
+index 545578fb8..29e09d23e 100644
+--- a/include/linux/mmc/mmc.h
++++ b/include/linux/mmc/mmc.h
+@@ -449,4 +449,11 @@ static inline bool mmc_ready_for_data(u32 status)
+ 
+ #define mmc_driver_type_mask(n)		(1 << (n))
+ 
++struct mmc_card;
++extern int mmc_select_bus_width(struct mmc_card *card);
++extern int mmc_select_hs(struct mmc_card *card);
++extern int mmc_select_hs_ddr(struct mmc_card *card);
++extern int mmc_select_hs400(struct mmc_card *card);
++extern int mmc_hs200_tuning(struct mmc_card *card);
++extern int mmc_select_timing(struct mmc_card *card);
+ #endif /* LINUX_MMC_MMC_H */
+diff --git a/include/linux/mmc/pm.h b/include/linux/mmc/pm.h
+index 3549f8045..1d554b858 100644
+--- a/include/linux/mmc/pm.h
++++ b/include/linux/mmc/pm.h
+@@ -23,5 +23,6 @@ typedef unsigned int mmc_pm_flag_t;
+ 
+ #define MMC_PM_KEEP_POWER	(1 << 0)	/* preserve card power during suspend */
+ #define MMC_PM_WAKE_SDIO_IRQ	(1 << 1)	/* wake up host system on SDIO IRQ assertion */
++#define MMC_PM_IGNORE_PM_NOTIFY	(1 << 2)	/* ignore mmc pm notify */
+ 
+ #endif /* LINUX_MMC_PM_H */
+diff --git a/include/linux/mmu_context.h b/include/linux/mmu_context.h
+index 03dee12d2..bc4ac3c52 100644
+--- a/include/linux/mmu_context.h
++++ b/include/linux/mmu_context.h
+@@ -14,4 +14,12 @@
+ static inline void leave_mm(int cpu) { }
+ #endif
+ 
++/*
++ * CPUs that are capable of running task @p. By default, we assume a sane,
++ * homogeneous system. Must contain at least one active CPU.
++ */
++#ifndef task_cpu_possible_mask
++# define task_cpu_possible_mask(p)	cpu_possible_mask
 +#endif
 +
- 	rq = task_rq_lock(p, &rf);
- 
- 	/* rq->curr == p */
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 0a94f01a1..932f44711 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -86,6 +86,7 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
-  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
-  */
- unsigned int sysctl_sched_min_granularity			= 750000ULL;
-+EXPORT_SYMBOL_GPL(sysctl_sched_min_granularity);
- static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
- 
- /*
-@@ -3406,6 +3407,7 @@ void set_task_rq_fair(struct sched_entity *se,
- 	se->avg.last_update_time = n_last_update_time;
- }
- 
-+
- /*
-  * When on migration a sched_entity joins/leaves the PELT hierarchy, we need to
-  * propagate its contribution. The key to this propagation is the invariant
-@@ -3473,6 +3475,7 @@ void set_task_rq_fair(struct sched_entity *se,
-  * XXX: only do this for the part of runnable > running ?
-  *
-  */
-+
- static inline void
- update_tg_cfs_util(struct cfs_rq *cfs_rq, struct sched_entity *se, struct cfs_rq *gcfs_rq)
- {
-@@ -3701,19 +3704,7 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
- 
- 		r = removed_util;
- 		sub_positive(&sa->util_avg, r);
--		sub_positive(&sa->util_sum, r * divider);
--		/*
--		 * Because of rounding, se->util_sum might ends up being +1 more than
--		 * cfs->util_sum. Although this is not a problem by itself, detaching
--		 * a lot of tasks with the rounding problem between 2 updates of
--		 * util_avg (~1ms) can make cfs->util_sum becoming null whereas
--		 * cfs_util_avg is not.
--		 * Check that util_sum is still above its lower bound for the new
--		 * util_avg. Given that period_contrib might have moved since the last
--		 * sync, we are only sure that util_sum must be above or equal to
--		 *    util_avg * minimum possible divider
--		 */
--		sa->util_sum = max_t(u32, sa->util_sum, sa->util_avg * PELT_MIN_DIVIDER);
-+		sa->util_sum = sa->util_avg * divider;
- 
- 		r = removed_runnable;
- 		sub_positive(&sa->runnable_avg, r);
-@@ -5361,7 +5352,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
- /*
-  * When a group wakes up we want to make sure that its quota is not already
-  * expired/exceeded, otherwise it may be allowed to steal additional ticks of
-- * runtime as update_curr() throttling can not trigger until it's on-rq.
-+ * runtime as update_curr() throttling can not not trigger until it's on-rq.
-  */
- static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
- {
-@@ -10821,8 +10812,20 @@ void nohz_balance_enter_idle(int cpu)
- 	SCHED_WARN_ON(cpu != smp_processor_id());
- 
- 	/* If this CPU is going down, then nothing needs to be done: */
--	if (!cpu_active(cpu))
-+	if (!cpu_active(cpu)) {
-+		/*
-+		 * A CPU can be paused while it is idle with it's tick
-+		 * stopped. nohz_balance_exit_idle() should be called
-+		 * from the local CPU, so it can't be called during
-+		 * pause. This results in paused CPU participating in
-+		 * the nohz idle balance, which should be avoided.
-+		 *
-+		 * When the paused CPU exits idle and enters again,
-+		 * exempt the paused CPU from nohz_balance_exit_idle.
-+		 */
-+		nohz_balance_exit_idle(rq);
- 		return;
-+	}
- 
- 	/* Spare idle load balancing on CPUs that don't want to be disturbed: */
- 	if (!housekeeping_cpu(cpu, HK_FLAG_SCHED))
-diff --git a/kernel/sched/loadavg.c b/kernel/sched/loadavg.c
-index d2a655643..b5837e277 100644
---- a/kernel/sched/loadavg.c
-+++ b/kernel/sched/loadavg.c
-@@ -75,6 +75,7 @@ void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
- 	loads[1] = (avenrun[1] + offset) << shift;
- 	loads[2] = (avenrun[2] + offset) << shift;
- }
-+EXPORT_SYMBOL_GPL(get_avenrun);
+ #endif
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index e6fe2f581..821b5b3e1 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -49,6 +49,7 @@ enum {
+ 	POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,	/* dynamically adjusted speed */
+ 	POWER_SUPPLY_CHARGE_TYPE_CUSTOM,	/* use CHARGE_CONTROL_* props */
+ 	POWER_SUPPLY_CHARGE_TYPE_LONGLIFE,	/* slow speed, longer life */
++	POWER_SUPPLY_CHARGE_TYPE_TAPER = 50,	/* charging in CV phase */
+ };
  
  long calc_load_fold_active(struct rq *this_rq, long adjust)
  {
