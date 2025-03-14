@@ -73158,1201 +73158,802 @@ index 000000000..00b412927
 +#define BTN_BACK		0x116
 +#define BTN_TASK		0x117
 +
-+/* Vbus Required (AMA only) */
-+#define AMA_VBUS_REQ		0
-+#define AMA_VBUS_NOT_REQ	1
++#define BTN_JOYSTICK		0x120
++#define BTN_TRIGGER		0x120
++#define BTN_THUMB		0x121
++#define BTN_THUMB2		0x122
++#define BTN_TOP			0x123
++#define BTN_TOP2		0x124
++#define BTN_PINKIE		0x125
++#define BTN_BASE		0x126
++#define BTN_BASE2		0x127
++#define BTN_BASE3		0x128
++#define BTN_BASE4		0x129
++#define BTN_BASE5		0x12a
++#define BTN_BASE6		0x12b
++#define BTN_DEAD		0x12f
 +
-+/* Alternate Modes */
-+#define UFP_ALTMODE_NOT_SUPP	0
-+#define UFP_ALTMODE_TBT3	BIT(0)
-+#define UFP_ALTMODE_RECFG	BIT(1)
-+#define UFP_ALTMODE_NO_RECFG	BIT(2)
++#define BTN_GAMEPAD		0x130
++#define BTN_SOUTH		0x130
++#define BTN_A			BTN_SOUTH
++#define BTN_EAST		0x131
++#define BTN_B			BTN_EAST
++#define BTN_C			0x132
++#define BTN_NORTH		0x133
++#define BTN_X			BTN_NORTH
++#define BTN_WEST		0x134
++#define BTN_Y			BTN_WEST
++#define BTN_Z			0x135
++#define BTN_TL			0x136
++#define BTN_TR			0x137
++#define BTN_TL2			0x138
++#define BTN_TR2			0x139
++#define BTN_SELECT		0x13a
++#define BTN_START		0x13b
++#define BTN_MODE		0x13c
++#define BTN_THUMBL		0x13d
++#define BTN_THUMBR		0x13e
 +
-+/* USB Highest Speed */
-+#define UFP_USB2_ONLY		0
-+#define UFP_USB32_GEN1		1
-+#define UFP_USB32_4_GEN2	2
-+#define UFP_USB4_GEN3		3
++#define BTN_DIGI		0x140
++#define BTN_TOOL_PEN		0x140
++#define BTN_TOOL_RUBBER		0x141
++#define BTN_TOOL_BRUSH		0x142
++#define BTN_TOOL_PENCIL		0x143
++#define BTN_TOOL_AIRBRUSH	0x144
++#define BTN_TOOL_FINGER		0x145
++#define BTN_TOOL_MOUSE		0x146
++#define BTN_TOOL_LENS		0x147
++#define BTN_TOOL_QUINTTAP	0x148	/* Five fingers on trackpad */
++#define BTN_TOUCH		0x14a
++#define BTN_STYLUS		0x14b
++#define BTN_STYLUS2		0x14c
++#define BTN_TOOL_DOUBLETAP	0x14d
++#define BTN_TOOL_TRIPLETAP	0x14e
++#define BTN_TOOL_QUADTAP	0x14f	/* Four fingers on trackpad */
 +
-+#define VDO_UFP(ver, cap, conn, vcpwr, vcr, vbr, alt, spd)			\
-+	(((ver) & 0x7) << 29 | ((cap) & 0xf) << 24 | ((conn) & 0x3) << 22	\
-+	 | ((vcpwr) & 0x7) << 8 | (vcr) << 7 | (vbr) << 6 | ((alt) & 0x7) << 3	\
-+	 | ((spd) & 0x7))
++#define BTN_WHEEL		0x150
++#define BTN_GEAR_DOWN		0x150
++#define BTN_GEAR_UP		0x151
 +
- /*
-- * DFP VDO
-+ * DFP VDO (PD Revision 3.0+ only)
-  * --------
-  * <31:29> :: DFP VDO version
-  * <28:27> :: Reserved
-  * <26:24> :: Host capability
-- * <23:5>  :: Reserved
-+ * <23:22> :: Connector type (10b == receptacle, 11b == captive plug)
-+ * <21:5>  :: Reserved
-  * <4:0>   :: Port number
-  */
- #define PD_VDO_DFP_HOSTCAP(vdo)	(((vdo) & GENMASK(26, 24)) >> 24)
- 
-+#define DFP_VDO_VER1_1		1
- #define HOST_USB2_CAPABLE	BIT(0)
- #define HOST_USB3_CAPABLE	BIT(1)
- #define HOST_USB4_CAPABLE	BIT(2)
-+#define DFP_RECEPTACLE		2
-+#define DFP_CAPTIVE		3
++#define KEY_OK			0x160
++#define KEY_SELECT		0x161
++#define KEY_GOTO		0x162
++#define KEY_CLEAR		0x163
++#define KEY_POWER2		0x164
++#define KEY_OPTION		0x165
++#define KEY_INFO		0x166	/* AL OEM Features/Tips/Tutorial */
++#define KEY_TIME		0x167
++#define KEY_VENDOR		0x168
++#define KEY_ARCHIVE		0x169
++#define KEY_PROGRAM		0x16a	/* Media Select Program Guide */
++#define KEY_CHANNEL		0x16b
++#define KEY_FAVORITES		0x16c
++#define KEY_EPG			0x16d
++#define KEY_PVR			0x16e	/* Media Select Home */
++#define KEY_MHP			0x16f
++#define KEY_LANGUAGE		0x170
++#define KEY_TITLE		0x171
++#define KEY_SUBTITLE		0x172
++#define KEY_ANGLE		0x173
++#define KEY_ZOOM		0x174
++#define KEY_MODE		0x175
++#define KEY_KEYBOARD		0x176
++#define KEY_SCREEN		0x177
++#define KEY_PC			0x178	/* Media Select Computer */
++#define KEY_TV			0x179	/* Media Select TV */
++#define KEY_TV2			0x17a	/* Media Select Cable */
++#define KEY_VCR			0x17b	/* Media Select VCR */
++#define KEY_VCR2		0x17c	/* VCR Plus */
++#define KEY_SAT			0x17d	/* Media Select Satellite */
++#define KEY_SAT2		0x17e
++#define KEY_CD			0x17f	/* Media Select CD */
++#define KEY_TAPE		0x180	/* Media Select Tape */
++#define KEY_RADIO		0x181
++#define KEY_TUNER		0x182	/* Media Select Tuner */
++#define KEY_PLAYER		0x183
++#define KEY_TEXT		0x184
++#define KEY_DVD			0x185	/* Media Select DVD */
++#define KEY_AUX			0x186
++#define KEY_MP3			0x187
++#define KEY_AUDIO		0x188	/* AL Audio Browser */
++#define KEY_VIDEO		0x189	/* AL Movie Browser */
++#define KEY_DIRECTORY		0x18a
++#define KEY_LIST		0x18b
++#define KEY_MEMO		0x18c	/* Media Select Messages */
++#define KEY_CALENDAR		0x18d
++#define KEY_RED			0x18e
++#define KEY_GREEN		0x18f
++#define KEY_YELLOW		0x190
++#define KEY_BLUE		0x191
++#define KEY_CHANNELUP		0x192	/* Channel Increment */
++#define KEY_CHANNELDOWN		0x193	/* Channel Decrement */
++#define KEY_FIRST		0x194
++#define KEY_LAST		0x195	/* Recall Last */
++#define KEY_AB			0x196
++#define KEY_NEXT		0x197
++#define KEY_RESTART		0x198
++#define KEY_SLOW		0x199
++#define KEY_SHUFFLE		0x19a
++#define KEY_BREAK		0x19b
++#define KEY_PREVIOUS		0x19c
++#define KEY_DIGITS		0x19d
++#define KEY_TEEN		0x19e
++#define KEY_TWEN		0x19f
++#define KEY_VIDEOPHONE		0x1a0	/* Media Select Video Phone */
++#define KEY_GAMES		0x1a1	/* Media Select Games */
++#define KEY_ZOOMIN		0x1a2	/* AC Zoom In */
++#define KEY_ZOOMOUT		0x1a3	/* AC Zoom Out */
++#define KEY_ZOOMRESET		0x1a4	/* AC Zoom */
++#define KEY_WORDPROCESSOR	0x1a5	/* AL Word Processor */
++#define KEY_EDITOR		0x1a6	/* AL Text Editor */
++#define KEY_SPREADSHEET		0x1a7	/* AL Spreadsheet */
++#define KEY_GRAPHICSEDITOR	0x1a8	/* AL Graphics Editor */
++#define KEY_PRESENTATION	0x1a9	/* AL Presentation App */
++#define KEY_DATABASE		0x1aa	/* AL Database App */
++#define KEY_NEWS		0x1ab	/* AL Newsreader */
++#define KEY_VOICEMAIL		0x1ac	/* AL Voicemail */
++#define KEY_ADDRESSBOOK		0x1ad	/* AL Contacts/Address Book */
++#define KEY_MESSENGER		0x1ae	/* AL Instant Messaging */
++#define KEY_DISPLAYTOGGLE	0x1af	/* Turn display (LCD) on and off */
++#define KEY_BRIGHTNESS_TOGGLE	KEY_DISPLAYTOGGLE
++#define KEY_SPELLCHECK		0x1b0   /* AL Spell Check */
++#define KEY_LOGOFF		0x1b1   /* AL Logoff */
 +
-+#define VDO_DFP(ver, cap, conn, pnum)						\
-+	(((ver) & 0x7) << 29 | ((cap) & 0x7) << 24 | ((conn) & 0x3) << 22	\
-+	 | ((pnum) & 0x1f))
- 
- /*
-- * Cable VDO
-+ * Cable VDO (for both Passive and Active Cable VDO in PD Rev2.0)
-  * ---------
-  * <31:28> :: Cable HW version
-  * <27:24> :: Cable FW version
-  * <23:20> :: Reserved, Shall be set to zero
-- * <19:18> :: type-C to Type-A/B/C (00b == A, 01 == B, 10 == C)
-- * <17>    :: Type-C to Plug/Receptacle (0b == plug, 1b == receptacle)
-+ * <19:18> :: type-C to Type-A/B/C/Captive (00b == A, 01 == B, 10 == C, 11 == Captive)
-+ * <17>    :: Reserved, Shall be set to zero
-  * <16:13> :: cable latency (0001 == <10ns(~1m length))
-  * <12:11> :: cable termination type (11b == both ends active VCONN req)
-  * <10>    :: SSTX1 Directionality support (0b == fixed, 1b == cfgable)
-  * <9>     :: SSTX2 Directionality support
-  * <8>     :: SSRX1 Directionality support
-  * <7>     :: SSRX2 Directionality support
-- * <6:5>   :: Vbus current handling capability
-+ * <6:5>   :: Vbus current handling capability (01b == 3A, 10b == 5A)
-  * <4>     :: Vbus through cable (0b == no, 1b == yes)
-  * <3>     :: SOP" controller present? (0b == no, 1b == yes)
-  * <2:0>   :: USB SS Signaling support
-+ *
-+ * Passive Cable VDO (PD Rev3.0+)
-+ * ---------
-+ * <31:28> :: Cable HW version
-+ * <27:24> :: Cable FW version
-+ * <23:21> :: VDO version
-+ * <20>    :: Reserved, Shall be set to zero
-+ * <19:18> :: Type-C to Type-C/Captive (10b == C, 11b == Captive)
-+ * <17>    :: Reserved, Shall be set to zero
-+ * <16:13> :: cable latency (0001 == <10ns(~1m length))
-+ * <12:11> :: cable termination type (10b == Vconn not req, 01b == Vconn req)
-+ * <10:9>  :: Maximum Vbus voltage (00b == 20V, 01b == 30V, 10b == 40V, 11b == 50V)
-+ * <8:7>   :: Reserved, Shall be set to zero
-+ * <6:5>   :: Vbus current handling capability (01b == 3A, 10b == 5A)
-+ * <4:3>   :: Reserved, Shall be set to zero
-+ * <2:0>   :: USB highest speed
-+ *
-+ * Active Cable VDO 1 (PD Rev3.0+)
-+ * ---------
-+ * <31:28> :: Cable HW version
-+ * <27:24> :: Cable FW version
-+ * <23:21> :: VDO version
-+ * <20>    :: Reserved, Shall be set to zero
-+ * <19:18> :: Connector type (10b == C, 11b == Captive)
-+ * <17>    :: Reserved, Shall be set to zero
-+ * <16:13> :: cable latency (0001 == <10ns(~1m length))
-+ * <12:11> :: cable termination type (10b == one end active, 11b == both ends active VCONN req)
-+ * <10:9>  :: Maximum Vbus voltage (00b == 20V, 01b == 30V, 10b == 40V, 11b == 50V)
-+ * <8>     :: SBU supported (0b == supported, 1b == not supported)
-+ * <7>     :: SBU type (0b == passive, 1b == active)
-+ * <6:5>   :: Vbus current handling capability (01b == 3A, 10b == 5A)
-+ * <2:0>   :: USB highest speed
-  */
-+/* Cable VDO Version */
-+#define CABLE_VDO_VER1_0	0
-+#define CABLE_VDO_VER1_3	3
++#define KEY_DOLLAR		0x1b2
++#define KEY_EURO		0x1b3
 +
-+/* Connector Type (_ATYPE and _BTYPE are for PD Rev2.0 only) */
- #define CABLE_ATYPE		0
- #define CABLE_BTYPE		1
- #define CABLE_CTYPE		2
--#define CABLE_PLUG		0
--#define CABLE_RECEPTACLE	1
--#define CABLE_CURR_1A5		0
-+#define CABLE_CAPTIVE		3
++#define KEY_FRAMEBACK		0x1b4	/* Consumer - transport controls */
++#define KEY_FRAMEFORWARD	0x1b5
++#define KEY_CONTEXT_MENU	0x1b6	/* GenDesc - system context menu */
++#define KEY_MEDIA_REPEAT	0x1b7	/* Consumer - transport control */
++#define KEY_10CHANNELSUP	0x1b8	/* 10 channels up (10+) */
++#define KEY_10CHANNELSDOWN	0x1b9	/* 10 channels down (10-) */
++#define KEY_IMAGES		0x1ba	/* AL Image Browser */
 +
-+/* Cable Latency */
-+#define CABLE_LATENCY_1M	1
-+#define CABLE_LATENCY_2M	2
-+#define CABLE_LATENCY_3M	3
-+#define CABLE_LATENCY_4M	4
-+#define CABLE_LATENCY_5M	5
-+#define CABLE_LATENCY_6M	6
-+#define CABLE_LATENCY_7M	7
-+#define CABLE_LATENCY_7M_PLUS	8
++#define KEY_DEL_EOL		0x1c0
++#define KEY_DEL_EOS		0x1c1
++#define KEY_INS_LINE		0x1c2
++#define KEY_DEL_LINE		0x1c3
 +
-+/* Cable Termination Type */
-+#define PCABLE_VCONN_NOT_REQ	0
-+#define PCABLE_VCONN_REQ	1
-+#define ACABLE_ONE_END		2
-+#define ACABLE_BOTH_END		3
++#define KEY_FN			0x1d0
++#define KEY_FN_ESC		0x1d1
++#define KEY_FN_F1		0x1d2
++#define KEY_FN_F2		0x1d3
++#define KEY_FN_F3		0x1d4
++#define KEY_FN_F4		0x1d5
++#define KEY_FN_F5		0x1d6
++#define KEY_FN_F6		0x1d7
++#define KEY_FN_F7		0x1d8
++#define KEY_FN_F8		0x1d9
++#define KEY_FN_F9		0x1da
++#define KEY_FN_F10		0x1db
++#define KEY_FN_F11		0x1dc
++#define KEY_FN_F12		0x1dd
++#define KEY_FN_1		0x1de
++#define KEY_FN_2		0x1df
++#define KEY_FN_D		0x1e0
++#define KEY_FN_E		0x1e1
++#define KEY_FN_F		0x1e2
++#define KEY_FN_S		0x1e3
++#define KEY_FN_B		0x1e4
 +
-+/* Maximum Vbus Voltage */
-+#define CABLE_MAX_VBUS_20V	0
-+#define CABLE_MAX_VBUS_30V	1
-+#define CABLE_MAX_VBUS_40V	2
-+#define CABLE_MAX_VBUS_50V	3
++#define KEY_BRL_DOT1		0x1f1
++#define KEY_BRL_DOT2		0x1f2
++#define KEY_BRL_DOT3		0x1f3
++#define KEY_BRL_DOT4		0x1f4
++#define KEY_BRL_DOT5		0x1f5
++#define KEY_BRL_DOT6		0x1f6
++#define KEY_BRL_DOT7		0x1f7
++#define KEY_BRL_DOT8		0x1f8
++#define KEY_BRL_DOT9		0x1f9
++#define KEY_BRL_DOT10		0x1fa
 +
-+/* Active Cable SBU Supported/Type */
-+#define ACABLE_SBU_SUPP		0
-+#define ACABLE_SBU_NOT_SUPP	1
-+#define ACABLE_SBU_PASSIVE	0
-+#define ACABLE_SBU_ACTIVE	1
++#define KEY_NUMERIC_0		0x200	/* used by phones, remote controls, */
++#define KEY_NUMERIC_1		0x201	/* and other keypads */
++#define KEY_NUMERIC_2		0x202
++#define KEY_NUMERIC_3		0x203
++#define KEY_NUMERIC_4		0x204
++#define KEY_NUMERIC_5		0x205
++#define KEY_NUMERIC_6		0x206
++#define KEY_NUMERIC_7		0x207
++#define KEY_NUMERIC_8		0x208
++#define KEY_NUMERIC_9		0x209
++#define KEY_NUMERIC_STAR	0x20a
++#define KEY_NUMERIC_POUND	0x20b
 +
-+/* Vbus Current Handling Capability */
-+#define CABLE_CURR_DEF		0
- #define CABLE_CURR_3A		1
- #define CABLE_CURR_5A		2
++#define KEY_CAMERA_FOCUS	0x210
++#define KEY_WPS_BUTTON		0x211	/* WiFi Protected Setup key */
 +
-+/* USB SuperSpeed Signaling Support (PD Rev2.0) */
- #define CABLE_USBSS_U2_ONLY	0
- #define CABLE_USBSS_U31_GEN1	1
- #define CABLE_USBSS_U31_GEN2	2
--#define VDO_CABLE(hw, fw, cbl, gdr, lat, term, tx1d, tx2d, rx1d, rx2d, cur,\
--		  vps, sopp, usbss) \
--	(((hw) & 0x7) << 28 | ((fw) & 0x7) << 24 | ((cbl) & 0x3) << 18	\
--	 | (gdr) << 17 | ((lat) & 0x7) << 13 | ((term) & 0x3) << 11	\
--	 | (tx1d) << 10 | (tx2d) << 9 | (rx1d) << 8 | (rx2d) << 7	\
--	 | ((cur) & 0x3) << 5 | (vps) << 4 | (sopp) << 3		\
--	 | ((usbss) & 0x7))
++#define KEY_TOUCHPAD_TOGGLE	0x212	/* Request switch touchpad on or off */
++#define KEY_TOUCHPAD_ON		0x213
++#define KEY_TOUCHPAD_OFF	0x214
 +
-+/* USB Highest Speed */
-+#define CABLE_USB2_ONLY		0
-+#define CABLE_USB32_GEN1	1
-+#define CABLE_USB32_4_GEN2	2
-+#define CABLE_USB4_GEN3		3
++#define KEY_CAMERA_ZOOMIN	0x215
++#define KEY_CAMERA_ZOOMOUT	0x216
++#define KEY_CAMERA_UP		0x217
++#define KEY_CAMERA_DOWN		0x218
++#define KEY_CAMERA_LEFT		0x219
++#define KEY_CAMERA_RIGHT	0x21a
 +
-+#define VDO_CABLE(hw, fw, cbl, lat, term, tx1d, tx2d, rx1d, rx2d, cur, vps, sopp, usbss) \
-+	(((hw) & 0x7) << 28 | ((fw) & 0x7) << 24 | ((cbl) & 0x3) << 18		\
-+	 | ((lat) & 0x7) << 13 | ((term) & 0x3) << 11 | (tx1d) << 10		\
-+	 | (tx2d) << 9 | (rx1d) << 8 | (rx2d) << 7 | ((cur) & 0x3) << 5		\
-+	 | (vps) << 4 | (sopp) << 3 | ((usbss) & 0x7))
-+#define VDO_PCABLE(hw, fw, ver, conn, lat, term, vbm, cur, spd)			\
-+	(((hw) & 0xf) << 28 | ((fw) & 0xf) << 24 | ((ver) & 0x7) << 21		\
-+	 | ((conn) & 0x3) << 18 | ((lat) & 0xf) << 13 | ((term) & 0x3) << 11	\
-+	 | ((vbm) & 0x3) << 9 | ((cur) & 0x3) << 5 | ((spd) & 0x7))
-+#define VDO_ACABLE1(hw, fw, ver, conn, lat, term, vbm, sbu, sbut, cur, vbt, sopp, spd) \
-+	(((hw) & 0xf) << 28 | ((fw) & 0xf) << 24 | ((ver) & 0x7) << 21		\
-+	 | ((conn) & 0x3) << 18	| ((lat) & 0xf) << 13 | ((term) & 0x3) << 11	\
-+	 | ((vbm) & 0x3) << 9 | (sbu) << 8 | (sbut) << 7 | ((cur) & 0x3) << 5	\
-+	 | (vbt) << 4 | (sopp) << 3 | ((spd) & 0x7))
++#define KEY_ATTENDANT_ON	0x21b
++#define KEY_ATTENDANT_OFF	0x21c
++#define KEY_ATTENDANT_TOGGLE	0x21d	/* Attendant call on or off */
++#define KEY_LIGHTS_TOGGLE	0x21e	/* Reading light on or off */
 +
-+#define VDO_TYPEC_CABLE_TYPE(vdo)	(((vdo) >> 18) & 0x3)
++#define BTN_DPAD_UP		0x220
++#define BTN_DPAD_DOWN		0x221
++#define BTN_DPAD_LEFT		0x222
++#define BTN_DPAD_RIGHT		0x223
++
++#define KEY_ALS_TOGGLE		0x230	/* Ambient light sensor */
++
++#define KEY_BUTTONCONFIG		0x240	/* AL Button Configuration */
++#define KEY_TASKMANAGER		0x241	/* AL Task/Project Manager */
++#define KEY_JOURNAL		0x242	/* AL Log/Journal/Timecard */
++#define KEY_CONTROLPANEL		0x243	/* AL Control Panel */
++#define KEY_APPSELECT		0x244	/* AL Select Task/Application */
++#define KEY_SCREENSAVER		0x245	/* AL Screen Saver */
++#define KEY_VOICECOMMAND		0x246	/* Listening Voice Command */
++
++#define KEY_BRIGHTNESS_MIN		0x250	/* Set Brightness to Minimum */
++#define KEY_BRIGHTNESS_MAX		0x251	/* Set Brightness to Maximum */
++
++#define BTN_TRIGGER_HAPPY		0x2c0
++#define BTN_TRIGGER_HAPPY1		0x2c0
++#define BTN_TRIGGER_HAPPY2		0x2c1
++#define BTN_TRIGGER_HAPPY3		0x2c2
++#define BTN_TRIGGER_HAPPY4		0x2c3
++#define BTN_TRIGGER_HAPPY5		0x2c4
++#define BTN_TRIGGER_HAPPY6		0x2c5
++#define BTN_TRIGGER_HAPPY7		0x2c6
++#define BTN_TRIGGER_HAPPY8		0x2c7
++#define BTN_TRIGGER_HAPPY9		0x2c8
++#define BTN_TRIGGER_HAPPY10		0x2c9
++#define BTN_TRIGGER_HAPPY11		0x2ca
++#define BTN_TRIGGER_HAPPY12		0x2cb
++#define BTN_TRIGGER_HAPPY13		0x2cc
++#define BTN_TRIGGER_HAPPY14		0x2cd
++#define BTN_TRIGGER_HAPPY15		0x2ce
++#define BTN_TRIGGER_HAPPY16		0x2cf
++#define BTN_TRIGGER_HAPPY17		0x2d0
++#define BTN_TRIGGER_HAPPY18		0x2d1
++#define BTN_TRIGGER_HAPPY19		0x2d2
++#define BTN_TRIGGER_HAPPY20		0x2d3
++#define BTN_TRIGGER_HAPPY21		0x2d4
++#define BTN_TRIGGER_HAPPY22		0x2d5
++#define BTN_TRIGGER_HAPPY23		0x2d6
++#define BTN_TRIGGER_HAPPY24		0x2d7
++#define BTN_TRIGGER_HAPPY25		0x2d8
++#define BTN_TRIGGER_HAPPY26		0x2d9
++#define BTN_TRIGGER_HAPPY27		0x2da
++#define BTN_TRIGGER_HAPPY28		0x2db
++#define BTN_TRIGGER_HAPPY29		0x2dc
++#define BTN_TRIGGER_HAPPY30		0x2dd
++#define BTN_TRIGGER_HAPPY31		0x2de
++#define BTN_TRIGGER_HAPPY32		0x2df
++#define BTN_TRIGGER_HAPPY33		0x2e0
++#define BTN_TRIGGER_HAPPY34		0x2e1
++#define BTN_TRIGGER_HAPPY35		0x2e2
++#define BTN_TRIGGER_HAPPY36		0x2e3
++#define BTN_TRIGGER_HAPPY37		0x2e4
++#define BTN_TRIGGER_HAPPY38		0x2e5
++#define BTN_TRIGGER_HAPPY39		0x2e6
++#define BTN_TRIGGER_HAPPY40		0x2e7
++
++/* We avoid low common keys in module aliases so they don't get huge. */
++#define KEY_MIN_INTERESTING	KEY_MUTE
++#define KEY_MAX			0x2ff
++#define KEY_CNT			(KEY_MAX+1)
 +
 +/*
-+ * Active Cable VDO 2
-+ * ---------
-+ * <31:24> :: Maximum operating temperature
-+ * <23:16> :: Shutdown temperature
-+ * <15>    :: Reserved, Shall be set to zero
-+ * <14:12> :: U3/CLd power
-+ * <11>    :: U3 to U0 transition mode (0b == direct, 1b == through U3S)
-+ * <10>    :: Physical connection (0b == copper, 1b == optical)
-+ * <9>     :: Active element (0b == redriver, 1b == retimer)
-+ * <8>     :: USB4 supported (0b == yes, 1b == no)
-+ * <7:6>   :: USB2 hub hops consumed
-+ * <5>     :: USB2 supported (0b == yes, 1b == no)
-+ * <4>     :: USB3.2 supported (0b == yes, 1b == no)
-+ * <3>     :: USB lanes supported (0b == one lane, 1b == two lanes)
-+ * <2>     :: Optically isolated active cable (0b == no, 1b == yes)
-+ * <1>     :: Reserved, Shall be set to zero
-+ * <0>     :: USB gen (0b == gen1, 1b == gen2+)
++ * Relative axes
 + */
 +
-+/* U3/CLd Power*/
-+#define ACAB2_U3_CLD_10MW_PLUS	0
-+#define ACAB2_U3_CLD_10MW	1
-+#define ACAB2_U3_CLD_5MW	2
-+#define ACAB2_U3_CLD_1MW	3
-+#define ACAB2_U3_CLD_500UW	4
-+#define ACAB2_U3_CLD_200UW	5
-+#define ACAB2_U3_CLD_50UW	6
++#define REL_X			0x00
++#define REL_Y			0x01
++#define REL_Z			0x02
++#define REL_RX			0x03
++#define REL_RY			0x04
++#define REL_RZ			0x05
++#define REL_HWHEEL		0x06
++#define REL_DIAL		0x07
++#define REL_WHEEL		0x08
++#define REL_MISC		0x09
++#define REL_MAX			0x0f
++#define REL_CNT			(REL_MAX+1)
 +
-+/* Other Active Cable VDO 2 Fields */
-+#define ACAB2_U3U0_DIRECT	0
-+#define ACAB2_U3U0_U3S		1
-+#define ACAB2_PHY_COPPER	0
-+#define ACAB2_PHY_OPTICAL	1
-+#define ACAB2_REDRIVER		0
-+#define ACAB2_RETIMER		1
-+#define ACAB2_USB4_SUPP		0
-+#define ACAB2_USB4_NOT_SUPP	1
-+#define ACAB2_USB2_SUPP		0
-+#define ACAB2_USB2_NOT_SUPP	1
-+#define ACAB2_USB32_SUPP	0
-+#define ACAB2_USB32_NOT_SUPP	1
-+#define ACAB2_LANES_ONE		0
-+#define ACAB2_LANES_TWO		1
-+#define ACAB2_OPT_ISO_NO	0
-+#define ACAB2_OPT_ISO_YES	1
-+#define ACAB2_GEN_1		0
-+#define ACAB2_GEN_2_PLUS	1
-+
-+#define VDO_ACABLE2(mtemp, stemp, u3p, trans, phy, ele, u4, hops, u2, u32, lane, iso, gen)	\
-+	(((mtemp) & 0xff) << 24 | ((stemp) & 0xff) << 16 | ((u3p) & 0x7) << 12	\
-+	 | (trans) << 11 | (phy) << 10 | (ele) << 9 | (u4) << 8			\
-+	 | ((hops) & 0x3) << 6 | (u2) << 5 | (u32) << 4 | (lane) << 3		\
-+	 | (iso) << 2 | (gen))
- 
- /*
-- * AMA VDO
-+ * AMA VDO (PD Rev2.0)
-  * ---------
-  * <31:28> :: Cable HW version
-  * <27:24> :: Cable FW version
-@@ -233,18 +455,40 @@
- #define PD_VDO_AMA_VCONN_REQ(vdo)	(((vdo) >> 4) & 1)
- #define PD_VDO_AMA_VBUS_REQ(vdo)	(((vdo) >> 3) & 1)
- 
--#define AMA_VCONN_PWR_1W	0
--#define AMA_VCONN_PWR_1W5	1
--#define AMA_VCONN_PWR_2W	2
--#define AMA_VCONN_PWR_3W	3
--#define AMA_VCONN_PWR_4W	4
--#define AMA_VCONN_PWR_5W	5
--#define AMA_VCONN_PWR_6W	6
- #define AMA_USBSS_U2_ONLY	0
- #define AMA_USBSS_U31_GEN1	1
- #define AMA_USBSS_U31_GEN2	2
- #define AMA_USBSS_BBONLY	3
- 
 +/*
-+ * VPD VDO
-+ * ---------
-+ * <31:28> :: HW version
-+ * <27:24> :: FW version
-+ * <23:21> :: VDO version
-+ * <20:17> :: Reserved, Shall be set to zero
-+ * <16:15> :: Maximum Vbus voltage (00b == 20V, 01b == 30V, 10b == 40V, 11b == 50V)
-+ * <14>    :: Charge through current support (0b == 3A, 1b == 5A)
-+ * <13>    :: Reserved, Shall be set to zero
-+ * <12:7>  :: Vbus impedance
-+ * <6:1>   :: Ground impedance
-+ * <0>     :: Charge through support (0b == no, 1b == yes)
++ * Absolute axes
 + */
-+#define VPD_VDO_VER1_0		0
-+#define VPD_MAX_VBUS_20V	0
-+#define VPD_MAX_VBUS_30V	1
-+#define VPD_MAX_VBUS_40V	2
-+#define VPD_MAX_VBUS_50V	3
-+#define VPDCT_CURR_3A		0
-+#define VPDCT_CURR_5A		1
-+#define VPDCT_NOT_SUPP		0
-+#define VPDCT_SUPP		1
 +
-+#define VDO_VPD(hw, fw, ver, vbm, curr, vbi, gi, ct)			\
-+	(((hw) & 0xf) << 28 | ((fw) & 0xf) << 24 | ((ver) & 0x7) << 21	\
-+	 | ((vbm) & 0x3) << 15 | (curr) << 14 | ((vbi) & 0x3f) << 7	\
-+	 | ((gi) & 0x3f) << 1 | (ct))
++#define ABS_X			0x00
++#define ABS_Y			0x01
++#define ABS_Z			0x02
++#define ABS_RX			0x03
++#define ABS_RY			0x04
++#define ABS_RZ			0x05
++#define ABS_THROTTLE		0x06
++#define ABS_RUDDER		0x07
++#define ABS_WHEEL		0x08
++#define ABS_GAS			0x09
++#define ABS_BRAKE		0x0a
++#define ABS_HAT0X		0x10
++#define ABS_HAT0Y		0x11
++#define ABS_HAT1X		0x12
++#define ABS_HAT1Y		0x13
++#define ABS_HAT2X		0x14
++#define ABS_HAT2Y		0x15
++#define ABS_HAT3X		0x16
++#define ABS_HAT3Y		0x17
++#define ABS_PRESSURE		0x18
++#define ABS_DISTANCE		0x19
++#define ABS_TILT_X		0x1a
++#define ABS_TILT_Y		0x1b
++#define ABS_TOOL_WIDTH		0x1c
 +
- /*
-  * SVDM Discover SVIDs request -> response
-  *
-diff --git a/include/linux/usb/phy.h b/include/linux/usb/phy.h
-index e4de6bc1f..888d2fdb6 100644
---- a/include/linux/usb/phy.h
-+++ b/include/linux/usb/phy.h
-@@ -13,6 +13,7 @@
- #include <linux/extcon.h>
- #include <linux/notifier.h>
- #include <linux/usb.h>
-+#include <linux/android_kabi.h>
- #include <uapi/linux/usb/charger.h>
- 
- enum usb_phy_interface {
-@@ -155,6 +156,8 @@ struct usb_phy {
- 	 * manually detect the charger type.
- 	 */
- 	enum usb_charger_type (*charger_detect)(struct usb_phy *x);
++#define ABS_VOLUME		0x20
 +
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /* for board-specific init logic */
-diff --git a/include/linux/usb/quirks.h b/include/linux/usb/quirks.h
-index 5e4c497f5..6567f7445 100644
---- a/include/linux/usb/quirks.h
-+++ b/include/linux/usb/quirks.h
-@@ -72,4 +72,7 @@
- /* device has endpoints that should be ignored */
- #define USB_QUIRK_ENDPOINT_IGNORE		BIT(15)
- 
-+/* device can't support auto suspend function */
-+#define USB_QUIRK_AUTO_SUSPEND			BIT(16)
++#define ABS_MISC		0x28
 +
- #endif /* __LINUX_USB_QUIRKS_H */
-diff --git a/include/linux/usb/tcpm.h b/include/linux/usb/tcpm.h
-index 09762d26f..cb69546f8 100644
---- a/include/linux/usb/tcpm.h
-+++ b/include/linux/usb/tcpm.h
-@@ -19,6 +19,10 @@ enum typec_cc_status {
- 	TYPEC_CC_RP_3_0,
- };
- 
-+/* Collision Avoidance */
-+#define SINK_TX_NG	TYPEC_CC_RP_1_5
-+#define SINK_TX_OK	TYPEC_CC_RP_3_0
++#define ABS_MT_SLOT		0x2f	/* MT slot being modified */
++#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
++#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis (omit if circular) */
++#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
++#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis (omit if circular) */
++#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
++#define ABS_MT_POSITION_X	0x35	/* Center X touch position */
++#define ABS_MT_POSITION_Y	0x36	/* Center Y touch position */
++#define ABS_MT_TOOL_TYPE	0x37	/* Type of touching device */
++#define ABS_MT_BLOB_ID		0x38	/* Group a set of packets as a blob */
++#define ABS_MT_TRACKING_ID	0x39	/* Unique ID of initiated contact */
++#define ABS_MT_PRESSURE		0x3a	/* Pressure on contact area */
++#define ABS_MT_DISTANCE		0x3b	/* Contact hover distance */
++#define ABS_MT_TOOL_X		0x3c	/* Center X tool position */
++#define ABS_MT_TOOL_Y		0x3d	/* Center Y tool position */
 +
- enum typec_cc_polarity {
- 	TYPEC_POLARITY_CC1,
- 	TYPEC_POLARITY_CC2,
-@@ -62,6 +66,8 @@ enum tcpm_transmit_type {
-  *		For example, some tcpcs may include BC1.2 charger detection
-  *		and use that in this case.
-  * @set_cc:	Called to set value of CC pins
-+ * @apply_rc:	Optional; Needed to move TCPCI based chipset to APPLY_RC state
-+ *		as stated by the TCPCI specification.
-  * @get_cc:	Called to read current CC pin values
-  * @set_polarity:
-  *		Called to set polarity
-@@ -83,6 +89,39 @@ enum tcpm_transmit_type {
-  *		Optional; Called to enable/disable PD 3.0 fast role swap.
-  *		Enabling frs is accessory dependent as not all PD3.0
-  *		accessories support fast role swap.
-+ * @frs_sourcing_vbus:
-+ *		Optional; Called to notify that vbus is now being sourced.
-+ *		Low level drivers can perform chip specific operations, if any.
-+ * @enable_auto_vbus_discharge:
-+ *		Optional; TCPCI spec based TCPC implementations can optionally
-+ *		support hardware to autonomously dischrge vbus upon disconnecting
-+ *		as sink or source. TCPM signals TCPC to enable the mechanism upon
-+ *		entering connected state and signals disabling upon disconnect.
-+ * @set_auto_vbus_discharge_threshold:
-+ *		Mandatory when enable_auto_vbus_discharge is implemented. TCPM
-+ *		calls this function to allow lower levels drivers to program the
-+ *		vbus threshold voltage below which the vbus discharge circuit
-+ *		will be turned on. requested_vbus_voltage is set to 0 when vbus
-+ *		is going to disappear knowingly i.e. during PR_SWAP and
-+ *		HARD_RESET etc.
-+ * @is_vbus_vsafe0v:
-+ *		Optional; TCPCI spec based TCPC implementations are expected to
-+ *		detect VSAFE0V voltage level at vbus. When detection of VSAFE0V
-+ *		is supported by TCPC, set this callback for TCPM to query
-+ *		whether vbus is at VSAFE0V when needed.
-+ *		Returns true when vbus is at VSAFE0V, false otherwise.
-+ * @set_partner_usb_comm_capable:
-+ *              Optional; The USB Communications Capable bit indicates if port
-+ *              partner is capable of communication over the USB data lines
-+ *              (e.g. D+/- or SS Tx/Rx). Called to notify the status of the bit.
-+ * @check_contaminant:
-+ *		Optional; The callback is called when CC pins report open status
-+ *		at the end of the toggling period. Chip level drivers are
-+ *		expected to check for contaminant and re-enable toggling if
-+ *		needed. When 0 is not returned, check_contaminant is expected to
-+ *		restart toggling after checking the connector for contaminant.
-+ *		This forces the TCPM state machine to tranistion to TOGGLING state
-+ *		without calling start_toggling callback.
-  */
- struct tcpc_dev {
- 	struct fwnode_handle *fwnode;
-@@ -91,6 +130,8 @@ struct tcpc_dev {
- 	int (*get_vbus)(struct tcpc_dev *dev);
- 	int (*get_current_limit)(struct tcpc_dev *dev);
- 	int (*set_cc)(struct tcpc_dev *dev, enum typec_cc_status cc);
-+	int (*apply_rc)(struct tcpc_dev *dev, enum typec_cc_status cc,
-+			enum typec_cc_polarity polarity);
- 	int (*get_cc)(struct tcpc_dev *dev, enum typec_cc_status *cc1,
- 		      enum typec_cc_status *cc2);
- 	int (*set_polarity)(struct tcpc_dev *dev,
-@@ -106,9 +147,16 @@ struct tcpc_dev {
- 			      enum typec_cc_status cc);
- 	int (*try_role)(struct tcpc_dev *dev, int role);
- 	int (*pd_transmit)(struct tcpc_dev *dev, enum tcpm_transmit_type type,
--			   const struct pd_message *msg);
-+			   const struct pd_message *msg, unsigned int negotiated_rev);
- 	int (*set_bist_data)(struct tcpc_dev *dev, bool on);
- 	int (*enable_frs)(struct tcpc_dev *dev, bool enable);
-+	void (*frs_sourcing_vbus)(struct tcpc_dev *dev);
-+	int (*enable_auto_vbus_discharge)(struct tcpc_dev *dev, bool enable);
-+	int (*set_auto_vbus_discharge_threshold)(struct tcpc_dev *dev, enum typec_pwr_opmode mode,
-+						 bool pps_active, u32 requested_vbus_voltage);
-+	int (*check_contaminant)(struct tcpc_dev *dev);
-+	bool (*is_vbus_vsafe0v)(struct tcpc_dev *dev);
-+	void (*set_partner_usb_comm_capable)(struct tcpc_dev *dev, bool enable);
- };
- 
- struct tcpm_port;
-@@ -116,6 +164,10 @@ struct tcpm_port;
- struct tcpm_port *tcpm_register_port(struct device *dev, struct tcpc_dev *tcpc);
- void tcpm_unregister_port(struct tcpm_port *port);
- 
-+int tcpm_update_sink_capabilities(struct tcpm_port *port, const u32 *pdo,
-+				  unsigned int nr_pdo,
-+				  unsigned int operating_snk_mw);
 +
- void tcpm_vbus_change(struct tcpm_port *port);
- void tcpm_cc_change(struct tcpm_port *port);
- void tcpm_sink_frs(struct tcpm_port *port);
-@@ -126,5 +178,7 @@ void tcpm_pd_transmit_complete(struct tcpm_port *port,
- 			       enum tcpm_transmit_status status);
- void tcpm_pd_hard_reset(struct tcpm_port *port);
- void tcpm_tcpc_reset(struct tcpm_port *port);
-+bool tcpm_is_debouncing(struct tcpm_port *tcpm);
-+bool tcpm_is_toggling(struct tcpm_port *port);
- 
- #endif /* __LINUX_USB_TCPM_H */
-diff --git a/include/linux/usb/typec.h b/include/linux/usb/typec.h
-index 6be558045..34cc102b3 100644
---- a/include/linux/usb/typec.h
-+++ b/include/linux/usb/typec.h
-@@ -4,6 +4,7 @@
- #define __LINUX_USB_TYPEC_H
- 
- #include <linux/types.h>
-+#include <linux/android_kabi.h>
- 
- /* USB Type-C Specification releases */
- #define USB_TYPEC_REV_1_0	0x100 /* 1.0 */
-@@ -17,6 +18,7 @@ struct typec_partner;
- struct typec_cable;
- struct typec_plug;
- struct typec_port;
-+struct typec_altmode_ops;
- 
- struct fwnode_handle;
- struct device;
-@@ -126,15 +128,31 @@ struct typec_altmode_desc {
- 	enum typec_port_data	roles;
- };
- 
-+void typec_partner_set_pd_revision(struct typec_partner *partner, u16 pd_revision);
-+int typec_partner_set_num_altmodes(struct typec_partner *partner, int num_altmodes);
- struct typec_altmode
- *typec_partner_register_altmode(struct typec_partner *partner,
- 				const struct typec_altmode_desc *desc);
-+int typec_plug_set_num_altmodes(struct typec_plug *plug, int num_altmodes);
- struct typec_altmode
- *typec_plug_register_altmode(struct typec_plug *plug,
- 			     const struct typec_altmode_desc *desc);
- struct typec_altmode
- *typec_port_register_altmode(struct typec_port *port,
- 			     const struct typec_altmode_desc *desc);
++#define ABS_MAX			0x3f
++#define ABS_CNT			(ABS_MAX+1)
 +
-+#ifdef CONFIG_NO_GKI
-+void typec_port_register_altmodes(struct typec_port *port,
-+	const struct typec_altmode_ops *ops, void *drvdata,
-+	struct typec_altmode **altmodes, size_t n);
-+#else
-+static inline void typec_port_register_altmodes(struct typec_port *port,
-+	const struct typec_altmode_ops *ops, void *drvdata,
-+	struct typec_altmode **altmodes, size_t n)
-+{
-+}
-+#endif
-+
- void typec_unregister_altmode(struct typec_altmode *altmode);
- 
- struct typec_port *typec_altmode2port(struct typec_altmode *alt);
-@@ -162,6 +180,7 @@ struct typec_plug_desc {
-  * @type: The plug type from USB PD Cable VDO
-  * @active: Is the cable active or passive
-  * @identity: Result of Discover Identity command
-+ * @pd_revision: USB Power Delivery Specification revision if supported
-  *
-  * Represents USB Type-C Cable attached to USB Type-C port.
-  */
-@@ -169,6 +188,8 @@ struct typec_cable_desc {
- 	enum typec_plug_type	type;
- 	unsigned int		active:1;
- 	struct usb_pd_identity	*identity;
-+	u16			pd_revision; /* 0300H = "3.0" */
-+
- };
- 
- /*
-@@ -176,15 +197,22 @@ struct typec_cable_desc {
-  * @usb_pd: USB Power Delivery support
-  * @accessory: Audio, Debug or none.
-  * @identity: Discover Identity command data
-+ * @pd_revision: USB Power Delivery Specification Revision if supported
-  *
-  * Details about a partner that is attached to USB Type-C port. If @identity
-  * member exists when partner is registered, a directory named "identity" is
-  * created to sysfs for the partner device.
-+ *
-+ * @pd_revision is based on the setting of the "Specification Revision" field
-+ * in the message header on the initial "Source Capabilities" message received
-+ * from the partner, or a "Request" message received from the partner, depending
-+ * on whether our port is a Sink or a Source.
-  */
- struct typec_partner_desc {
- 	unsigned int		usb_pd:1;
- 	enum typec_accessory	accessory;
- 	struct usb_pd_identity	*identity;
-+	u16			pd_revision; /* 0300H = "3.0" */
- };
- 
- /**
-@@ -202,6 +230,13 @@ struct typec_operations {
- 	int (*vconn_set)(struct typec_port *port, enum typec_role role);
- 	int (*port_type_set)(struct typec_port *port,
- 			     enum typec_port_type type);
-+	ANDROID_KABI_RESERVE(1);
-+};
-+
-+enum usb_pd_svdm_ver {
-+	SVDM_VER_1_0 = 0,
-+	SVDM_VER_2_0 = 1,
-+	SVDM_VER_MAX = SVDM_VER_2_0,
- };
- 
- /*
-@@ -210,6 +245,7 @@ struct typec_operations {
-  * @data: Supported data role of the port
-  * @revision: USB Type-C Specification release. Binary coded decimal
-  * @pd_revision: USB Power Delivery Specification revision if supported
-+ * @svdm_version: USB PD Structured VDM version if supported
-  * @prefer_role: Initial role preference (DRP ports).
-  * @accessory: Supported Accessory Modes
-  * @fwnode: Optional fwnode of the port
-@@ -223,6 +259,7 @@ struct typec_capability {
- 	enum typec_port_data	data;
- 	u16			revision; /* 0120H = "1.2" */
- 	u16			pd_revision; /* 0300H = "3.0" */
-+	enum usb_pd_svdm_ver	svdm_version;
- 	int			prefer_role;
- 	enum typec_accessory	accessory[TYPEC_MAX_ACCESSORY];
- 	unsigned int		orientation_aware:1;
-@@ -231,6 +268,7 @@ struct typec_capability {
- 	void			*driver_data;
- 
- 	const struct typec_operations	*ops;
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- /* Specific to try_role(). Indicates the user want's to clear the preference. */
-@@ -273,4 +311,8 @@ int typec_find_orientation(const char *name);
- int typec_find_port_power_role(const char *name);
- int typec_find_power_role(const char *name);
- int typec_find_port_data_role(const char *name);
-+
-+void typec_partner_set_svdm_version(struct typec_partner *partner,
-+				    enum usb_pd_svdm_ver svdm_version);
-+int typec_get_negotiated_svdm_version(struct typec_port *port);
- #endif /* __LINUX_USB_TYPEC_H */
-diff --git a/include/linux/usb/typec_altmode.h b/include/linux/usb/typec_altmode.h
-index 5e0a7b764..60531284d 100644
---- a/include/linux/usb/typec_altmode.h
-+++ b/include/linux/usb/typec_altmode.h
-@@ -30,6 +30,7 @@ struct typec_altmode {
- 
- 	char				*desc;
- 	const struct typec_altmode_ops	*ops;
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- #define to_typec_altmode(d) container_of(d, struct typec_altmode, dev)
-@@ -63,6 +64,7 @@ struct typec_altmode_ops {
- 	int (*notify)(struct typec_altmode *altmode, unsigned long conf,
- 		      void *data);
- 	int (*activate)(struct typec_altmode *altmode, int activate);
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- int typec_altmode_enter(struct typec_altmode *altmode, u32 *vdo);
-@@ -132,6 +134,16 @@ typec_altmode_get_orientation(struct typec_altmode *altmode)
- 	return typec_get_orientation(typec_altmode2port(altmode));
- }
- 
-+/**
-+ * typec_altmode_get_svdm_version - Get negotiated SVDM version
-+ * @altmode: Handle to the alternate mode
-+ */
-+static inline int
-+typec_altmode_get_svdm_version(struct typec_altmode *altmode)
-+{
-+	return typec_get_negotiated_svdm_version(typec_altmode2port(altmode));
-+}
-+
- /**
-  * struct typec_altmode_driver - USB Type-C alternate mode device driver
-  * @id_table: Null terminated array of SVIDs
-diff --git a/include/linux/usb/typec_tbt.h b/include/linux/usb/typec_tbt.h
-index 47c2d501d..63dd44b72 100644
---- a/include/linux/usb/typec_tbt.h
-+++ b/include/linux/usb/typec_tbt.h
-@@ -39,12 +39,16 @@ struct typec_thunderbolt_data {
- #define   TBT_CABLE_USB3_GEN1		1
- #define   TBT_CABLE_USB3_PASSIVE	2
- #define   TBT_CABLE_10_AND_20GBPS	3
--#define TBT_CABLE_ROUNDED		BIT(19)
-+#define TBT_CABLE_ROUNDED_SUPPORT(_vdo_) \
-+					(((_vdo_) & GENMASK(20, 19)) >> 19)
-+#define   TBT_GEN3_NON_ROUNDED                 0
-+#define   TBT_GEN3_GEN4_ROUNDED_NON_ROUNDED    1
- #define TBT_CABLE_OPTICAL		BIT(21)
- #define TBT_CABLE_RETIMER		BIT(22)
- #define TBT_CABLE_LINK_TRAINING		BIT(23)
- 
- #define TBT_SET_CABLE_SPEED(_s_)	(((_s_) & GENMASK(2, 0)) << 16)
-+#define TBT_SET_CABLE_ROUNDED(_g_)	(((_g_) & GENMASK(1, 0)) << 19)
- 
- /* TBT3 Device Enter Mode VDO bits */
- #define TBT_ENTER_MODE_CABLE_SPEED(s)	TBT_SET_CABLE_SPEED(s)
-diff --git a/include/linux/usb/usbnet.h b/include/linux/usb/usbnet.h
-index 8110c29fa..195512a3a 100644
---- a/include/linux/usb/usbnet.h
-+++ b/include/linux/usb/usbnet.h
-@@ -23,6 +23,8 @@
- #ifndef	__LINUX_USB_USBNET_H
- #define	__LINUX_USB_USBNET_H
- 
-+#include <linux/android_kabi.h>
-+
- /* interface from usbnet core to each USB networking link we handle */
- struct usbnet {
- 	/* housekeeping */
-@@ -83,8 +85,11 @@ struct usbnet {
- #		define EVENT_LINK_CHANGE	11
- #		define EVENT_SET_RX_MODE	12
- #		define EVENT_NO_IP_ALIGN	13
--	u32			rx_speed;	/* in bps - NOT Mbps */
--	u32			tx_speed;	/* in bps - NOT Mbps */
-+
-+	ANDROID_KABI_RESERVE(1);
-+	ANDROID_KABI_RESERVE(2);
-+	ANDROID_KABI_RESERVE(3);
-+	ANDROID_KABI_RESERVE(4);
- };
- 
- static inline struct usb_driver *driver_of(struct usb_interface *intf)
-@@ -174,6 +179,9 @@ struct driver_info {
- 	int		out;		/* tx endpoint */
- 
- 	unsigned long	data;		/* Misc driver specific data */
-+
-+	ANDROID_KABI_RESERVE(1);
-+	ANDROID_KABI_RESERVE(2);
- };
- 
- /* Minidrivers are just drivers using the "usbnet" core as a powerful
-diff --git a/include/media/v4l2-async.h b/include/media/v4l2-async.h
-index 92cd9f038..03b43b0f7 100644
---- a/include/media/v4l2-async.h
-+++ b/include/media/v4l2-async.h
-@@ -266,6 +266,21 @@ int v4l2_async_notifier_register(struct v4l2_device *v4l2_dev,
- int v4l2_async_subdev_notifier_register(struct v4l2_subdev *sd,
- 					struct v4l2_async_notifier *notifier);
- 
-+/**
-+ * v4l2_async_notifier_clr_unready_dev - remove unready subdevice
-+ *
-+ * @notifier: pointer to &struct v4l2_async_notifier
-+ */
-+#if IS_ENABLED(CONFIG_NO_GKI)
-+int v4l2_async_notifier_clr_unready_dev(struct v4l2_async_notifier *notifier);
-+#else
-+static inline int
-+v4l2_async_notifier_clr_unready_dev(struct v4l2_async_notifier *notifier)
-+{
-+	return 0;
-+}
-+#endif
-+
- /**
-  * v4l2_async_notifier_unregister - unregisters a subdevice
-  *	asynchronous notifier
-diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
-index c46a9ae2a..4afba01c6 100644
---- a/include/soc/rockchip/rockchip_sip.h
-+++ b/include/soc/rockchip/rockchip_sip.h
-@@ -15,6 +15,12 @@
- #define ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE	0x05
- #define ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ	0x06
- #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
--#define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
-+#define ROCKCHIP_SIP_CONFIG_DRAM_GET_VERSION	0x08
-+#define ROCKCHIP_SIP_CONFIG_DRAM_POST_SET_RATE	0x09
-+#define ROCKCHIP_SIP_CONFIG_DRAM_SET_MSCH_RL	0x0a
-+#define ROCKCHIP_SIP_CONFIG_DRAM_DEBUG		0x0b
-+#define ROCKCHIP_SIP_CONFIG_MCU_START		0x0c
-+#define ROCKCHIP_SIP_CONFIG_DRAM_GET_FREQ_INFO	0x0e
-+#define ROCKCHIP_SIP_CONFIG_DRAM_ADDRMAP_GET	0x10
- 
- #endif
-diff --git a/include/sound/hdmi-codec.h b/include/sound/hdmi-codec.h
-index b55970859..4fc733c8c 100644
---- a/include/sound/hdmi-codec.h
-+++ b/include/sound/hdmi-codec.h
-@@ -34,6 +34,11 @@ struct hdmi_codec_daifmt {
- 	unsigned int frame_clk_inv:1;
- 	unsigned int bit_clk_master:1;
- 	unsigned int frame_clk_master:1;
-+	/* bit_fmt could be standard PCM format or
-+	 * IEC958 encoded format. ALSA IEC958 plugin will pass
-+	 * IEC958_SUBFRAME format to the underneath driver.
-+	 */
-+	snd_pcm_format_t bit_fmt;
- };
- 
- /*
-@@ -60,12 +65,22 @@ struct hdmi_codec_ops {
- 
- 	/*
- 	 * Configures HDMI-encoder for audio stream.
--	 * Mandatory
-+	 * Having either prepare or hw_params is mandatory.
- 	 */
- 	int (*hw_params)(struct device *dev, void *data,
- 			 struct hdmi_codec_daifmt *fmt,
- 			 struct hdmi_codec_params *hparms);
- 
-+	/*
-+	 * Configures HDMI-encoder for audio stream. Can be called
-+	 * multiple times for each setup.
-+	 *
-+	 * Having either prepare or hw_params is mandatory.
-+	 */
-+	int (*prepare)(struct device *dev, void *data,
-+		       struct hdmi_codec_daifmt *fmt,
-+		       struct hdmi_codec_params *hparms);
-+
- 	/*
- 	 * Shuts down the audio stream.
- 	 * Mandatory
-diff --git a/include/sound/hwdep.h b/include/sound/hwdep.h
-index 8d6cdb254..d99a53025 100644
---- a/include/sound/hwdep.h
-+++ b/include/sound/hwdep.h
-@@ -9,6 +9,7 @@
- 
- #include <sound/asound.h>
- #include <linux/poll.h>
-+#include <linux/android_kabi.h>
- 
- struct snd_hwdep;
- 
-@@ -34,6 +35,8 @@ struct snd_hwdep_ops {
- 			  struct snd_hwdep_dsp_status *status);
- 	int (*dsp_load)(struct snd_hwdep *hw,
- 			struct snd_hwdep_dsp_image *image);
-+
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- struct snd_hwdep {
-@@ -59,6 +62,8 @@ struct snd_hwdep {
- 	int used;			/* reference counter */
- 	unsigned int dsp_loaded;	/* bit fields of loaded dsp indices */
- 	unsigned int exclusive:1;	/* exclusive access mode */
-+
-+	ANDROID_KABI_RESERVE(1);
- };
- 
- extern int snd_hwdep_new(struct snd_card *card, char *id, int device,
-diff --git a/include/sound/pcm_iec958.h b/include/sound/pcm_iec958.h
-index 0939aa45e..64e84441c 100644
---- a/include/sound/pcm_iec958.h
-+++ b/include/sound/pcm_iec958.h
-@@ -4,6 +4,14 @@
- 
- #include <linux/types.h>
- 
-+int snd_pcm_create_iec958_consumer_default(u8 *cs, size_t len);
-+
-+int snd_pcm_fill_iec958_consumer(struct snd_pcm_runtime *runtime, u8 *cs,
-+				 size_t len);
-+
-+int snd_pcm_fill_iec958_consumer_hw_params(struct snd_pcm_hw_params *params,
-+					   u8 *cs, size_t len);
-+
- int snd_pcm_create_iec958_consumer(struct snd_pcm_runtime *runtime, u8 *cs,
- 	size_t len);
- 
-diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
-index dad9d3b4a..1b26ff448 100644
---- a/include/uapi/drm/drm_fourcc.h
-+++ b/include/uapi/drm/drm_fourcc.h
-@@ -242,6 +242,8 @@ extern "C" {
-  * index 1 = Cr:Cb plane, [39:0] Cr1:Cb1:Cr0:Cb0 little endian
-  */
- #define DRM_FORMAT_NV15		fourcc_code('N', 'V', '1', '5') /* 2x2 subsampled Cr:Cb plane */
-+#define DRM_FORMAT_NV20		fourcc_code('N', 'V', '2', '0') /* 2x1 subsampled Cr:Cb plane */
-+#define DRM_FORMAT_NV30		fourcc_code('N', 'V', '3', '0') /* non-subsampled Cr:Cb plane */
- 
- /*
-  * 2 plane YCbCr MSB aligned
-diff --git a/include/uapi/linux/dma-buf.h b/include/uapi/linux/dma-buf.h
-index f76d11725..37aeab6d1 100644
---- a/include/uapi/linux/dma-buf.h
-+++ b/include/uapi/linux/dma-buf.h
-@@ -47,4 +47,12 @@ struct dma_buf_sync {
- #define DMA_BUF_SET_NAME_A	_IOW(DMA_BUF_BASE, 1, __u32)
- #define DMA_BUF_SET_NAME_B	_IOW(DMA_BUF_BASE, 1, __u64)
- 
-+struct dma_buf_sync_partial {
-+	__u64 flags;
-+	__u32 offset;
-+	__u32 len;
-+};
-+
-+#define DMA_BUF_IOCTL_SYNC_PARTIAL	_IOW(DMA_BUF_BASE, 2, struct dma_buf_sync_partial)
-+
- #endif
-diff --git a/include/uapi/linux/media-bus-format.h b/include/uapi/linux/media-bus-format.h
-index 84fa53ffb..096f891d4 100644
---- a/include/uapi/linux/media-bus-format.h
-+++ b/include/uapi/linux/media-bus-format.h
-@@ -34,7 +34,7 @@
- 
- #define MEDIA_BUS_FMT_FIXED			0x0001
- 
--/* RGB - next is	0x101d */
-+/* RGB - next is	0x1024 */
- #define MEDIA_BUS_FMT_RGB444_1X12		0x1016
- #define MEDIA_BUS_FMT_RGB444_2X8_PADHI_BE	0x1001
- #define MEDIA_BUS_FMT_RGB444_2X8_PADHI_LE	0x1002
-@@ -63,6 +63,10 @@
- #define MEDIA_BUS_FMT_RGB101010_1X30		0x1018
- #define MEDIA_BUS_FMT_RGB121212_1X36		0x1019
- #define MEDIA_BUS_FMT_RGB161616_1X48		0x101a
-+#define MEDIA_BUS_FMT_RGB888_DUMMY_4X8		0x101f
-+#define MEDIA_BUS_FMT_BGR888_DUMMY_4X8		0x1020
-+#define MEDIA_BUS_FMT_RGB101010_1X7X5_SPWG	0x1022
-+#define MEDIA_BUS_FMT_RGB101010_1X7X5_JEIDA	0x1023
- 
- /* YUV (including grey) - next is	0x202e */
- #define MEDIA_BUS_FMT_Y8_1X8			0x2001
-diff --git a/include/uapi/linux/serial_reg.h b/include/uapi/linux/serial_reg.h
-index f51bc8f36..7e3fe68af 100644
---- a/include/uapi/linux/serial_reg.h
-+++ b/include/uapi/linux/serial_reg.h
-@@ -30,6 +30,7 @@
-  * Sleep mode for ST16650 and TI16750.  For the ST16650, EFR[4]=1
-  */
- #define UART_IERX_SLEEP		0x10 /* Enable sleep mode */
-+#define UART_IER_PTIME		0x80 /* Enable programmable transmit interrupt mode */
- 
- #define UART_IIR	2	/* In:  Interrupt ID Register */
- #define UART_IIR_NO_INT		0x01 /* No interrupts pending */
-diff --git a/include/uapi/linux/usb/g_uvc.h b/include/uapi/linux/usb/g_uvc.h
-index 652f169a0..428926e35 100644
---- a/include/uapi/linux/usb/g_uvc.h
-+++ b/include/uapi/linux/usb/g_uvc.h
-@@ -19,7 +19,9 @@
- #define UVC_EVENT_STREAMOFF		(V4L2_EVENT_PRIVATE_START + 3)
- #define UVC_EVENT_SETUP			(V4L2_EVENT_PRIVATE_START + 4)
- #define UVC_EVENT_DATA			(V4L2_EVENT_PRIVATE_START + 5)
--#define UVC_EVENT_LAST			(V4L2_EVENT_PRIVATE_START + 5)
-+#define UVC_EVENT_SUSPEND		(V4L2_EVENT_PRIVATE_START + 6)
-+#define UVC_EVENT_RESUME		(V4L2_EVENT_PRIVATE_START + 7)
-+#define UVC_EVENT_LAST			(V4L2_EVENT_PRIVATE_START + 7)
- 
- struct uvc_request_data {
- 	__s32 length;
-diff --git a/include/uapi/linux/usb/video.h b/include/uapi/linux/usb/video.h
-index bfdae12cd..b82436fd9 100644
---- a/include/uapi/linux/usb/video.h
-+++ b/include/uapi/linux/usb/video.h
-@@ -567,5 +567,63 @@ struct UVC_FRAME_MJPEG(n) {				\
- 	__le32 dwFrameInterval[n];			\
- } __attribute__ ((packed))
- 
-+/* Frame Based Payload - 3.1.1. Frame Based Video Format Descriptor */
-+struct uvc_format_framebased {
-+	__u8  bLength;
-+	__u8  bDescriptorType;
-+	__u8  bDescriptorSubType;
-+	__u8  bFormatIndex;
-+	__u8  bNumFrameDescriptors;
-+	__u8  guidFormat[16];
-+	__u8  bBitsPerPixel;
-+	__u8  bDefaultFrameIndex;
-+	__u8  bAspectRatioX;
-+	__u8  bAspectRatioY;
-+	__u8  bmInterfaceFlags;
-+	__u8  bCopyProtect;
-+	__u8  bVariableSize;
-+} __attribute__((__packed__));
-+
-+#define UVC_DT_FORMAT_FRAMEBASED_SIZE			28
-+
-+/* Frame Based Payload - 3.1.2. Frame Based Video Frame Descriptor */
-+struct uvc_frame_framebased {
-+	__u8  bLength;
-+	__u8  bDescriptorType;
-+	__u8  bDescriptorSubType;
-+	__u8  bFrameIndex;
-+	__u8  bmCapabilities;
-+	__u16 wWidth;
-+	__u16 wHeight;
-+	__u32 dwMinBitRate;
-+	__u32 dwMaxBitRate;
-+	__u32 dwDefaultFrameInterval;
-+	__u8  bFrameIntervalType;
-+	__u32 dwBytesPerLine;
-+	__u32 dwFrameInterval[];
-+} __attribute__((__packed__));
-+
-+#define UVC_DT_FRAME_FRAMEBASED_SIZE(n)                        (26+4*(n))
-+
-+#define UVC_FRAME_FRAMEBASED(n) \
-+	uvc_frame_framebased_##n
-+
-+#define DECLARE_UVC_FRAME_FRAMEBASED(n)		\
-+struct UVC_FRAME_FRAMEBASED(n) {		\
-+	__u8  bLength;				\
-+	__u8  bDescriptorType;			\
-+	__u8  bDescriptorSubType;		\
-+	__u8  bFrameIndex;			\
-+	__u8  bmCapabilities;			\
-+	__u16 wWidth;				\
-+	__u16 wHeight;				\
-+	__u32 dwMinBitRate;			\
-+	__u32 dwMaxBitRate;			\
-+	__u32 dwDefaultFrameInterval;		\
-+	__u8  bFrameIntervalType;		\
-+	__u32 dwBytesPerLine;			\
-+	__u32 dwFrameInterval[n];		\
-+} __attribute__ ((packed))
-+
- #endif /* __LINUX_USB_VIDEO_H */
- 
-diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
-index a184c4939..b80ac7753 100644
---- a/include/uapi/linux/v4l2-controls.h
-+++ b/include/uapi/linux/v4l2-controls.h
-@@ -65,6 +65,7 @@
- #define V4L2_CTRL_CLASS_FM_RX		0x00a10000	/* FM Receiver controls */
- #define V4L2_CTRL_CLASS_RF_TUNER	0x00a20000	/* RF tuner controls */
- #define V4L2_CTRL_CLASS_DETECT		0x00a30000	/* Detection controls */
-+#define V4L2_CTRL_CLASS_COLORIMETRY	0x00a50000	/* Colorimetry controls */
- 
- /* User-class control IDs */
- 
-@@ -188,6 +189,12 @@ enum v4l2_colorfx {
-  */
- #define V4L2_CID_USER_MAX217X_BASE		(V4L2_CID_USER_BASE + 0x1090)
- 
 +/*
-+ * The base for the tc35874x driver controls.
-+ * We reserve 16 controls for this driver.
++ * Switch events
 + */
-+#define V4L2_CID_USER_TC35874X_BASE		(V4L2_CID_USER_BASE + 0x10a0)
 +
- /* The base for the imx driver controls.
-  * We reserve 16 controls for this driver. */
- #define V4L2_CID_USER_IMX_BASE			(V4L2_CID_USER_BASE + 0x10b0)
-@@ -415,6 +422,12 @@ enum v4l2_mpeg_video_multi_slice_mode {
- #define V4L2_CID_MPEG_VIDEO_MV_H_SEARCH_RANGE		(V4L2_CID_MPEG_BASE+227)
- #define V4L2_CID_MPEG_VIDEO_MV_V_SEARCH_RANGE		(V4L2_CID_MPEG_BASE+228)
- #define V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME		(V4L2_CID_MPEG_BASE+229)
-+#define V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID	(V4L2_CID_MPEG_BASE+230)
-+#define V4L2_CID_MPEG_VIDEO_AU_DELIMITER		(V4L2_CID_MPEG_BASE+231)
-+#define V4L2_CID_MPEG_VIDEO_LTR_COUNT			(V4L2_CID_MPEG_BASE+232)
-+#define V4L2_CID_MPEG_VIDEO_FRAME_LTR_INDEX		(V4L2_CID_MPEG_BASE+233)
-+#define V4L2_CID_MPEG_VIDEO_USE_LTR_FRAMES		(V4L2_CID_MPEG_BASE+234)
-+#define V4L2_CID_MPEG_VIDEO_DEC_CONCEAL_COLOR		(V4L2_CID_MPEG_BASE+235)
++#define SW_LID			0x00  /* set = lid shut */
++#define SW_TABLET_MODE		0x01  /* set = tablet mode */
++#define SW_HEADPHONE_INSERT	0x02  /* set = inserted */
++#define SW_RFKILL_ALL		0x03  /* rfkill master switch, type "any"
++					 set = radio enabled */
++#define SW_RADIO		SW_RFKILL_ALL	/* deprecated */
++#define SW_MICROPHONE_INSERT	0x04  /* set = inserted */
++#define SW_DOCK			0x05  /* set = plugged into dock */
++#define SW_LINEOUT_INSERT	0x06  /* set = inserted */
++#define SW_JACK_PHYSICAL_INSERT 0x07  /* set = mechanical switch set */
++#define SW_VIDEOOUT_INSERT	0x08  /* set = inserted */
++#define SW_CAMERA_LENS_COVER	0x09  /* set = lens covered */
++#define SW_KEYPAD_SLIDE		0x0a  /* set = keypad slide out */
++#define SW_FRONT_PROXIMITY	0x0b  /* set = front proximity sensor active */
++#define SW_ROTATE_LOCK		0x0c  /* set = rotate locked/disabled */
++#define SW_LINEIN_INSERT	0x0d  /* set = inserted */
++#define SW_MUTE_DEVICE		0x0e  /* set = device disabled */
++#define SW_MAX			0x0f
++#define SW_CNT			(SW_MAX+1)
++
++/*
++ * Misc events
++ */
++
++#define MSC_SERIAL		0x00
++#define MSC_PULSELED		0x01
++#define MSC_GESTURE		0x02
++#define MSC_RAW			0x03
++#define MSC_SCAN		0x04
++#define MSC_TIMESTAMP		0x05
++#define MSC_MAX			0x07
++#define MSC_CNT			(MSC_MAX+1)
++
++/*
++ * LEDs
++ */
++
++#define LED_NUML		0x00
++#define LED_CAPSL		0x01
++#define LED_SCROLLL		0x02
++#define LED_COMPOSE		0x03
++#define LED_KANA		0x04
++#define LED_SLEEP		0x05
++#define LED_SUSPEND		0x06
++#define LED_MUTE		0x07
++#define LED_MISC		0x08
++#define LED_MAIL		0x09
++#define LED_CHARGING		0x0a
++#define LED_MAX			0x0f
++#define LED_CNT			(LED_MAX+1)
++
++/*
++ * Autorepeat values
++ */
++
++#define REP_DELAY		0x00
++#define REP_PERIOD		0x01
++#define REP_MAX			0x01
++#define REP_CNT			(REP_MAX+1)
++
++/*
++ * Sounds
++ */
++
++#define SND_CLICK		0x00
++#define SND_BELL		0x01
++#define SND_TONE		0x02
++#define SND_MAX			0x07
++#define SND_CNT			(SND_MAX+1)
++
++/*
++ * IDs.
++ */
++
++#define ID_BUS			0
++#define ID_VENDOR		1
++#define ID_PRODUCT		2
++#define ID_VERSION		3
++
++#define BUS_PCI			0x01
++#define BUS_ISAPNP		0x02
++#define BUS_USB			0x03
++#define BUS_HIL			0x04
++#define BUS_BLUETOOTH		0x05
++#define BUS_VIRTUAL		0x06
++
++#define BUS_ISA			0x10
++#define BUS_I8042		0x11
++#define BUS_XTKBD		0x12
++#define BUS_RS232		0x13
++#define BUS_GAMEPORT		0x14
++#define BUS_PARPORT		0x15
++#define BUS_AMIGA		0x16
++#define BUS_ADB			0x17
++#define BUS_I2C			0x18
++#define BUS_HOST		0x19
++#define BUS_GSC			0x1A
++#define BUS_ATARI		0x1B
++#define BUS_SPI			0x1C
++
++/*
++ * MT_TOOL types
++ */
++#define MT_TOOL_FINGER		0
++#define MT_TOOL_PEN		1
++#define MT_TOOL_MAX		1
++
++/*
++ * Values describing the status of a force-feedback effect
++ */
++#define FF_STATUS_STOPPED	0x00
++#define FF_STATUS_PLAYING	0x01
++#define FF_STATUS_MAX		0x01
+diff --git a/include/dt-bindings/phy/phy-snps-pcie3.h b/include/dt-bindings/phy/phy-snps-pcie3.h
+new file mode 100755
+index 000000000..5006947f2
+--- /dev/null
++++ b/include/dt-bindings/phy/phy-snps-pcie3.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++/*
++ * Copyright (c) 2021 Rockchip Electronics Co., Ltd.
++ */
++
++#ifndef _DT_BINDINGS_PHY_SNPS_PCIE3
++#define _DT_BINDINGS_PHY_SNPS_PCIE3
++
++/*
++ * pcie30_phy_mode[2:0]
++ * bit2: aggregation
++ * bit1: bifurcation for port 1
++ * bit0: bifurcation for port 0
++ */
++#define PHY_MODE_PCIE_AGGREGATION 4	/* PCIe3x4 */
++#define PHY_MODE_PCIE_NANBNB	0	/* P1:PCIe3x2  +  P0:PCIe3x2 */
++#define PHY_MODE_PCIE_NANBBI	1	/* P1:PCIe3x2  +  P0:PCIe3x1*2 */
++#define PHY_MODE_PCIE_NABINB	2	/* P1:PCIe3x1*2 + P0:PCIe3x2 */
++#define PHY_MODE_PCIE_NABIBI	3	/* P1:PCIe3x1*2 + P0:PCIe3x1*2 */
++
++#endif /* _DT_BINDINGS_PHY_SNPS_PCIE3 */
+diff --git a/include/dt-bindings/power/rk3588-power.h b/include/dt-bindings/power/rk3588-power.h
+new file mode 100755
+index 000000000..ee2fa52c9
+--- /dev/null
++++ b/include/dt-bindings/power/rk3588-power.h
+@@ -0,0 +1,69 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++#ifndef __DT_BINDINGS_POWER_RK3588_POWER_H__
++#define __DT_BINDINGS_POWER_RK3588_POWER_H__
++
++/* VD_LITDSU */
++#define RK3588_PD_CPU_0		0
++#define RK3588_PD_CPU_1		1
++#define RK3588_PD_CPU_2		2
++#define RK3588_PD_CPU_3		3
++
++/* VD_BIGCORE0 */
++#define RK3588_PD_CPU_4		4
++#define RK3588_PD_CPU_5		5
++
++/* VD_BIGCORE1 */
++#define RK3588_PD_CPU_6		6
++#define RK3588_PD_CPU_7		7
++
++/* VD_NPU */
++#define RK3588_PD_NPU		8
++#define RK3588_PD_NPUTOP	9
++#define RK3588_PD_NPU1		10
++#define RK3588_PD_NPU2		11
++
++/* VD_GPU */
++#define RK3588_PD_GPU		12
++
++/* VD_VCODEC */
++#define RK3588_PD_VCODEC	13
++#define RK3588_PD_RKVDEC0	14
++#define RK3588_PD_RKVDEC1	15
++#define RK3588_PD_VENC0		16
++#define RK3588_PD_VENC1		17
++
++/* VD_DD01 */
++#define RK3588_PD_DDR01		18
++
++/* VD_DD23 */
++#define RK3588_PD_DDR23		19
++
++/* VD_LOGIC */
++#define RK3588_PD_CENTER	20
++#define RK3588_PD_VDPU		21
++#define RK3588_PD_RGA30		22
++#define RK3588_PD_AV1		23
++#define RK3588_PD_VOP		24
++#define RK3588_PD_VO0		25
++#define RK3588_PD_VO1		26
++#define RK3588_PD_VI		27
++#define RK3588_PD_ISP1		28
++#define RK3588_PD_FEC		29
++#define RK3588_PD_RGA31		30
++#define RK3588_PD_USB		31
++#define RK3588_PD_PHP		32
++#define RK3588_PD_GMAC		33
++#define RK3588_PD_PCIE		34
++#define RK3588_PD_NVM		35
++#define RK3588_PD_NVM0		36
++#define RK3588_PD_SDIO		37
++#define RK3588_PD_AUDIO		38
++#define RK3588_PD_SECURE	39
++#define RK3588_PD_SDMMC		40
++#define RK3588_PD_CRYPTO	41
++#define RK3588_PD_BUS		42
++
++/* VD_PMU */
++#define RK3588_PD_PMU1		43
++
++#endif
+diff --git a/include/dt-bindings/reset/rk628-rgu.h b/include/dt-bindings/reset/rk628-rgu.h
+new file mode 100755
+index 000000000..e0c714bef
+--- /dev/null
++++ b/include/dt-bindings/reset/rk628-rgu.h
+@@ -0,0 +1,43 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2020 Rockchip Electronics Co. Ltd.
++ *
++ * Author: Wyon Bi <bivvy.bi@rock-chips.com>
++ */
++
++#ifndef _RK628_RGU_H
++#define _RK628_RGU_H
++
++#define RGU_LOGIC	0
++#define RGU_CRU		1
++#define RGU_REGFILE	2
++#define RGU_I2C2APB	3
++#define RGU_EFUSE	4
++#define RGU_ADAPTER	5
++#define RGU_CLK_RX	6
++#define RGU_BT1120DEC	7
++#define RGU_VOP		8
++#define RGU_GPIO0	9
++#define RGU_GPIO1	10
++#define RGU_GPIO2	11
++#define RGU_GPIO3	12
++#define RGU_GPIO_DB0	13
++#define RGU_GPIO_DB1	14
++#define RGU_GPIO_DB2	15
++#define RGU_GPIO_DB3	16
++#define RGU_RXPHY	17
++#define RGU_HDMIRX	18
++#define RGU_TXPHY_CON	19
++#define RGU_HDMITX	20
++#define RGU_GVIHOST	21
++#define RGU_DSI0	22
++#define RGU_DSI1	23
++#define RGU_CSI		24
++#define RGU_TXDATA	25
++#define RGU_DECODER	26
++#define RGU_ENCODER	27
++#define RGU_HDMIRX_PON	28
++#define RGU_TXBYTEHS	29
++#define RGU_TXESC	30
++
++#endif
+diff --git a/include/dt-bindings/sensor-dev.h b/include/dt-bindings/sensor-dev.h
+new file mode 100755
+index 000000000..e03f0027d
+--- /dev/null
++++ b/include/dt-bindings/sensor-dev.h
+@@ -0,0 +1,18 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __DT_BINDINGS_ROCKCHIP_SENSORDEV_H__
++#define __DT_BINDINGS_ROCKCHIP_SENSORDEV_H__
++
++#define	SENSOR_TYPE_NULL  0	
++#define	SENSOR_TYPE_ANGLE 1
++#define	SENSOR_TYPE_ACCEL 2
++#define	SENSOR_TYPE_COMPASS 3	
++#define	SENSOR_TYPE_GYROSCOPE 4	
++#define	SENSOR_TYPE_LIGHT 5	
++#define	SENSOR_TYPE_PROXIMITY 6
++#define	SENSOR_TYPE_TEMPERATURE 7	
++#define	SENSOR_TYPE_PRESSURE 8
++#define	SENSOR_TYPE_HALL 9
++#define	SENSOR_NUM_TYPES 10
++
++#endif
+diff --git a/include/dt-bindings/soc/rockchip,boot-mode.h b/include/dt-bindings/soc/rockchip,boot-mode.h
+index 4b0914c09..1436e1d32 100644
+--- a/include/dt-bindings/soc/rockchip,boot-mode.h
++++ b/include/dt-bindings/soc/rockchip,boot-mode.h
+@@ -10,7 +10,15 @@
+ #define BOOT_BL_DOWNLOAD	(REBOOT_FLAG + 1)
+ /* enter recovery */
+ #define BOOT_RECOVERY		(REBOOT_FLAG + 3)
+- /* enter fastboot mode */
++/* reboot by panic */
++#define BOOT_PANIC		(REBOOT_FLAG + 7)
++/* reboot by watchdog */
++#define BOOT_WATCHDOG		(REBOOT_FLAG + 8)
++/* enter fastboot mode */
+ #define BOOT_FASTBOOT		(REBOOT_FLAG + 9)
++/* enter charging mode */
++#define BOOT_CHARGING		(REBOOT_FLAG + 11)
++/* enter usb mass storage mode */
++#define BOOT_UMS		(REBOOT_FLAG + 12)
  
- /* CIDs for the MPEG-2 Part 2 (H.262) codec */
- #define V4L2_CID_MPEG_VIDEO_MPEG2_LEVEL			(V4L2_CID_MPEG_BASE+270)
-@@ -578,6 +591,15 @@ enum v4l2_mpeg_video_h264_hierarchical_coding_type {
- #define V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+386)
- #define V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MIN_QP	(V4L2_CID_MPEG_BASE+387)
- #define V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+388)
-+#define V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MIN_QP	(V4L2_CID_MPEG_BASE+389)
-+#define V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+390)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L0_BR	(V4L2_CID_MPEG_BASE+391)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L1_BR	(V4L2_CID_MPEG_BASE+392)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L2_BR	(V4L2_CID_MPEG_BASE+393)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L3_BR	(V4L2_CID_MPEG_BASE+394)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L4_BR	(V4L2_CID_MPEG_BASE+395)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L5_BR	(V4L2_CID_MPEG_BASE+396)
-+#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L6_BR	(V4L2_CID_MPEG_BASE+397)
- #define V4L2_CID_MPEG_VIDEO_MPEG4_I_FRAME_QP	(V4L2_CID_MPEG_BASE+400)
- #define V4L2_CID_MPEG_VIDEO_MPEG4_P_FRAME_QP	(V4L2_CID_MPEG_BASE+401)
- #define V4L2_CID_MPEG_VIDEO_MPEG4_B_FRAME_QP	(V4L2_CID_MPEG_BASE+402)
-@@ -768,6 +790,15 @@ enum v4l2_mpeg_video_frame_skip_mode {
- 	V4L2_MPEG_VIDEO_FRAME_SKIP_MODE_BUF_LIMIT	= 2,
- };
- 
-+#define V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 647)
-+#define V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 648)
-+#define V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 649)
-+#define V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 650)
-+#define V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 651)
-+#define V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 652)
-+#define V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY		(V4L2_CID_MPEG_BASE + 653)
-+#define V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY_ENABLE	(V4L2_CID_MPEG_BASE + 654)
-+
- /*  MPEG-class control IDs specific to the CX2341x driver as defined by V4L2 */
- #define V4L2_CID_MPEG_CX2341X_BASE				(V4L2_CTRL_CLASS_MPEG | 0x1000)
- #define V4L2_CID_MPEG_CX2341X_VIDEO_SPATIAL_FILTER_MODE		(V4L2_CID_MPEG_CX2341X_BASE+0)
-@@ -1171,4 +1202,38 @@ enum v4l2_detect_md_mode {
- #define V4L2_CID_DETECT_MD_THRESHOLD_GRID	(V4L2_CID_DETECT_CLASS_BASE + 3)
- #define V4L2_CID_DETECT_MD_REGION_GRID		(V4L2_CID_DETECT_CLASS_BASE + 4)
- 
-+#define V4L2_CID_COLORIMETRY_CLASS_BASE	(V4L2_CTRL_CLASS_COLORIMETRY | 0x900)
-+#define V4L2_CID_COLORIMETRY_CLASS	(V4L2_CTRL_CLASS_COLORIMETRY | 1)
-+
-+#define V4L2_CID_COLORIMETRY_HDR10_CLL_INFO	(V4L2_CID_COLORIMETRY_CLASS_BASE + 0)
-+
-+struct v4l2_ctrl_hdr10_cll_info {
-+	__u16 max_content_light_level;
-+	__u16 max_pic_average_light_level;
-+};
-+
-+#define V4L2_CID_COLORIMETRY_HDR10_MASTERING_DISPLAY	(V4L2_CID_COLORIMETRY_CLASS_BASE + 1)
-+
-+#define V4L2_HDR10_MASTERING_PRIMARIES_X_LOW	5
-+#define V4L2_HDR10_MASTERING_PRIMARIES_X_HIGH	37000
-+#define V4L2_HDR10_MASTERING_PRIMARIES_Y_LOW	5
-+#define V4L2_HDR10_MASTERING_PRIMARIES_Y_HIGH	42000
-+#define V4L2_HDR10_MASTERING_WHITE_POINT_X_LOW	5
-+#define V4L2_HDR10_MASTERING_WHITE_POINT_X_HIGH	37000
-+#define V4L2_HDR10_MASTERING_WHITE_POINT_Y_LOW	5
-+#define V4L2_HDR10_MASTERING_WHITE_POINT_Y_HIGH	42000
-+#define V4L2_HDR10_MASTERING_MAX_LUMA_LOW	50000
-+#define V4L2_HDR10_MASTERING_MAX_LUMA_HIGH	100000000
-+#define V4L2_HDR10_MASTERING_MIN_LUMA_LOW	1
-+#define V4L2_HDR10_MASTERING_MIN_LUMA_HIGH	50000
-+
-+struct v4l2_ctrl_hdr10_mastering_display {
-+	__u16 display_primaries_x[3];
-+	__u16 display_primaries_y[3];
-+	__u16 white_point_x;
-+	__u16 white_point_y;
-+	__u32 max_display_mastering_luminance;
-+	__u32 min_display_mastering_luminance;
-+};
-+
  #endif
-diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
-index b28817c59..1e650c284 100644
---- a/include/uapi/linux/videodev2.h
-+++ b/include/uapi/linux/videodev2.h
-@@ -689,6 +689,7 @@ struct v4l2_pix_format {
- #define V4L2_PIX_FMT_JPEG     v4l2_fourcc('J', 'P', 'E', 'G') /* JFIF JPEG     */
- #define V4L2_PIX_FMT_DV       v4l2_fourcc('d', 'v', 's', 'd') /* 1394          */
- #define V4L2_PIX_FMT_MPEG     v4l2_fourcc('M', 'P', 'E', 'G') /* MPEG-1/2/4 Multiplexed */
-+#define V4L2_PIX_FMT_H265     v4l2_fourcc('H', '2', '6', '5') /* H265 with start codes */
- #define V4L2_PIX_FMT_H264     v4l2_fourcc('H', '2', '6', '4') /* H264 with start codes */
- #define V4L2_PIX_FMT_H264_NO_SC v4l2_fourcc('A', 'V', 'C', '1') /* H264 without start codes */
- #define V4L2_PIX_FMT_H264_MVC v4l2_fourcc('M', '2', '6', '4') /* H264 MVC */
-@@ -1778,6 +1779,14 @@ enum v4l2_ctrl_type {
- 	V4L2_CTRL_TYPE_U16	     = 0x0101,
- 	V4L2_CTRL_TYPE_U32	     = 0x0102,
- 	V4L2_CTRL_TYPE_AREA          = 0x0106,
-+	V4L2_CTRL_TYPE_HDR10_CLL_INFO		= 0x0110,
-+	V4L2_CTRL_TYPE_HDR10_MASTERING_DISPLAY	= 0x0111,
-+	V4L2_CTRL_TYPE_H264_SPS             = 0x0200,
-+	V4L2_CTRL_TYPE_H264_PPS		    = 0x0201,
-+	V4L2_CTRL_TYPE_H264_SCALING_MATRIX  = 0x0202,
-+	V4L2_CTRL_TYPE_H264_SLICE_PARAMS    = 0x0203,
-+	V4L2_CTRL_TYPE_H264_DECODE_PARAMS   = 0x0204,
-+	V4L2_CTRL_TYPE_H264_PRED_WEIGHTS    = 0x0205,
- };
- 
- /*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */
-diff --git a/init/Kconfig b/init/Kconfig
-index 4b5a6fc0f..cf5edde30 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1352,6 +1352,11 @@ config BLK_DEV_INITRD
- if BLK_DEV_INITRD
- 
- source "usr/Kconfig"
-+config INITRD_ASYNC
-+	bool "Initrd async"
-+	depends on NO_GKI
-+	help
-+	  Init ramdisk async, can reduce kernel init time.
- 
- endif
- 
-@@ -1711,6 +1716,13 @@ config KALLSYMS
- 	  symbolic stack backtraces. This increases the size of the kernel
- 	  somewhat, as all symbols have to be loaded into the kernel image.
- 
-+config WGCM
-+	bool "Enable Workgroup Control Monitor API"
-+	default n
-+	help
-+	  Enable Workgroup Control Monitor API, userspace can get the number of
-+	  blocked threads.
+diff --git a/include/dt-bindings/soc/rockchip-system-status.h b/include/dt-bindings/soc/rockchip-system-status.h
+new file mode 100755
+index 000000000..b6689e969
+--- /dev/null
++++ b/include/dt-bindings/soc/rockchip-system-status.h
+@@ -0,0 +1,50 @@
++/*
++ *
++ * Copyright (C) 2017 ROCKCHIP, Inc.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
 +
- config KALLSYMS_ALL
- 	bool "Include all symbols in kallsyms"
- 	depends on DEBUG_KERNEL && KALLSYMS
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 55b74d7e5..f4c4e2404 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -12,6 +12,7 @@
- #include <linux/file.h>
- #include <linux/memblock.h>
- #include <linux/namei.h>
-+#include <linux/initramfs.h>
- #include <linux/init_syscalls.h>
- 
- static ssize_t __init xwrite(struct file *file, const char *p, size_t count,
-@@ -465,6 +466,9 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
- 	state = Start;
- 	this_header = 0;
- 	message = NULL;
-+#if defined(CONFIG_ROCKCHIP_THUNDER_BOOT) && defined(CONFIG_ROCKCHIP_HW_DECOMPRESS) && defined(CONFIG_INITRD_ASYNC)
-+	wait_initrd_hw_decom_done();
++#ifndef _DT_BINDINGS_SOC_ROCKCHIP_SYSTEM_STATUS_H
++#define _DT_BINDINGS_SOC_ROCKCHIP_SYSTEM_STATUS_H
++
++#define SYS_STATUS_NORMAL	(1 << 0)
++#define SYS_STATUS_SUSPEND	(1 << 1)
++#define SYS_STATUS_IDLE		(1 << 2)
++#define SYS_STATUS_REBOOT	(1 << 3)
++#define SYS_STATUS_VIDEO_4K	(1 << 4)
++#define SYS_STATUS_VIDEO_1080P	(1 << 5)
++#define SYS_STATUS_GPU		(1 << 6)
++#define SYS_STATUS_RGA		(1 << 7)
++#define SYS_STATUS_CIF0		(1 << 8)
++#define SYS_STATUS_CIF1		(1 << 9)
++#define SYS_STATUS_LCDC0	(1 << 10)
++#define SYS_STATUS_LCDC1	(1 << 11)
++#define SYS_STATUS_BOOST	(1 << 12)
++#define SYS_STATUS_PERFORMANCE	(1 << 13)
++#define SYS_STATUS_ISP		(1 << 14)
++#define SYS_STATUS_HDMI		(1 << 15)
++#define SYS_STATUS_VIDEO_4K_10B	(1 << 16)
++#define SYS_STATUS_LOW_POWER	(1 << 17)
++#define SYS_STATUS_HDMIRX	(1 << 18)
++#define SYS_STATUS_VIDEO_SVEP	(1 << 19)
++
++#define SYS_STATUS_VIDEO	(SYS_STATUS_VIDEO_4K | \
++				 SYS_STATUS_VIDEO_1080P | \
++				 SYS_STATUS_VIDEO_4K_10B)
++#define SYS_STATUS_DUALVIEW	(SYS_STATUS_LCDC0 | SYS_STATUS_LCDC1)
++
++#define DMC_FREQ_LEVEL_LOW	(0x1 << 0)
++#define DMC_FREQ_LEVEL_MID_LOW	(0x1 << 1)
++#define DMC_FREQ_LEVEL_MID_HIGH	(0x1 << 2)
++#define DMC_FREQ_LEVEL_HIGH	(0x1 << 3)
++
 +#endif
- 	while (!message && len) {
- 		loff_t saved_offset = this_header;
- 		if (*buf == '0' && !(this_header & 3)) {
-@@ -639,4 +643,23 @@ static int __init populate_rootfs(void)
- 	flush_delayed_fput();
- 	return 0;
- }
+diff --git a/include/dt-bindings/suspend/rockchip-rk3588.h b/include/dt-bindings/suspend/rockchip-rk3588.h
+new file mode 100755
+index 000000000..936febd57
+--- /dev/null
++++ b/include/dt-bindings/suspend/rockchip-rk3588.h
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: (GPL-2.0+ OR MIT) */
++/*
++ * Header providing constants for Rockchip suspend bindings.
++ *
++ * Copyright (C) 2022, Rockchip Electronics Co., Ltd
++ * Author: XiaoDong.Huang
++ */
 +
-+#if IS_BUILTIN(CONFIG_INITRD_ASYNC)
-+#include <linux/kthread.h>
-+#include <linux/async.h>
++#ifndef __DT_BINDINGS_RK3588_PM_H__
++#define __DT_BINDINGS_RK3588_PM_H__
++/******************************bits ops************************************/
 +
-+static void __init unpack_rootfs_async(void *unused, async_cookie_t cookie)
-+{
-+	populate_rootfs();
-+}
-+
-+static int __init populate_rootfs_async(void)
-+{
-+	async_schedule(unpack_rootfs_async, NULL);
-+	return 0;
-+}
-+
-+pure_initcall(populate_rootfs_async);
-+#else
- rootfs_initcall(populate_rootfs);
-+#endif
-diff --git a/init/main.c b/init/main.c
-index 30d6afeae..f54324ddb 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -113,6 +113,10 @@
- 
- #include <kunit/test.h>
- 
-+#ifdef CONFIG_SCHED_RTG_AUTHORITY
-+extern int init_rtg_authority_control(void);
++#ifndef BIT
++#define BIT(nr)				(1 << (nr))
 +#endif
 +
- static int kernel_init(void *);
- 
- extern void init_IRQ(void);
-@@ -926,6 +930,10 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
- 		local_irq_disable();
- 	radix_tree_init();
- 
-+#ifdef CONFIG_SCHED_RTG_AUTHORITY
-+	BUG_ON(init_rtg_authority_control());
-+#endif
++#define RKPM_SLP_ARMPD			BIT(0)
++#define RKPM_SLP_ARMOFF			BIT(1)
++#define RKPM_SLP_ARMOFF_DDRPD		BIT(2)
++#define RKPM_SLP_ARMOFF_LOGOFF		BIT(3)
++#define RKPM_SLP_ARMOFF_PMUOFF		BIT(4)
 +
- 	/*
- 	 * Set up housekeeping before setting up workqueues to allow the unbound
- 	 * workqueue to take non-housekeeping into account.
-@@ -1524,6 +1532,9 @@ static noinline void __init kernel_init_freeable(void)
- 	smp_init();
- 	sched_init_smp();
- 
-+#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT
-+	kthread_run(defer_free_memblock, NULL, "defer_mem");
++/* all plls except ddr's pll*/
++#define RKPM_SLP_PMU_HW_PLLS_PD		BIT(8)
++#define RKPM_SLP_PMU_PMUALIVE_32K	BIT(9)
++#define RKPM_SLP_PMU_DIS_OSC		BIT(10)
++
++#define RKPM_SLP_CLK_GT			BIT(16)
++#define RKPM_SLP_PMIC_LP		BIT(17)
++
++#define RKPM_SLP_32K_EXT		BIT(24)
++#define RKPM_SLP_TIME_OUT_WKUP		BIT(25)
++#define RKPM_SLP_PMU_DBG		BIT(26)
++
++/* the wake up source */
++#define RKPM_CPU0_WKUP_EN		BIT(0)
++#define RKPM_CPU1_WKUP_EN		BIT(1)
++#define RKPM_CPU2_WKUP_EN		BIT(2)
++#define RKPM_CPU3_WKUP_EN		BIT(3)
++#define RKPM_CPU4_WKUP_EN		BIT(4)
++#define RKPM_CPU5_WKUP_EN		BIT(5)
++#define RKPM_CPU6_WKUP_EN		BIT(6)
++#define RKPM_CPU7_WKUP_EN		BIT(7)
++#define RKPM_GPIO_WKUP_EN		BIT(8)
++#define RKPM_SDMMC_WKUP_EN		BIT(9)
++#define RKPM_SDIO_WKUP_EN		BIT(10)
++#define RKPM_USB_WKUP_EN		BIT(11)
++#define RKPM_UART0_WKUP_EN		BIT(12)
++#define RKPM_VAD_WKUP_EN		BIT(13)
++#define RKPM_TIMER_WKUP_EN		BIT(14)
++#define RKPM_SYSINT_WKUP_EN		BIT(15)
++#define RKPM_TIME_OUT_WKUP_EN		BIT(16)
++#define RKPM_PMUMCU_CEC_WKUP_EN		BIT(20)
++#define RKPM_PMUMCU_VAD_WKUP_EN		BIT(21)
++
++/* io retention config */
++#define RKPM_EMMCIO_RET_EN		BIT(0)
++#define RKPM_VCCIO1_RET_EN		BIT(1)
++#define RKPM_VCCIO2_RET_EN		BIT(2)
++#define RKPM_VCCIO3_RET_EN		BIT(3)
++#define RKPM_VCCIO4_RET_EN		BIT(4)
++#define RKPM_VCCIO5_RET_EN		BIT(5)
++#define RKPM_VCCIO6_RET_EN		BIT(6)
++#define RKPM_PMUIO2_RET_EN		BIT(7)
 +#endif
  	padata_init();
  	page_alloc_init_late();
