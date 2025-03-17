@@ -76591,261 +76591,1748 @@ index 8d6cdb254..d99a53025 100644
 +++ b/include/sound/hwdep.h
 @@ -9,6 +9,7 @@
  
- #include "lkc.h"
+ #include <sound/asound.h>
+ #include <linux/poll.h>
++#include <linux/android_kabi.h>
  
-@@ -20,11 +21,18 @@
+ struct snd_hwdep;
  
- int cdebug = PRINTD;
- 
-+static const char *kconfig_white_list[] = {
-+	"vendor/Kconfig",
-+	"net/newip/Kconfig",
-+	"net/newip/hooks/Kconfig",
-+};
+@@ -34,6 +35,8 @@ struct snd_hwdep_ops {
+ 			  struct snd_hwdep_dsp_status *status);
+ 	int (*dsp_load)(struct snd_hwdep *hw,
+ 			struct snd_hwdep_dsp_image *image);
 +
- static void yyerror(const char *err);
- static void zconfprint(const char *err, ...);
- static void zconf_error(const char *err, ...);
- static bool zconf_endtoken(const char *tokenname,
- 			   const char *expected_tokenname);
-+static bool zconf_in_whitelist(const char *path);
- 
- struct symbol *symbol_hash[SYMBOL_HASHSIZE];
- 
-@@ -367,7 +375,9 @@ menu_option_list:
- source_stmt: T_SOURCE T_WORD_QUOTE T_EOL
- {
- 	printd(DEBUG_PARSE, "%s:%d:source %s\n", zconf_curname(), zconf_lineno(), $2);
--	zconf_nextfile($2);
-+	if (access(($2), F_OK) == 0 || zconf_in_whitelist($2) == false) {
-+		zconf_nextfile($2);
-+	}
- 	free($2);
++	ANDROID_KABI_RESERVE(1);
  };
  
-@@ -484,6 +494,16 @@ assign_val:
- 
- %%
- 
-+static bool zconf_in_whitelist(const char *path)
-+{
-+	int i;
-+	for (i = 0; i < sizeof(kconfig_white_list) / sizeof(kconfig_white_list[0]); i++) {
-+		if(strcmp(kconfig_white_list[i], path) == 0)
-+			return true;
-+	}
-+	return false;
-+}
+ struct snd_hwdep {
+@@ -59,6 +62,8 @@ struct snd_hwdep {
+ 	int used;			/* reference counter */
+ 	unsigned int dsp_loaded;	/* bit fields of loaded dsp indices */
+ 	unsigned int exclusive:1;	/* exclusive access mode */
 +
- void conf_parse(const char *name)
- {
- 	struct symbol *sym;
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 662f7b4a9..a4e66d3b1 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -101,7 +101,7 @@
- #include "ibpkey.h"
- #include "xfrm.h"
- #include "netlabel.h"
--#include "audit.h"
-+#include "include/audit.h"
- #include "avc_ss.h"
++	ANDROID_KABI_RESERVE(1);
+ };
  
- struct selinux_state selinux_state;
-diff --git a/security/selinux/ss/avtab.h b/security/selinux/ss/avtab.h
-index f2eeb3626..96f121d33 100644
---- a/security/selinux/ss/avtab.h
-+++ b/security/selinux/ss/avtab.h
-@@ -21,7 +21,7 @@
- #ifndef _SS_AVTAB_H_
- #define _SS_AVTAB_H_
+ extern int snd_hwdep_new(struct snd_card *card, char *id, int device,
+diff --git a/include/sound/pcm_iec958.h b/include/sound/pcm_iec958.h
+index 0939aa45e..64e84441c 100644
+--- a/include/sound/pcm_iec958.h
++++ b/include/sound/pcm_iec958.h
+@@ -4,6 +4,14 @@
  
--#include "security.h"
-+#include "../include/security.h"
+ #include <linux/types.h>
  
- struct avtab_key {
- 	u16 source_type;	/* source type */
-diff --git a/security/selinux/ss/context.h b/security/selinux/ss/context.h
-index 62990aa1e..9ec2bb0a4 100644
---- a/security/selinux/ss/context.h
-+++ b/security/selinux/ss/context.h
-@@ -18,7 +18,7 @@
++int snd_pcm_create_iec958_consumer_default(u8 *cs, size_t len);
++
++int snd_pcm_fill_iec958_consumer(struct snd_pcm_runtime *runtime, u8 *cs,
++				 size_t len);
++
++int snd_pcm_fill_iec958_consumer_hw_params(struct snd_pcm_hw_params *params,
++					   u8 *cs, size_t len);
++
+ int snd_pcm_create_iec958_consumer(struct snd_pcm_runtime *runtime, u8 *cs,
+ 	size_t len);
  
- #include "ebitmap.h"
- #include "mls_types.h"
--#include "security.h"
-+#include "../include/security.h"
+diff --git a/include/uapi/drm/drm_fourcc.h b/include/uapi/drm/drm_fourcc.h
+index dad9d3b4a..1b26ff448 100644
+--- a/include/uapi/drm/drm_fourcc.h
++++ b/include/uapi/drm/drm_fourcc.h
+@@ -242,6 +242,8 @@ extern "C" {
+  * index 1 = Cr:Cb plane, [39:0] Cr1:Cb1:Cr0:Cb0 little endian
+  */
+ #define DRM_FORMAT_NV15		fourcc_code('N', 'V', '1', '5') /* 2x2 subsampled Cr:Cb plane */
++#define DRM_FORMAT_NV20		fourcc_code('N', 'V', '2', '0') /* 2x1 subsampled Cr:Cb plane */
++#define DRM_FORMAT_NV30		fourcc_code('N', 'V', '3', '0') /* non-subsampled Cr:Cb plane */
  
  /*
-  * A security context consists of an authenticated user
-diff --git a/sound/soc/rockchip/Kconfig b/sound/soc/rockchip/Kconfig
-index d610b553e..2925971bc 100644
---- a/sound/soc/rockchip/Kconfig
-+++ b/sound/soc/rockchip/Kconfig
-@@ -16,6 +16,15 @@ config SND_SOC_ROCKCHIP_I2S
- 	  Rockchip I2S device. The device supports upto maximum of
- 	  8 channels each for play and record.
+  * 2 plane YCbCr MSB aligned
+diff --git a/include/uapi/linux/dma-buf.h b/include/uapi/linux/dma-buf.h
+index f76d11725..37aeab6d1 100644
+--- a/include/uapi/linux/dma-buf.h
++++ b/include/uapi/linux/dma-buf.h
+@@ -47,4 +47,12 @@ struct dma_buf_sync {
+ #define DMA_BUF_SET_NAME_A	_IOW(DMA_BUF_BASE, 1, __u32)
+ #define DMA_BUF_SET_NAME_B	_IOW(DMA_BUF_BASE, 1, __u64)
  
-+config SND_SOC_ROCKCHIP_I2S_TDM
-+	tristate "Rockchip I2S/TDM Device Driver"
-+	depends on CLKDEV_LOOKUP && SND_SOC_ROCKCHIP
-+	select SND_SOC_GENERIC_DMAENGINE_PCM
-+	help
-+	  Say Y or M if you want to add support for I2S/TDM driver for
-+	  Rockchip I2S/TDM device. The device supports up to maximum of
-+	  8 channels each for play and record.
++struct dma_buf_sync_partial {
++	__u64 flags;
++	__u32 offset;
++	__u32 len;
++};
 +
- config SND_SOC_ROCKCHIP_PDM
- 	tristate "Rockchip PDM Controller Driver"
- 	depends on CLKDEV_LOOKUP && SND_SOC_ROCKCHIP
-@@ -34,6 +43,21 @@ config SND_SOC_ROCKCHIP_SPDIF
- 	  Say Y or M if you want to add support for SPDIF driver for
- 	  Rockchip SPDIF transceiver device.
- 
-+config SND_SOC_ROCKCHIP_SPDIFRX
-+	tristate "Rockchip SPDIFRX Device Driver"
-+	depends on CLKDEV_LOOKUP && SND_SOC_ROCKCHIP
-+	select SND_SOC_GENERIC_DMAENGINE_PCM
-+	help
-+	  Say Y or M if you want to add support for SPDIFRX driver for
-+	  Rockchip SPDIF receiver device.
++#define DMA_BUF_IOCTL_SYNC_PARTIAL	_IOW(DMA_BUF_BASE, 2, struct dma_buf_sync_partial)
 +
-+config SND_SOC_ROCKCHIP_VAD
-+	tristate "Rockchip Voice Activity Detection Driver"
-+	depends on CLKDEV_LOOKUP && SND_SOC_ROCKCHIP
-+	help
-+	  Say Y or M if you want to add support for VAD driver for
-+	  Rockchip VAD device.
+ #endif
+diff --git a/include/uapi/linux/media-bus-format.h b/include/uapi/linux/media-bus-format.h
+index 84fa53ffb..096f891d4 100644
+--- a/include/uapi/linux/media-bus-format.h
++++ b/include/uapi/linux/media-bus-format.h
+@@ -34,7 +34,7 @@
+ 
+ #define MEDIA_BUS_FMT_FIXED			0x0001
+ 
+-/* RGB - next is	0x101d */
++/* RGB - next is	0x1024 */
+ #define MEDIA_BUS_FMT_RGB444_1X12		0x1016
+ #define MEDIA_BUS_FMT_RGB444_2X8_PADHI_BE	0x1001
+ #define MEDIA_BUS_FMT_RGB444_2X8_PADHI_LE	0x1002
+@@ -63,6 +63,10 @@
+ #define MEDIA_BUS_FMT_RGB101010_1X30		0x1018
+ #define MEDIA_BUS_FMT_RGB121212_1X36		0x1019
+ #define MEDIA_BUS_FMT_RGB161616_1X48		0x101a
++#define MEDIA_BUS_FMT_RGB888_DUMMY_4X8		0x101f
++#define MEDIA_BUS_FMT_BGR888_DUMMY_4X8		0x1020
++#define MEDIA_BUS_FMT_RGB101010_1X7X5_SPWG	0x1022
++#define MEDIA_BUS_FMT_RGB101010_1X7X5_JEIDA	0x1023
+ 
+ /* YUV (including grey) - next is	0x202e */
+ #define MEDIA_BUS_FMT_Y8_1X8			0x2001
+diff --git a/include/uapi/linux/serial_reg.h b/include/uapi/linux/serial_reg.h
+index f51bc8f36..7e3fe68af 100644
+--- a/include/uapi/linux/serial_reg.h
++++ b/include/uapi/linux/serial_reg.h
+@@ -30,6 +30,7 @@
+  * Sleep mode for ST16650 and TI16750.  For the ST16650, EFR[4]=1
+  */
+ #define UART_IERX_SLEEP		0x10 /* Enable sleep mode */
++#define UART_IER_PTIME		0x80 /* Enable programmable transmit interrupt mode */
+ 
+ #define UART_IIR	2	/* In:  Interrupt ID Register */
+ #define UART_IIR_NO_INT		0x01 /* No interrupts pending */
+diff --git a/include/uapi/linux/usb/g_uvc.h b/include/uapi/linux/usb/g_uvc.h
+index 652f169a0..428926e35 100644
+--- a/include/uapi/linux/usb/g_uvc.h
++++ b/include/uapi/linux/usb/g_uvc.h
+@@ -19,7 +19,9 @@
+ #define UVC_EVENT_STREAMOFF		(V4L2_EVENT_PRIVATE_START + 3)
+ #define UVC_EVENT_SETUP			(V4L2_EVENT_PRIVATE_START + 4)
+ #define UVC_EVENT_DATA			(V4L2_EVENT_PRIVATE_START + 5)
+-#define UVC_EVENT_LAST			(V4L2_EVENT_PRIVATE_START + 5)
++#define UVC_EVENT_SUSPEND		(V4L2_EVENT_PRIVATE_START + 6)
++#define UVC_EVENT_RESUME		(V4L2_EVENT_PRIVATE_START + 7)
++#define UVC_EVENT_LAST			(V4L2_EVENT_PRIVATE_START + 7)
+ 
+ struct uvc_request_data {
+ 	__s32 length;
+diff --git a/include/uapi/linux/usb/video.h b/include/uapi/linux/usb/video.h
+index c58854fb7..d160d5bdd 100644
+--- a/include/uapi/linux/usb/video.h
++++ b/include/uapi/linux/usb/video.h
+@@ -597,5 +597,63 @@ struct UVC_FRAME_MJPEG(n) {				\
+ 	__le32 dwFrameInterval[n];			\
+ } __attribute__ ((packed))
+ 
++/* Frame Based Payload - 3.1.1. Frame Based Video Format Descriptor */
++struct uvc_format_framebased {
++	__u8  bLength;
++	__u8  bDescriptorType;
++	__u8  bDescriptorSubType;
++	__u8  bFormatIndex;
++	__u8  bNumFrameDescriptors;
++	__u8  guidFormat[16];
++	__u8  bBitsPerPixel;
++	__u8  bDefaultFrameIndex;
++	__u8  bAspectRatioX;
++	__u8  bAspectRatioY;
++	__u8  bmInterfaceFlags;
++	__u8  bCopyProtect;
++	__u8  bVariableSize;
++} __attribute__((__packed__));
 +
- config SND_SOC_ROCKCHIP_MAX98090
- 	tristate "ASoC support for Rockchip boards using a MAX98090 codec"
- 	depends on SND_SOC_ROCKCHIP && I2C && GPIOLIB && CLKDEV_LOOKUP
-@@ -45,6 +69,13 @@ config SND_SOC_ROCKCHIP_MAX98090
- 	  Say Y or M here if you want to add support for SoC audio on Rockchip
- 	  boards using the MAX98090 codec and HDMI codec, such as Veyron.
- 
-+config SND_SOC_ROCKCHIP_MULTICODECS
-+	tristate "ASoC support for Rockchip multicodecs"
-+	depends on SND_SOC_ROCKCHIP && CLKDEV_LOOKUP
-+	help
-+	  Say Y or M here if you want to add support for SoC audio on Rockchip
-+	  boards using multicodecs, such as RK3308 boards.
++#define UVC_DT_FORMAT_FRAMEBASED_SIZE			28
 +
- config SND_SOC_ROCKCHIP_RT5645
- 	tristate "ASoC support for Rockchip boards using a RT5645/RT5650 codec"
- 	depends on SND_SOC_ROCKCHIP && I2C && GPIOLIB && CLKDEV_LOOKUP
-@@ -54,6 +85,14 @@ config SND_SOC_ROCKCHIP_RT5645
- 	  Say Y or M here if you want to add support for SoC audio on Rockchip
- 	  boards using the RT5645/RT5650 codec, such as Veyron.
- 
-+config SND_SOC_ROCKCHIP_HDMI
-+	tristate "ASoC support for Rockchip HDMI audio"
-+	depends on SND_SOC_ROCKCHIP && CLKDEV_LOOKUP
-+	select SND_SOC_HDMI_CODEC
-+	help
-+	  Say Y or M here if you want to add support for SoC audio on Rockchip
-+	  boards using built-in HDMI or external HDMI.
++/* Frame Based Payload - 3.1.2. Frame Based Video Frame Descriptor */
++struct uvc_frame_framebased {
++	__u8  bLength;
++	__u8  bDescriptorType;
++	__u8  bDescriptorSubType;
++	__u8  bFrameIndex;
++	__u8  bmCapabilities;
++	__u16 wWidth;
++	__u16 wHeight;
++	__u32 dwMinBitRate;
++	__u32 dwMaxBitRate;
++	__u32 dwDefaultFrameInterval;
++	__u8  bFrameIntervalType;
++	__u32 dwBytesPerLine;
++	__u32 dwFrameInterval[];
++} __attribute__((__packed__));
 +
- config SND_SOC_RK3288_HDMI_ANALOG
- 	tristate "ASoC support multiple codecs for Rockchip RK3288 boards"
- 	depends on SND_SOC_ROCKCHIP && I2C && GPIOLIB && CLKDEV_LOOKUP
-diff --git a/sound/soc/rockchip/Makefile b/sound/soc/rockchip/Makefile
-index 65e814d46..ec17d97d0 100644
---- a/sound/soc/rockchip/Makefile
-+++ b/sound/soc/rockchip/Makefile
-@@ -1,20 +1,35 @@
- # SPDX-License-Identifier: GPL-2.0
- # ROCKCHIP Platform Support
- snd-soc-rockchip-i2s-objs := rockchip_i2s.o
--snd-soc-rockchip-pcm-objs := rockchip_pcm.o
-+snd-soc-rockchip-i2s-tdm-objs := rockchip_i2s_tdm.o
- snd-soc-rockchip-pdm-objs := rockchip_pdm.o
- snd-soc-rockchip-spdif-objs := rockchip_spdif.o
-+snd-soc-rockchip-spdifrx-objs := rockchip_spdifrx.o
-+snd-soc-rockchip-vad-objs := rockchip_vad.o
-+ifdef CONFIG_THUMB2_KERNEL
-+snd-soc-rockchip-vad-$(CONFIG_THUMB2_KERNEL) += vad_preprocess_thumb.o
-+else
-+snd-soc-rockchip-vad-$(CONFIG_ARM64) += vad_preprocess_arm64.o
-+snd-soc-rockchip-vad-$(CONFIG_ARM) += vad_preprocess_arm.o
-+endif
++#define UVC_DT_FRAME_FRAMEBASED_SIZE(n)                        (26+4*(n))
++
++#define UVC_FRAME_FRAMEBASED(n) \
++	uvc_frame_framebased_##n
++
++#define DECLARE_UVC_FRAME_FRAMEBASED(n)		\
++struct UVC_FRAME_FRAMEBASED(n) {		\
++	__u8  bLength;				\
++	__u8  bDescriptorType;			\
++	__u8  bDescriptorSubType;		\
++	__u8  bFrameIndex;			\
++	__u8  bmCapabilities;			\
++	__u16 wWidth;				\
++	__u16 wHeight;				\
++	__u32 dwMinBitRate;			\
++	__u32 dwMaxBitRate;			\
++	__u32 dwDefaultFrameInterval;		\
++	__u8  bFrameIntervalType;		\
++	__u32 dwBytesPerLine;			\
++	__u32 dwFrameInterval[n];		\
++} __attribute__ ((packed))
++
+ #endif /* __LINUX_USB_VIDEO_H */
  
--obj-$(CONFIG_SND_SOC_ROCKCHIP_I2S) += snd-soc-rockchip-i2s.o snd-soc-rockchip-pcm.o
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_I2S) += snd-soc-rockchip-i2s.o
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_I2S_TDM) += snd-soc-rockchip-i2s-tdm.o
- obj-$(CONFIG_SND_SOC_ROCKCHIP_PDM) += snd-soc-rockchip-pdm.o
- obj-$(CONFIG_SND_SOC_ROCKCHIP_SPDIF) += snd-soc-rockchip-spdif.o
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_SPDIFRX) += snd-soc-rockchip-spdifrx.o
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_VAD) += snd-soc-rockchip-vad.o
+diff --git a/include/uapi/linux/v4l2-controls.h b/include/uapi/linux/v4l2-controls.h
+index a184c4939..b80ac7753 100644
+--- a/include/uapi/linux/v4l2-controls.h
++++ b/include/uapi/linux/v4l2-controls.h
+@@ -65,6 +65,7 @@
+ #define V4L2_CTRL_CLASS_FM_RX		0x00a10000	/* FM Receiver controls */
+ #define V4L2_CTRL_CLASS_RF_TUNER	0x00a20000	/* RF tuner controls */
+ #define V4L2_CTRL_CLASS_DETECT		0x00a30000	/* Detection controls */
++#define V4L2_CTRL_CLASS_COLORIMETRY	0x00a50000	/* Colorimetry controls */
  
-+snd-soc-rockchip-hdmi-objs := rockchip_hdmi.o
- snd-soc-rockchip-max98090-objs := rockchip_max98090.o
-+snd-soc-rockchip-multicodecs-objs := rockchip_multicodecs.o
- snd-soc-rockchip-rt5645-objs := rockchip_rt5645.o
- snd-soc-rk3288-hdmi-analog-objs := rk3288_hdmi_analog.o
- snd-soc-rk3399-gru-sound-objs := rk3399_gru_sound.o
+ /* User-class control IDs */
  
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_HDMI) += snd-soc-rockchip-hdmi.o
- obj-$(CONFIG_SND_SOC_ROCKCHIP_MAX98090) += snd-soc-rockchip-max98090.o
-+obj-$(CONFIG_SND_SOC_ROCKCHIP_MULTICODECS) += snd-soc-rockchip-multicodecs.o
- obj-$(CONFIG_SND_SOC_ROCKCHIP_RT5645) += snd-soc-rockchip-rt5645.o
- obj-$(CONFIG_SND_SOC_RK3288_HDMI_ANALOG) += snd-soc-rk3288-hdmi-analog.o
- obj-$(CONFIG_SND_SOC_RK3399_GRU_SOUND) += snd-soc-rk3399-gru-sound.o
-diff --git a/sound/soc/rockchip/rockchip_i2s.h b/sound/soc/rockchip/rockchip_i2s.h
-index fcaae24e4..251851bf4 100644
---- a/sound/soc/rockchip/rockchip_i2s.h
-+++ b/sound/soc/rockchip/rockchip_i2s.h
-@@ -88,15 +88,17 @@
- #define I2S_CKR_MSS_SLAVE	(1 << I2S_CKR_MSS_SHIFT)
- #define I2S_CKR_MSS_MASK	(1 << I2S_CKR_MSS_SHIFT)
- #define I2S_CKR_CKP_SHIFT	26
--#define I2S_CKR_CKP_NEG		(0 << I2S_CKR_CKP_SHIFT)
--#define I2S_CKR_CKP_POS		(1 << I2S_CKR_CKP_SHIFT)
-+#define I2S_CKR_CKP_NORMAL	(0 << I2S_CKR_CKP_SHIFT)
-+#define I2S_CKR_CKP_INVERTED	(1 << I2S_CKR_CKP_SHIFT)
- #define I2S_CKR_CKP_MASK	(1 << I2S_CKR_CKP_SHIFT)
- #define I2S_CKR_RLP_SHIFT	25
- #define I2S_CKR_RLP_NORMAL	(0 << I2S_CKR_RLP_SHIFT)
--#define I2S_CKR_RLP_OPPSITE	(1 << I2S_CKR_RLP_SHIFT)
-+#define I2S_CKR_RLP_INVERTED	(1 << I2S_CKR_RLP_SHIFT)
-+#define I2S_CKR_RLP_MASK	(1 << I2S_CKR_RLP_SHIFT)
- #define I2S_CKR_TLP_SHIFT	24
- #define I2S_CKR_TLP_NORMAL	(0 << I2S_CKR_TLP_SHIFT)
--#define I2S_CKR_TLP_OPPSITE	(1 << I2S_CKR_TLP_SHIFT)
-+#define I2S_CKR_TLP_INVERTED	(1 << I2S_CKR_TLP_SHIFT)
-+#define I2S_CKR_TLP_MASK	(1 << I2S_CKR_TLP_SHIFT)
- #define I2S_CKR_MDIV_SHIFT	16
- #define I2S_CKR_MDIV(x)		((x - 1) << I2S_CKR_MDIV_SHIFT)
- #define I2S_CKR_MDIV_MASK	(0xff << I2S_CKR_MDIV_SHIFT)
-diff --git a/sound/soc/rockchip/rockchip_pdm.h b/sound/soc/rockchip/rockchip_pdm.h
-index 8e5bbafef..cab977272 100644
---- a/sound/soc/rockchip/rockchip_pdm.h
-+++ b/sound/soc/rockchip/rockchip_pdm.h
-@@ -41,6 +41,8 @@
- #define PDM_PATH1_EN		BIT(28)
- #define PDM_PATH0_EN		BIT(27)
- #define PDM_HWT_EN		BIT(26)
-+#define PDM_SAMPLERATE_MSK	GENMASK(7, 5)
-+#define PDM_SAMPLERATE(x)	((x) << 5)
- #define PDM_VDW_MSK		(0x1f << 0)
- #define PDM_VDW(X)		((X - 1) << 0)
+@@ -188,6 +189,12 @@ enum v4l2_colorfx {
+  */
+ #define V4L2_CID_USER_MAX217X_BASE		(V4L2_CID_USER_BASE + 0x1090)
  
-@@ -51,6 +53,9 @@
- #define PDM_FD_DENOMINATOR_MSK	GENMASK(15, 0)
++/*
++ * The base for the tc35874x driver controls.
++ * We reserve 16 controls for this driver.
++ */
++#define V4L2_CID_USER_TC35874X_BASE		(V4L2_CID_USER_BASE + 0x10a0)
++
+ /* The base for the imx driver controls.
+  * We reserve 16 controls for this driver. */
+ #define V4L2_CID_USER_IMX_BASE			(V4L2_CID_USER_BASE + 0x10b0)
+@@ -415,6 +422,12 @@ enum v4l2_mpeg_video_multi_slice_mode {
+ #define V4L2_CID_MPEG_VIDEO_MV_H_SEARCH_RANGE		(V4L2_CID_MPEG_BASE+227)
+ #define V4L2_CID_MPEG_VIDEO_MV_V_SEARCH_RANGE		(V4L2_CID_MPEG_BASE+228)
+ #define V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME		(V4L2_CID_MPEG_BASE+229)
++#define V4L2_CID_MPEG_VIDEO_BASELAYER_PRIORITY_ID	(V4L2_CID_MPEG_BASE+230)
++#define V4L2_CID_MPEG_VIDEO_AU_DELIMITER		(V4L2_CID_MPEG_BASE+231)
++#define V4L2_CID_MPEG_VIDEO_LTR_COUNT			(V4L2_CID_MPEG_BASE+232)
++#define V4L2_CID_MPEG_VIDEO_FRAME_LTR_INDEX		(V4L2_CID_MPEG_BASE+233)
++#define V4L2_CID_MPEG_VIDEO_USE_LTR_FRAMES		(V4L2_CID_MPEG_BASE+234)
++#define V4L2_CID_MPEG_VIDEO_DEC_CONCEAL_COLOR		(V4L2_CID_MPEG_BASE+235)
  
- /* PDM CLK CTRL */
-+#define PDM_PATH_SHIFT(x)	(8 + (x) * 2)
-+#define PDM_PATH_MASK(x)	(0x3 << PDM_PATH_SHIFT(x))
-+#define PDM_PATH(x, v)		((v) << PDM_PATH_SHIFT(x))
- #define PDM_CLK_FD_RATIO_MSK	BIT(6)
- #define PDM_CLK_FD_RATIO_40	(0X0 << 6)
- #define PDM_CLK_FD_RATIO_35	BIT(6)
-@@ -66,6 +71,7 @@
- #define PDM_CLK_1280FS		(0x2 << 0)
- #define PDM_CLK_2560FS		(0x3 << 0)
- #define PDM_CLK_5120FS		(0x4 << 0)
-+#define PDM_CIC_RATIO_MSK	(0x3 << 0)
+ /* CIDs for the MPEG-2 Part 2 (H.262) codec */
+ #define V4L2_CID_MPEG_VIDEO_MPEG2_LEVEL			(V4L2_CID_MPEG_BASE+270)
+@@ -578,6 +591,15 @@ enum v4l2_mpeg_video_h264_hierarchical_coding_type {
+ #define V4L2_CID_MPEG_VIDEO_H264_I_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+386)
+ #define V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MIN_QP	(V4L2_CID_MPEG_BASE+387)
+ #define V4L2_CID_MPEG_VIDEO_H264_P_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+388)
++#define V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MIN_QP	(V4L2_CID_MPEG_BASE+389)
++#define V4L2_CID_MPEG_VIDEO_H264_B_FRAME_MAX_QP	(V4L2_CID_MPEG_BASE+390)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L0_BR	(V4L2_CID_MPEG_BASE+391)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L1_BR	(V4L2_CID_MPEG_BASE+392)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L2_BR	(V4L2_CID_MPEG_BASE+393)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L3_BR	(V4L2_CID_MPEG_BASE+394)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L4_BR	(V4L2_CID_MPEG_BASE+395)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L5_BR	(V4L2_CID_MPEG_BASE+396)
++#define V4L2_CID_MPEG_VIDEO_H264_HIER_CODING_L6_BR	(V4L2_CID_MPEG_BASE+397)
+ #define V4L2_CID_MPEG_VIDEO_MPEG4_I_FRAME_QP	(V4L2_CID_MPEG_BASE+400)
+ #define V4L2_CID_MPEG_VIDEO_MPEG4_P_FRAME_QP	(V4L2_CID_MPEG_BASE+401)
+ #define V4L2_CID_MPEG_VIDEO_MPEG4_B_FRAME_QP	(V4L2_CID_MPEG_BASE+402)
+@@ -768,6 +790,15 @@ enum v4l2_mpeg_video_frame_skip_mode {
+ 	V4L2_MPEG_VIDEO_FRAME_SKIP_MODE_BUF_LIMIT	= 2,
+ };
  
- /* PDM HPF CTRL */
- #define PDM_HPF_LE		BIT(3)
++#define V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 647)
++#define V4L2_CID_MPEG_VIDEO_HEVC_I_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 648)
++#define V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 649)
++#define V4L2_CID_MPEG_VIDEO_HEVC_P_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 650)
++#define V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MIN_QP		(V4L2_CID_MPEG_BASE + 651)
++#define V4L2_CID_MPEG_VIDEO_HEVC_B_FRAME_MAX_QP		(V4L2_CID_MPEG_BASE + 652)
++#define V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY		(V4L2_CID_MPEG_BASE + 653)
++#define V4L2_CID_MPEG_VIDEO_DEC_DISPLAY_DELAY_ENABLE	(V4L2_CID_MPEG_BASE + 654)
++
+ /*  MPEG-class control IDs specific to the CX2341x driver as defined by V4L2 */
+ #define V4L2_CID_MPEG_CX2341X_BASE				(V4L2_CTRL_CLASS_MPEG | 0x1000)
+ #define V4L2_CID_MPEG_CX2341X_VIDEO_SPATIAL_FILTER_MODE		(V4L2_CID_MPEG_CX2341X_BASE+0)
+@@ -1171,4 +1202,38 @@ enum v4l2_detect_md_mode {
+ #define V4L2_CID_DETECT_MD_THRESHOLD_GRID	(V4L2_CID_DETECT_CLASS_BASE + 3)
+ #define V4L2_CID_DETECT_MD_REGION_GRID		(V4L2_CID_DETECT_CLASS_BASE + 4)
+ 
++#define V4L2_CID_COLORIMETRY_CLASS_BASE	(V4L2_CTRL_CLASS_COLORIMETRY | 0x900)
++#define V4L2_CID_COLORIMETRY_CLASS	(V4L2_CTRL_CLASS_COLORIMETRY | 1)
++
++#define V4L2_CID_COLORIMETRY_HDR10_CLL_INFO	(V4L2_CID_COLORIMETRY_CLASS_BASE + 0)
++
++struct v4l2_ctrl_hdr10_cll_info {
++	__u16 max_content_light_level;
++	__u16 max_pic_average_light_level;
++};
++
++#define V4L2_CID_COLORIMETRY_HDR10_MASTERING_DISPLAY	(V4L2_CID_COLORIMETRY_CLASS_BASE + 1)
++
++#define V4L2_HDR10_MASTERING_PRIMARIES_X_LOW	5
++#define V4L2_HDR10_MASTERING_PRIMARIES_X_HIGH	37000
++#define V4L2_HDR10_MASTERING_PRIMARIES_Y_LOW	5
++#define V4L2_HDR10_MASTERING_PRIMARIES_Y_HIGH	42000
++#define V4L2_HDR10_MASTERING_WHITE_POINT_X_LOW	5
++#define V4L2_HDR10_MASTERING_WHITE_POINT_X_HIGH	37000
++#define V4L2_HDR10_MASTERING_WHITE_POINT_Y_LOW	5
++#define V4L2_HDR10_MASTERING_WHITE_POINT_Y_HIGH	42000
++#define V4L2_HDR10_MASTERING_MAX_LUMA_LOW	50000
++#define V4L2_HDR10_MASTERING_MAX_LUMA_HIGH	100000000
++#define V4L2_HDR10_MASTERING_MIN_LUMA_LOW	1
++#define V4L2_HDR10_MASTERING_MIN_LUMA_HIGH	50000
++
++struct v4l2_ctrl_hdr10_mastering_display {
++	__u16 display_primaries_x[3];
++	__u16 display_primaries_y[3];
++	__u16 white_point_x;
++	__u16 white_point_y;
++	__u32 max_display_mastering_luminance;
++	__u32 min_display_mastering_luminance;
++};
++
+ #endif
+diff --git a/include/uapi/linux/videodev2.h b/include/uapi/linux/videodev2.h
+index 55b8c4b82..5532f4918 100644
+--- a/include/uapi/linux/videodev2.h
++++ b/include/uapi/linux/videodev2.h
+@@ -689,6 +689,7 @@ struct v4l2_pix_format {
+ #define V4L2_PIX_FMT_JPEG     v4l2_fourcc('J', 'P', 'E', 'G') /* JFIF JPEG     */
+ #define V4L2_PIX_FMT_DV       v4l2_fourcc('d', 'v', 's', 'd') /* 1394          */
+ #define V4L2_PIX_FMT_MPEG     v4l2_fourcc('M', 'P', 'E', 'G') /* MPEG-1/2/4 Multiplexed */
++#define V4L2_PIX_FMT_H265     v4l2_fourcc('H', '2', '6', '5') /* H265 with start codes */
+ #define V4L2_PIX_FMT_H264     v4l2_fourcc('H', '2', '6', '4') /* H264 with start codes */
+ #define V4L2_PIX_FMT_H264_NO_SC v4l2_fourcc('A', 'V', 'C', '1') /* H264 without start codes */
+ #define V4L2_PIX_FMT_H264_MVC v4l2_fourcc('M', '2', '6', '4') /* H264 MVC */
+@@ -1778,6 +1779,14 @@ enum v4l2_ctrl_type {
+ 	V4L2_CTRL_TYPE_U16	     = 0x0101,
+ 	V4L2_CTRL_TYPE_U32	     = 0x0102,
+ 	V4L2_CTRL_TYPE_AREA          = 0x0106,
++	V4L2_CTRL_TYPE_HDR10_CLL_INFO		= 0x0110,
++	V4L2_CTRL_TYPE_HDR10_MASTERING_DISPLAY	= 0x0111,
++	V4L2_CTRL_TYPE_H264_SPS             = 0x0200,
++	V4L2_CTRL_TYPE_H264_PPS		    = 0x0201,
++	V4L2_CTRL_TYPE_H264_SCALING_MATRIX  = 0x0202,
++	V4L2_CTRL_TYPE_H264_SLICE_PARAMS    = 0x0203,
++	V4L2_CTRL_TYPE_H264_DECODE_PARAMS   = 0x0204,
++	V4L2_CTRL_TYPE_H264_PRED_WEIGHTS    = 0x0205,
+ };
+ 
+ /*  Used in the VIDIOC_QUERYCTRL ioctl for querying controls */
+diff --git a/init/Kconfig b/init/Kconfig
+index 8cfe761ff..782cb6efe 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1375,6 +1375,11 @@ config BLK_DEV_INITRD
+ if BLK_DEV_INITRD
+ 
+ source "usr/Kconfig"
++config INITRD_ASYNC
++	bool "Initrd async"
++	depends on NO_GKI
++	help
++	  Init ramdisk async, can reduce kernel init time.
+ 
+ endif
+ 
+@@ -1734,6 +1739,13 @@ config KALLSYMS
+ 	  symbolic stack backtraces. This increases the size of the kernel
+ 	  somewhat, as all symbols have to be loaded into the kernel image.
+ 
++config WGCM
++	bool "Enable Workgroup Control Monitor API"
++	default n
++	help
++	  Enable Workgroup Control Monitor API, userspace can get the number of
++	  blocked threads.
++
+ config KALLSYMS_ALL
+ 	bool "Include all symbols in kallsyms"
+ 	depends on DEBUG_KERNEL && KALLSYMS
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 65c9b45f9..ded50387c 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -12,6 +12,7 @@
+ #include <linux/file.h>
+ #include <linux/memblock.h>
+ #include <linux/namei.h>
++#include <linux/initramfs.h>
+ #include <linux/init_syscalls.h>
+ 
+ static ssize_t __init xwrite(struct file *file, const char *p, size_t count,
+@@ -480,6 +481,9 @@ static char * __init unpack_to_rootfs(char *buf, unsigned long len)
+ 	state = Start;
+ 	this_header = 0;
+ 	message = NULL;
++#if defined(CONFIG_ROCKCHIP_THUNDER_BOOT) && defined(CONFIG_ROCKCHIP_HW_DECOMPRESS) && defined(CONFIG_INITRD_ASYNC)
++	wait_initrd_hw_decom_done();
++#endif
+ 	while (!message && len) {
+ 		loff_t saved_offset = this_header;
+ 		if (*buf == '0' && !(this_header & 3)) {
+@@ -699,4 +703,23 @@ static int __init populate_rootfs(void)
+ 	flush_delayed_fput();
+ 	return 0;
+ }
++
++#if IS_BUILTIN(CONFIG_INITRD_ASYNC)
++#include <linux/kthread.h>
++#include <linux/async.h>
++
++static void __init unpack_rootfs_async(void *unused, async_cookie_t cookie)
++{
++	populate_rootfs();
++}
++
++static int __init populate_rootfs_async(void)
++{
++	async_schedule(unpack_rootfs_async, NULL);
++	return 0;
++}
++
++pure_initcall(populate_rootfs_async);
++#else
+ rootfs_initcall(populate_rootfs);
++#endif
+diff --git a/init/main.c b/init/main.c
+index 124d586f2..a1c737b29 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -111,6 +111,10 @@
+ 
+ #include <kunit/test.h>
+ 
++#ifdef CONFIG_SCHED_RTG_AUTHORITY
++extern int init_rtg_authority_control(void);
++#endif
++
+ static int kernel_init(void *);
+ 
+ extern void init_IRQ(void);
+@@ -925,6 +929,10 @@ asmlinkage __visible void __init __no_sanitize_address start_kernel(void)
+ 		local_irq_disable();
+ 	radix_tree_init();
+ 
++#ifdef CONFIG_SCHED_RTG_AUTHORITY
++	BUG_ON(init_rtg_authority_control());
++#endif
++
+ 	/*
+ 	 * Set up housekeeping before setting up workqueues to allow the unbound
+ 	 * workqueue to take non-housekeeping into account.
+@@ -1515,6 +1523,9 @@ static noinline void __init kernel_init_freeable(void)
+ 	smp_init();
+ 	sched_init_smp();
+ 
++#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT
++	kthread_run(defer_free_memblock, NULL, "defer_mem");
++#endif
+ 	padata_init();
+ 	page_alloc_init_late();
+ 	/* Initialize page ext after all struct pages are initialized. */
+@@ -1523,6 +1534,9 @@ static noinline void __init kernel_init_freeable(void)
+ 	do_basic_setup();
+ 
+ 	kunit_run_all_tests();
++#if IS_BUILTIN(CONFIG_INITRD_ASYNC)
++	async_synchronize_full();
++#endif
+ 
+ 	console_on_rootfs();
+ 
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 8ded6b8f1..6e6c8e0c9 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -147,7 +147,7 @@ static int newque(struct ipc_namespace *ns, struct ipc_params *params)
+ 	key_t key = params->key;
+ 	int msgflg = params->flg;
+ 
+-	msq = kvmalloc(sizeof(*msq), GFP_KERNEL_ACCOUNT);
++	msq = kvmalloc(sizeof(*msq), GFP_KERNEL);
+ 	if (unlikely(!msq))
+ 		return -ENOMEM;
+ 
+diff --git a/ipc/namespace.c b/ipc/namespace.c
+index c94c05846..24e7b4532 100644
+--- a/ipc/namespace.c
++++ b/ipc/namespace.c
+@@ -42,7 +42,7 @@ static struct ipc_namespace *create_ipc_ns(struct user_namespace *user_ns,
+ 		goto fail;
+ 
+ 	err = -ENOMEM;
+-	ns = kzalloc(sizeof(struct ipc_namespace), GFP_KERNEL_ACCOUNT);
++	ns = kzalloc(sizeof(struct ipc_namespace), GFP_KERNEL);
+ 	if (ns == NULL)
+ 		goto fail_dec;
+ 
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 916f7a90b..d735cecd9 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -511,7 +511,7 @@ static struct sem_array *sem_alloc(size_t nsems)
+ 	if (nsems > (INT_MAX - sizeof(*sma)) / sizeof(sma->sems[0]))
+ 		return NULL;
+ 
+-	sma = kvzalloc(struct_size(sma, sems, nsems), GFP_KERNEL_ACCOUNT);
++	sma = kvzalloc(struct_size(sma, sems, nsems), GFP_KERNEL);
+ 	if (unlikely(!sma))
+ 		return NULL;
+ 
+@@ -1852,7 +1852,7 @@ static inline int get_undo_list(struct sem_undo_list **undo_listp)
+ 
+ 	undo_list = current->sysvsem.undo_list;
+ 	if (!undo_list) {
+-		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL_ACCOUNT);
++		undo_list = kzalloc(sizeof(*undo_list), GFP_KERNEL);
+ 		if (undo_list == NULL)
+ 			return -ENOMEM;
+ 		spin_lock_init(&undo_list->lock);
+@@ -1937,7 +1937,7 @@ static struct sem_undo *find_alloc_undo(struct ipc_namespace *ns, int semid)
+ 	rcu_read_unlock();
+ 
+ 	/* step 2: allocate new undo structure */
+-	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL_ACCOUNT);
++	new = kzalloc(sizeof(struct sem_undo) + sizeof(short)*nsems, GFP_KERNEL);
+ 	if (!new) {
+ 		ipc_rcu_putref(&sma->sem_perm, sem_rcu_free);
+ 		return ERR_PTR(-ENOMEM);
+diff --git a/ipc/shm.c b/ipc/shm.c
+index b418731d6..471ac3e74 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -711,7 +711,7 @@ static int newseg(struct ipc_namespace *ns, struct ipc_params *params)
+ 			ns->shm_tot + numpages > ns->shm_ctlall)
+ 		return -ENOSPC;
+ 
+-	shp = kvmalloc(sizeof(*shp), GFP_KERNEL_ACCOUNT);
++	shp = kvmalloc(sizeof(*shp), GFP_KERNEL);
+ 	if (unlikely(!shp))
+ 		return -ENOMEM;
+ 
+diff --git a/ipc/util.c b/ipc/util.c
+index 7c3601dad..bbb5190af 100644
+--- a/ipc/util.c
++++ b/ipc/util.c
+@@ -754,13 +754,21 @@ struct pid_namespace *ipc_seq_pid_ns(struct seq_file *s)
+ static struct kern_ipc_perm *sysvipc_find_ipc(struct ipc_ids *ids, loff_t pos,
+ 					      loff_t *new_pos)
+ {
+-	struct kern_ipc_perm *ipc = NULL;
+-	int max_idx = ipc_get_maxidx(ids);
++	struct kern_ipc_perm *ipc;
++	int total, id;
++
++	total = 0;
++	for (id = 0; id < pos && total < ids->in_use; id++) {
++		ipc = idr_find(&ids->ipcs_idr, id);
++		if (ipc != NULL)
++			total++;
++	}
+ 
+-	if (max_idx == -1 || pos > max_idx)
++	ipc = NULL;
++	if (total >= ids->in_use)
+ 		goto out;
+ 
+-	for (; pos <= max_idx; pos++) {
++	for (; pos < ipc_mni; pos++) {
+ 		ipc = idr_find(&ids->ipcs_idr, pos);
+ 		if (ipc != NULL) {
+ 			rcu_read_lock();
+diff --git a/kernel/cgroup/legacy_freezer.c b/kernel/cgroup/legacy_freezer.c
+index 08236798d..081d026f1 100644
+--- a/kernel/cgroup/legacy_freezer.c
++++ b/kernel/cgroup/legacy_freezer.c
+@@ -479,3 +479,4 @@ struct cgroup_subsys freezer_cgrp_subsys = {
+ 	.fork		= freezer_fork,
+ 	.legacy_cftypes	= files,
+ };
++EXPORT_SYMBOL_GPL(freezer_cgrp_subsys);
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 2cda6a3ef..7b8933e78 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -275,11 +275,13 @@ void cpu_maps_update_begin(void)
+ {
+ 	mutex_lock(&cpu_add_remove_lock);
+ }
++EXPORT_SYMBOL_GPL(cpu_maps_update_begin);
+ 
+ void cpu_maps_update_done(void)
+ {
+ 	mutex_unlock(&cpu_add_remove_lock);
+ }
++EXPORT_SYMBOL_GPL(cpu_maps_update_done);
+ 
+ /*
+  * If set, cpu_up and cpu_down will return -EBUSY and do nothing.
+@@ -1054,7 +1056,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen,
+ 	struct cpuhp_cpu_state *st = per_cpu_ptr(&cpuhp_state, cpu);
+ 	int prev_state, ret = 0;
+ 
+-	if (num_online_cpus() == 1)
++	if (num_active_cpus() == 1 && cpu_active(cpu))
+ 		return -EBUSY;
+ 
+ 	if (!cpu_present(cpu))
+diff --git a/kernel/irq/generic-chip.c b/kernel/irq/generic-chip.c
+index 4195e7ad1..5e7b66e32 100644
+--- a/kernel/irq/generic-chip.c
++++ b/kernel/irq/generic-chip.c
+@@ -200,6 +200,7 @@ int irq_gc_set_wake(struct irq_data *d, unsigned int on)
+ 	irq_gc_unlock(gc);
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(irq_gc_set_wake);
+ 
+ static u32 irq_readl_be(void __iomem *addr)
+ {
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index 5899260a8..f5b51d8fe 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -17,4 +17,5 @@ obj-$(CONFIG_PM_WAKELOCKS)	+= wakelock.o
+ 
+ obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
+ 
++
+ obj-$(CONFIG_ENERGY_MODEL)	+= energy_model.o
+diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
+index 334173fe6..c2c858c6d 100644
+--- a/kernel/power/energy_model.c
++++ b/kernel/power/energy_model.c
+@@ -52,6 +52,17 @@ static int em_debug_cpus_show(struct seq_file *s, void *unused)
+ }
+ DEFINE_SHOW_ATTRIBUTE(em_debug_cpus);
+ 
++static int em_debug_units_show(struct seq_file *s, void *unused)
++{
++	struct em_perf_domain *pd = s->private;
++	char *units = pd->milliwatts ? "milliWatts" : "bogoWatts";
++
++	seq_printf(s, "%s\n", units);
++
++	return 0;
++}
++DEFINE_SHOW_ATTRIBUTE(em_debug_units);
++
+ static void em_debug_create_pd(struct device *dev)
+ {
+ 	struct dentry *d;
+@@ -64,6 +75,8 @@ static void em_debug_create_pd(struct device *dev)
+ 		debugfs_create_file("cpus", 0444, d, dev->em_pd->cpus,
+ 				    &em_debug_cpus_fops);
+ 
++	debugfs_create_file("units", 0444, d, dev->em_pd, &em_debug_units_fops);
++
+ 	/* Create a sub-directory for each performance state */
+ 	for (i = 0; i < dev->em_pd->nr_perf_states; i++)
+ 		em_debug_create_ps(&dev->em_pd->table[i], d);
+@@ -242,17 +255,24 @@ EXPORT_SYMBOL_GPL(em_cpu_get);
+  * @cpus	: Pointer to cpumask_t, which in case of a CPU device is
+  *		obligatory. It can be taken from i.e. 'policy->cpus'. For other
+  *		type of devices this should be set to NULL.
++ * @milliwatts	: Flag indicating that the power values are in milliWatts or
++ *		in some other scale. It must be set properly.
+  *
+  * Create Energy Model tables for a performance domain using the callbacks
+  * defined in cb.
+  *
++ * The @milliwatts is important to set with correct value. Some kernel
++ * sub-systems might rely on this flag and check if all devices in the EM are
++ * using the same scale.
++ *
+  * If multiple clients register the same performance domain, all but the first
+  * registration will be ignored.
+  *
+  * Return 0 on success
+  */
+ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+-				struct em_data_callback *cb, cpumask_t *cpus)
++				struct em_data_callback *cb, cpumask_t *cpus,
++				bool milliwatts)
+ {
+ 	unsigned long cap, prev_cap = 0;
+ 	int cpu, ret;
+@@ -305,6 +325,8 @@ int em_dev_register_perf_domain(struct device *dev, unsigned int nr_states,
+ 	if (ret)
+ 		goto unlock;
+ 
++	dev->em_pd->milliwatts = milliwatts;
++
+ 	em_debug_create_pd(dev);
+ 	dev_info(dev, "EM: created perf domain\n");
+ 
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 24f12d534..778bf431e 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -106,7 +106,7 @@ extern int create_basic_memory_bitmaps(void);
+ extern void free_basic_memory_bitmaps(void);
+ extern int hibernate_preallocate_memory(void);
+ 
+-extern void clear_free_pages(void);
++extern void clear_or_poison_free_pages(void);
+ 
+ /**
+  *	Auxiliary structure used for reading the snapshot image data and
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index b9faa363c..013dda3f1 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -85,23 +85,27 @@ static int try_to_freeze_tasks(bool user_only)
+ 	elapsed = ktime_sub(end, start);
+ 	elapsed_msecs = ktime_to_ms(elapsed);
+ 
+-	if (todo) {
++	if (wakeup) {
+ 		pr_cont("\n");
+-		pr_err("Freezing of tasks %s after %d.%03d seconds "
+-		       "(%d tasks refusing to freeze, wq_busy=%d):\n",
+-		       wakeup ? "aborted" : "failed",
++		pr_err("Freezing of tasks aborted after %d.%03d seconds",
++		       elapsed_msecs / 1000, elapsed_msecs % 1000);
++	} else if (todo) {
++		pr_cont("\n");
++		pr_err("Freezing of tasks failed after %d.%03d seconds"
++		       " (%d tasks refusing to freeze, wq_busy=%d):\n",
+ 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
+ 		       todo - wq_busy, wq_busy);
+ 
+ 		if (wq_busy)
+ 			show_workqueue_state();
+ 
+-		if (!wakeup || pm_debug_messages_on) {
++		if (pm_debug_messages_on) {
+ 			read_lock(&tasklist_lock);
+ 			for_each_process_thread(g, p) {
+ 				if (p != current && !freezer_should_skip(p)
+-				    && freezing(p) && !frozen(p))
++				    && freezing(p) && !frozen(p)) {
+ 					sched_show_task(p);
++				}
+ 			}
+ 			read_unlock(&tasklist_lock);
+ 		}
+@@ -134,7 +138,7 @@ int freeze_processes(void)
+ 	if (!pm_freezing)
+ 		atomic_inc(&system_freezing_cnt);
+ 
+-	pm_wakeup_clear(0);
++	pm_wakeup_clear(true);
+ 	pr_info("Freezing user space processes ... ");
+ 	pm_freezing = true;
+ 	error = try_to_freeze_tasks(true);
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 4aa4d5d39..545958377 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -30,6 +30,7 @@
+ #include <trace/events/power.h>
+ #include <linux/compiler.h>
+ #include <linux/moduleparam.h>
++#include <linux/wakeup_reason.h>
+ 
+ #include "power.h"
+ 
+@@ -138,6 +139,9 @@ static void s2idle_loop(void)
+ 			break;
+ 		}
+ 
++		pm_wakeup_clear(false);
++		clear_wakeup_reasons();
++
+ 		s2idle_enter();
+ 	}
+ 
+@@ -357,6 +361,7 @@ static int suspend_prepare(suspend_state_t state)
+ 	if (!error)
+ 		return 0;
+ 
++	log_suspend_abort_reason("One or more tasks refusing to freeze");
+ 	suspend_stats.failed_freeze++;
+ 	dpm_save_failed_step(SUSPEND_FREEZE);
+ 	pm_notifier_call_chain(PM_POST_SUSPEND);
+@@ -386,7 +391,7 @@ void __weak arch_suspend_enable_irqs(void)
+  */
+ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ {
+-	int error;
++	int error, last_dev;
+ 
+ 	error = platform_suspend_prepare(state);
+ 	if (error)
+@@ -394,7 +399,11 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 
+ 	error = dpm_suspend_late(PMSG_SUSPEND);
+ 	if (error) {
++		last_dev = suspend_stats.last_failed_dev + REC_FAILED_NUM - 1;
++		last_dev %= REC_FAILED_NUM;
+ 		pr_err("late suspend of devices failed\n");
++		log_suspend_abort_reason("late suspend of %s device failed",
++					 suspend_stats.failed_devs[last_dev]);
+ 		goto Platform_finish;
+ 	}
+ 	error = platform_suspend_prepare_late(state);
+@@ -403,7 +412,11 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 
+ 	error = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
++		last_dev = suspend_stats.last_failed_dev + REC_FAILED_NUM - 1;
++		last_dev %= REC_FAILED_NUM;
+ 		pr_err("noirq suspend of devices failed\n");
++		log_suspend_abort_reason("noirq suspend of %s device failed",
++					 suspend_stats.failed_devs[last_dev]);
+ 		goto Platform_early_resume;
+ 	}
+ 	error = platform_suspend_prepare_noirq(state);
+@@ -419,8 +432,10 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 	}
+ 
+ 	error = suspend_disable_secondary_cpus();
+-	if (error || suspend_test(TEST_CPUS))
++	if (error || suspend_test(TEST_CPUS)) {
++		log_suspend_abort_reason("Disabling non-boot cpus failed");
+ 		goto Enable_cpus;
++	}
+ 
+ 	arch_suspend_disable_irqs();
+ 	BUG_ON(!irqs_disabled());
+@@ -491,6 +506,8 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+ 		pr_err("Some devices failed to suspend, or early wake event detected\n");
++		log_suspend_abort_reason(
++				"Some devices failed to suspend, or early wake event detected");
+ 		goto Recover_platform;
+ 	}
+ 	suspend_test_finish("suspend devices");
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index e297b35fc..016ac1beb 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -32,7 +32,9 @@ EXPORT_SYMBOL(cad_pid);
+ #define DEFAULT_REBOOT_MODE
+ #endif
+ enum reboot_mode reboot_mode DEFAULT_REBOOT_MODE;
++EXPORT_SYMBOL_GPL(reboot_mode);
+ enum reboot_mode panic_reboot_mode = REBOOT_UNDEFINED;
++EXPORT_SYMBOL_GPL(panic_reboot_mode);
+ 
+ /*
+  * This variable is used privately to keep track of whether or not
+@@ -216,6 +218,27 @@ void do_kernel_restart(char *cmd)
+ 	atomic_notifier_call_chain(&restart_handler_list, reboot_mode, cmd);
+ }
+ 
++#ifdef CONFIG_NO_GKI
++static ATOMIC_NOTIFIER_HEAD(pre_restart_handler_list);
++
++int register_pre_restart_handler(struct notifier_block *nb)
++{
++	return atomic_notifier_chain_register(&pre_restart_handler_list, nb);
++}
++EXPORT_SYMBOL(register_pre_restart_handler);
++
++int unregister_pre_restart_handler(struct notifier_block *nb)
++{
++	return atomic_notifier_chain_unregister(&pre_restart_handler_list, nb);
++}
++EXPORT_SYMBOL(unregister_pre_restart_handler);
++
++void do_kernel_pre_restart(char *cmd)
++{
++	atomic_notifier_call_chain(&pre_restart_handler_list, reboot_mode, cmd);
++}
++#endif
++
+ void migrate_to_reboot_cpu(void)
+ {
+ 	/* The boot cpu is always logical cpu 0 */
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 49ed67b62..6f2951132 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -18,6 +18,7 @@
+ #include <linux/scs.h>
+ #include <linux/irq.h>
+ #include <linux/delay.h>
++#include <linux/wgcm.h>
+ 
+ #ifdef CONFIG_QOS_CTRL
+ #include <linux/sched/qos_ctrl.h>
+@@ -34,6 +35,7 @@
+ #include "smp.h"
+ #include "walt.h"
+ #include "rtg/rtg.h"
++#include <rtg/rtg_qos.h>
+ 
+ /*
+  * Export tracepoints that act as a bare tracehook (ie: have no trace event
+@@ -50,6 +52,14 @@ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_overutilized_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_cfs_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_util_est_se_tp);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(sched_update_nr_running_tp);
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_switch);
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_waking);
++#ifdef CONFIG_SCHEDSTATS
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_sleep);
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_wait);
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_iowait);
++EXPORT_TRACEPOINT_SYMBOL_GPL(sched_stat_blocked);
++#endif
+ 
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+ 
+@@ -663,7 +673,7 @@ int get_nohz_timer_target(void)
+ 	int i, cpu = smp_processor_id(), default_cpu = -1;
+ 	struct sched_domain *sd;
+ 
+-	if (housekeeping_cpu(cpu, HK_FLAG_TIMER)) {
++	if (housekeeping_cpu(cpu, HK_FLAG_TIMER) && cpu_active(cpu)) {
+ 		if (!idle_cpu(cpu))
+ 			return cpu;
+ 		default_cpu = cpu;
+@@ -683,8 +693,20 @@ int get_nohz_timer_target(void)
+ 		}
+ 	}
+ 
+-	if (default_cpu == -1)
+-		default_cpu = housekeeping_any_cpu(HK_FLAG_TIMER);
++	if (default_cpu == -1) {
++		for_each_cpu_and(i, cpu_active_mask,
++				 housekeeping_cpumask(HK_FLAG_TIMER)) {
++			if (cpu == i)
++				continue;
++			if (!idle_cpu(i)) {
++				cpu = i;
++				goto unlock;
++			}
++		}
++		default_cpu = cpumask_any(cpu_active_mask);
++		if (unlikely(default_cpu >= nr_cpu_ids))
++			goto unlock;
++	}
+ 	cpu = default_cpu;
+ unlock:
+ 	rcu_read_unlock();
+@@ -1656,11 +1678,15 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
+ 
+ 	enqueue_task(rq, p, flags);
+ 
++	wgcm_activate_task(p);
++
+ 	p->on_rq = TASK_ON_RQ_QUEUED;
+ }
+ 
+ void deactivate_task(struct rq *rq, struct task_struct *p, int flags)
+ {
++	wgcm_deactivate_task(p, flags);
++
+ 	p->on_rq = (flags & DEQUEUE_SLEEP) ? 0 : TASK_ON_RQ_MIGRATING;
+ 
+ 	dequeue_task(rq, p, flags);
+@@ -1772,7 +1798,9 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
+ 	if (is_per_cpu_kthread(p))
+ 		return cpu_online(cpu);
+ 
+-	return cpu_active(cpu);
++	if (!cpu_active(cpu))
++		return false;
++	return cpumask_test_cpu(cpu, task_cpu_possible_mask(p));
+ }
+ 
+ /*
+@@ -2435,7 +2463,7 @@ static int select_fallback_rq(int cpu, struct task_struct *p)
+ 			}
+ 			fallthrough;
+ 		case possible:
+-			do_set_cpus_allowed(p, cpu_possible_mask);
++			do_set_cpus_allowed(p, task_cpu_possible_mask(p));
+ 			state = fail;
+ 			break;
+ 
+@@ -2629,6 +2657,8 @@ ttwu_do_activate(struct rq *rq, struct task_struct *p, int wake_flags,
+ {
+ 	int en_flags = ENQUEUE_WAKEUP | ENQUEUE_NOCLOCK;
+ 
++	if (wake_flags & WF_SYNC)
++		en_flags |= ENQUEUE_WAKEUP_SYNC;
+ 	lockdep_assert_held(&rq->lock);
+ 
+ 	if (p->sched_contributes_to_load)
+@@ -3025,6 +3055,19 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
+ 	if (!(p->state & state))
+ 		goto unlock;
+ 
++#ifdef CONFIG_FREEZER
++	/*
++	 * If we're going to wake up a thread which may be frozen, then
++	 * we can only do so if we have an active CPU which is capable of
++	 * running it. This may not be the case when resuming from suspend,
++	 * as the secondary CPUs may not yet be back online. See __thaw_task()
++	 * for the actual wakeup.
++	 */
++	if (unlikely(frozen_or_skipped(p)) &&
++	    !cpumask_intersects(cpu_active_mask, task_cpu_possible_mask(p)))
++		goto unlock;
++#endif
++
+ 	trace_sched_waking(p);
+ 
+ 	/* We're going to change ->state: */
+@@ -3271,6 +3314,8 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+ #ifdef CONFIG_SCHED_RTG
+ 	p->rtg_depth = 0;
+ #endif
++
++	wgcm_clear_child(p);
+ }
+ 
+ DEFINE_STATIC_KEY_FALSE(sched_numa_balancing);
+@@ -5738,16 +5783,19 @@ int sched_setscheduler(struct task_struct *p, int policy,
+ {
+ 	return _sched_setscheduler(p, policy, param, true);
+ }
++EXPORT_SYMBOL_GPL(sched_setscheduler);
+ 
+ int sched_setattr(struct task_struct *p, const struct sched_attr *attr)
+ {
+ 	return __sched_setscheduler(p, attr, true, true);
+ }
++EXPORT_SYMBOL_GPL(sched_setattr);
+ 
+ int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
+ {
+ 	return __sched_setscheduler(p, attr, false, true);
+ }
++EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
+ 
+ /**
+  * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
+@@ -5767,6 +5815,7 @@ int sched_setscheduler_nocheck(struct task_struct *p, int policy,
+ {
+ 	return _sched_setscheduler(p, policy, param, false);
+ }
++EXPORT_SYMBOL_GPL(sched_setscheduler_nocheck);
+ 
+ /*
+  * SCHED_FIFO is a broken scheduler model; that is, it is fundamentally
+@@ -7061,6 +7110,9 @@ void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf,
+ 	 */
+ 	update_rq_clock(rq);
+ 
++#ifdef CONFIG_SCHED_DEBUG
++	orf.clock_update_flags |= RQCF_UPDATED;
++#endif
+ 	for (;;) {
+ 		/*
+ 		 * There's this thread running, bail when that's the only
+@@ -9196,6 +9248,10 @@ void sched_exit(struct task_struct *p)
+ 	sched_set_group_id(p, 0);
+ #endif
+ 
++#ifdef CONFIG_SCHED_RTG_QOS
++	sched_exit_qos_list(p);
++#endif
++
+ 	rq = task_rq_lock(p, &rf);
+ 
+ 	/* rq->curr == p */
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 9a701e968..fda9c5f53 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -86,6 +86,7 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
+  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
+ unsigned int sysctl_sched_min_granularity			= 750000ULL;
++EXPORT_SYMBOL_GPL(sysctl_sched_min_granularity);
+ static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
+ 
+ /*
+@@ -3406,6 +3407,7 @@ void set_task_rq_fair(struct sched_entity *se,
+ 	se->avg.last_update_time = n_last_update_time;
+ }
+ 
++
+ /*
+  * When on migration a sched_entity joins/leaves the PELT hierarchy, we need to
+  * propagate its contribution. The key to this propagation is the invariant
+@@ -3473,6 +3475,7 @@ void set_task_rq_fair(struct sched_entity *se,
+  * XXX: only do this for the part of runnable > running ?
+  *
+  */
++
+ static inline void
+ update_tg_cfs_util(struct cfs_rq *cfs_rq, struct sched_entity *se, struct cfs_rq *gcfs_rq)
+ {
+@@ -3701,19 +3704,7 @@ update_cfs_rq_load_avg(u64 now, struct cfs_rq *cfs_rq)
+ 
+ 		r = removed_util;
+ 		sub_positive(&sa->util_avg, r);
+-		sub_positive(&sa->util_sum, r * divider);
+-		/*
+-		 * Because of rounding, se->util_sum might ends up being +1 more than
+-		 * cfs->util_sum. Although this is not a problem by itself, detaching
+-		 * a lot of tasks with the rounding problem between 2 updates of
+-		 * util_avg (~1ms) can make cfs->util_sum becoming null whereas
+-		 * cfs_util_avg is not.
+-		 * Check that util_sum is still above its lower bound for the new
+-		 * util_avg. Given that period_contrib might have moved since the last
+-		 * sync, we are only sure that util_sum must be above or equal to
+-		 *    util_avg * minimum possible divider
+-		 */
+-		sa->util_sum = max_t(u32, sa->util_sum, sa->util_avg * PELT_MIN_DIVIDER);
++		sa->util_sum = sa->util_avg * divider;
+ 
+ 		r = removed_runnable;
+ 		sub_positive(&sa->runnable_avg, r);
+@@ -5420,7 +5411,7 @@ static void do_sched_cfs_slack_timer(struct cfs_bandwidth *cfs_b)
+ /*
+  * When a group wakes up we want to make sure that its quota is not already
+  * expired/exceeded, otherwise it may be allowed to steal additional ticks of
+- * runtime as update_curr() throttling can not trigger until it's on-rq.
++ * runtime as update_curr() throttling can not not trigger until it's on-rq.
+  */
+ static void check_enqueue_throttle(struct cfs_rq *cfs_rq)
+ {
+@@ -10987,8 +10978,20 @@ void nohz_balance_enter_idle(int cpu)
+ 	SCHED_WARN_ON(cpu != smp_processor_id());
+ 
+ 	/* If this CPU is going down, then nothing needs to be done: */
+-	if (!cpu_active(cpu))
++	if (!cpu_active(cpu)) {
++		/*
++		 * A CPU can be paused while it is idle with it's tick
++		 * stopped. nohz_balance_exit_idle() should be called
++		 * from the local CPU, so it can't be called during
++		 * pause. This results in paused CPU participating in
++		 * the nohz idle balance, which should be avoided.
++		 *
++		 * When the paused CPU exits idle and enters again,
++		 * exempt the paused CPU from nohz_balance_exit_idle.
++		 */
++		nohz_balance_exit_idle(rq);
+ 		return;
++	}
+ 
+ 	/* Spare idle load balancing on CPUs that don't want to be disturbed: */
+ 	if (!housekeeping_cpu(cpu, HK_FLAG_SCHED))
+diff --git a/kernel/sched/loadavg.c b/kernel/sched/loadavg.c
+index d2a655643..b5837e277 100644
+--- a/kernel/sched/loadavg.c
++++ b/kernel/sched/loadavg.c
+@@ -75,6 +75,7 @@ void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
+ 	loads[1] = (avenrun[1] + offset) << shift;
+ 	loads[2] = (avenrun[2] + offset) << shift;
+ }
++EXPORT_SYMBOL_GPL(get_avenrun);
+ 
+ long calc_load_fold_active(struct rq *this_rq, long adjust)
+ {
+diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
+index 2c613e1cf..134aa5ee2 100644
+--- a/kernel/sched/pelt.c
++++ b/kernel/sched/pelt.c
+@@ -28,6 +28,57 @@
+ #include "sched.h"
+ #include "pelt.h"
+ 
++int pelt_load_avg_period = PELT32_LOAD_AVG_PERIOD;
++int pelt_load_avg_max = PELT32_LOAD_AVG_MAX;
++const u32 *pelt_runnable_avg_yN_inv = pelt32_runnable_avg_yN_inv;
++int get_pelt_halflife(void)
++{
++	return pelt_load_avg_period;
++}
++EXPORT_SYMBOL_GPL(get_pelt_halflife);
++static int __set_pelt_halflife(void *data)
++{
++	int rc = 0;
++	int num = *(int *)data;
++	switch (num) {
++	case PELT8_LOAD_AVG_PERIOD:
++		pelt_load_avg_period = PELT8_LOAD_AVG_PERIOD;
++		pelt_load_avg_max = PELT8_LOAD_AVG_MAX;
++		pelt_runnable_avg_yN_inv = pelt8_runnable_avg_yN_inv;
++		pr_info("PELT half life is set to %dms\n", num);
++		break;
++	case PELT32_LOAD_AVG_PERIOD:
++		pelt_load_avg_period = PELT32_LOAD_AVG_PERIOD;
++		pelt_load_avg_max = PELT32_LOAD_AVG_MAX;
++		pelt_runnable_avg_yN_inv = pelt32_runnable_avg_yN_inv;
++		pr_info("PELT half life is set to %dms\n", num);
++		break;
++	default:
++		rc = -EINVAL;
++		pr_err("Failed to set PELT half life to %dms, the current value is %dms\n",
++			num, pelt_load_avg_period);
++	}
++	return rc;
++}
++int set_pelt_halflife(int num)
++{
++	return stop_machine(__set_pelt_halflife, &num, NULL);
++}
++EXPORT_SYMBOL_GPL(set_pelt_halflife);
++static int __init set_pelt(char *str)
++{
++	int rc, num;
++	rc = kstrtoint(str, 0, &num);
++	if (rc) {
++		pr_err("%s: kstrtoint failed. rc=%d\n", __func__, rc);
++		return 0;
++	}
++	__set_pelt_halflife(&num);
++	return rc;
++}
++
++early_param("pelt", set_pelt);
++
+ /*
+  * Approximate:
+  *   val * y^n,    where y^32 ~= 0.5 (~1 scheduling period)
+@@ -54,7 +105,7 @@ static u64 decay_load(u64 val, u64 n)
+ 		local_n %= LOAD_AVG_PERIOD;
+ 	}
+ 
+-	val = mul_u64_u32_shr(val, runnable_avg_yN_inv[local_n], 32);
++	val = mul_u64_u32_shr(val, pelt_runnable_avg_yN_inv[local_n], 32);
+ 	return val;
+ }
+ 
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index 15b4cc7b8..d81bccf60 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1393,6 +1393,27 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se, unsigned int flags)
+ 	enqueue_top_rt_rq(&rq->rt);
+ }
+ 
++#ifdef CONFIG_SMP
++static inline bool should_honor_rt_sync(struct rq *rq, struct task_struct *p,
++					bool sync)
++{
++	/*
++	 * If the waker is CFS, then an RT sync wakeup would preempt the waker
++	 * and force it to run for a likely small time after the RT wakee is
++	 * done. So, only honor RT sync wakeups from RT wakers.
++	 */
++	return sync && task_has_rt_policy(rq->curr) &&
++		p->prio <= rq->rt.highest_prio.next &&
++		rq->rt.rt_nr_running <= 2;
++}
++#else
++static inline bool should_honor_rt_sync(struct rq *rq, struct task_struct *p,
++					bool sync)
++{
++	return 0;
++}
++#endif
++
+ /*
+  * Adding/removing a task to/from a priority array:
+  */
+@@ -1400,6 +1421,7 @@ static void
+ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
+ {
+ 	struct sched_rt_entity *rt_se = &p->rt;
++	bool sync = !!(flags & ENQUEUE_WAKEUP_SYNC);
+ 
+ 	if (flags & ENQUEUE_WAKEUP)
+ 		rt_se->timeout = 0;
+@@ -1407,7 +1429,8 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
+ 	enqueue_rt_entity(rt_se, flags);
+ 	walt_inc_cumulative_runnable_avg(rq, p);
+ 
+-	if (!task_current(rq, p) && p->nr_cpus_allowed > 1)
++	if (!task_current(rq, p) && p->nr_cpus_allowed > 1 &&
++	    !should_honor_rt_sync(rq, p, sync))
+ 		enqueue_pushable_task(rq, p);
+ }
+ 
+@@ -1464,7 +1487,12 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ {
+ 	struct task_struct *curr;
+ 	struct rq *rq;
++	struct rq *this_cpu_rq;
+ 	bool test;
++	int target_cpu = -1;
++	bool may_not_preempt;
++	bool sync = !!(flags & WF_SYNC);
++	int this_cpu;
+ 
+ 	/* For anything but wake ups, just return the task_cpu */
+ 	if (sd_flag != SD_BALANCE_WAKE && sd_flag != SD_BALANCE_FORK)
+@@ -1474,6 +1502,8 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 
+ 	rcu_read_lock();
+ 	curr = READ_ONCE(rq->curr); /* unlocked access */
++	this_cpu = smp_processor_id();
++	this_cpu_rq = cpu_rq(this_cpu);
+ 
+ 	/*
+ 	 * If the current task on @p's runqueue is an RT task, then
+@@ -1508,6 +1538,14 @@ select_task_rq_rt(struct task_struct *p, int cpu, int sd_flag, int flags)
+ 	test |= sysctl_sched_enable_rt_cas;
+ #endif
+ 
++	/*
++	 * Respect the sync flag as long as the task can run on this CPU.
++	 */
++	if (should_honor_rt_sync(this_cpu_rq, p, sync) &&
++	    cpumask_test_cpu(this_cpu, p->cpus_ptr)) {
++		cpu = this_cpu;
++		goto out_unlock;
++	}
+ 	if (test || !rt_task_fits_capacity(p, cpu)) {
+ 		int target = find_lowest_rq(p);
+ 
+diff --git a/kernel/sched/sched-pelt.h b/kernel/sched/sched-pelt.h
+index c529706be..92a6875bc 100644
+--- a/kernel/sched/sched-pelt.h
++++ b/kernel/sched/sched-pelt.h
+@@ -1,7 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Generated by Documentation/scheduler/sched-pelt; do not modify. */
+ 
+-static const u32 runnable_avg_yN_inv[] __maybe_unused = {
++static const u32 pelt32_runnable_avg_yN_inv[] __maybe_unused = {
+ 	0xffffffff, 0xfa83b2da, 0xf5257d14, 0xefe4b99a, 0xeac0c6e6, 0xe5b906e6,
+ 	0xe0ccdeeb, 0xdbfbb796, 0xd744fcc9, 0xd2a81d91, 0xce248c14, 0xc9b9bd85,
+ 	0xc5672a10, 0xc12c4cc9, 0xbd08a39e, 0xb8fbaf46, 0xb504f333, 0xb123f581,
+@@ -10,5 +10,20 @@ static const u32 runnable_avg_yN_inv[] __maybe_unused = {
+ 	0x85aac367, 0x82cd8698,
+ };
+ 
+-#define LOAD_AVG_PERIOD 32
+-#define LOAD_AVG_MAX 47742
++#define PELT32_LOAD_AVG_PERIOD 32
++#define PELT32_LOAD_AVG_MAX 47742
++
++static const u32 pelt8_runnable_avg_yN_inv[] __maybe_unused = {
++	0xffffffff, 0xeac0c6e6, 0xd744fcc9, 0xc5672a10,
++	0xb504f333, 0xa5fed6a9, 0x9837f050, 0x8b95c1e3,
++};
++
++#define PELT8_LOAD_AVG_PERIOD 8
++#define PELT8_LOAD_AVG_MAX 12336
++
++extern const u32 *pelt_runnable_avg_yN_inv;
++extern int pelt_load_avg_period;
++extern int pelt_load_avg_max;
++
++#define LOAD_AVG_PERIOD pelt_load_avg_period
++#define LOAD_AVG_MAX pelt_load_avg_max
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 8da63d4e4..7e76bafef 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1914,6 +1914,7 @@ extern const int		sched_latency_to_weight[40];
+ #else
+ #define ENQUEUE_MIGRATED	0x00
+ #endif
++#define ENQUEUE_WAKEUP_SYNC	0x80
+ 
+ #define RETRY_TASK		((void *)-1UL)
+ 
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index 9191e5daa..58d840c62 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -5,6 +5,9 @@
+ #include "sched.h"
+ 
+ DEFINE_MUTEX(sched_domains_mutex);
++#ifdef CONFIG_LOCKDEP
++EXPORT_SYMBOL_GPL(sched_domains_mutex);
++#endif
+ 
+ /* Protected by sched_domains_mutex: */
+ static cpumask_var_t sched_domains_tmpmask;
+diff --git a/kernel/sched/wait.c b/kernel/sched/wait.c
+index a55642aa3..6911bbca0 100644
+--- a/kernel/sched/wait.c
++++ b/kernel/sched/wait.c
+@@ -396,7 +396,8 @@ void finish_wait(struct wait_queue_head *wq_head, struct wait_queue_entry *wq_en
+ }
+ EXPORT_SYMBOL(finish_wait);
+ 
+-int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key)
++__sched int autoremove_wake_function(struct wait_queue_entry *wq_entry, unsigned int mode,
++				     int sync, void *key)
+ {
+ 	int ret = default_wake_function(wq_entry, mode, sync, key);
+ 
+@@ -432,7 +433,7 @@ static inline bool is_kthread_should_stop(void)
+  * }						smp_mb(); // C
+  * remove_wait_queue(&wq_head, &wait);		wq_entry->flags |= WQ_FLAG_WOKEN;
+  */
+-long wait_woken(struct wait_queue_entry *wq_entry, unsigned mode, long timeout)
++__sched long wait_woken(struct wait_queue_entry *wq_entry, unsigned int mode, long timeout)
+ {
+ 	/*
+ 	 * The below executes an smp_mb(), which matches with the full barrier
+@@ -457,7 +458,8 @@ long wait_woken(struct wait_queue_entry *wq_entry, unsigned mode, long timeout)
+ }
+ EXPORT_SYMBOL(wait_woken);
+ 
+-int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned mode, int sync, void *key)
++__sched int woken_wake_function(struct wait_queue_entry *wq_entry, unsigned int mode,
++				int sync, void *key)
+ {
+ 	/* Pairs with the smp_store_mb() in wait_woken(). */
+ 	smp_mb(); /* C */
+diff --git a/mm/memblock.c b/mm/memblock.c
+index f72d53957..16331c252 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -97,6 +97,26 @@ struct pglist_data __refdata contig_page_data;
+ EXPORT_SYMBOL(contig_page_data);
+ #endif
+ 
++#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT
++static unsigned long defer_start __initdata;
++static unsigned long defer_end __initdata;
++
++#define DEFAULT_DEFER_FREE_BLOCK_SIZE SZ_256M
++static unsigned long defer_free_block_size __initdata =
++	DEFAULT_DEFER_FREE_BLOCK_SIZE;
++
++static int __init early_defer_free_block_size(char *p)
++{
++	defer_free_block_size = memparse(p, &p);
++
++	pr_debug("defer_free_block_size = 0x%lx\n", defer_free_block_size);
++
++	return 0;
++}
++
++early_param("defer_free_block_size", early_defer_free_block_size);
++#endif
++
+ unsigned long max_low_pfn;
+ unsigned long min_low_pfn;
+ unsigned long max_pfn;
+@@ -814,6 +834,9 @@ int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
+ 	kmemleak_free_part_phys(base, size);
+ 	return memblock_remove_range(&memblock.reserved, base, size);
+ }
++#ifdef CONFIG_ARCH_KEEP_MEMBLOCK
++EXPORT_SYMBOL_GPL(memblock_free);
++#endif
+ 
+ int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
+ {
+@@ -1391,6 +1414,9 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
+ 					     phys_addr_t start,
+ 					     phys_addr_t end)
+ {
++	memblock_dbg("%s: %llu bytes align=0x%llx from=%pa max_addr=%pa %pS\n",
++		     __func__, (u64)size, (u64)align, &start, &end,
++		     (void *)_RET_IP_);
+ 	return memblock_alloc_range_nid(size, align, start, end, NUMA_NO_NODE,
+ 					false);
+ }
+@@ -1628,6 +1654,7 @@ phys_addr_t __init_memblock memblock_end_of_DRAM(void)
+ 
+ 	return (memblock.memory.regions[idx].base + memblock.memory.regions[idx].size);
+ }
++EXPORT_SYMBOL_GPL(memblock_end_of_DRAM);
+ 
+ static phys_addr_t __init_memblock __find_max_addr(phys_addr_t limit)
+ {
+@@ -1913,6 +1940,28 @@ static void __init __free_pages_memory(unsigned long start, unsigned long end)
+ 	}
+ }
+ 
++#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT
++int __init defer_free_memblock(void *unused)
++{
++	if (defer_start == 0)
++		return 0;
++
++	pr_debug("start = %ld, end = %ld\n", defer_start, defer_end);
++
++	__free_pages_memory(defer_start, defer_end);
++
++	totalram_pages_add(defer_end - defer_start);
++
++	pr_info("%s: size %luM free %luM [%luM - %luM] total %luM\n", __func__,
++		defer_free_block_size >> 20,
++		(defer_end - defer_start) >> (20 - PAGE_SHIFT),
++		defer_end >> (20 - PAGE_SHIFT),
++		defer_start >> (20 - PAGE_SHIFT),
++		totalram_pages() >> (20 - PAGE_SHIFT));
++	return 0;
++}
++#endif
++
+ static unsigned long __init __free_memory_core(phys_addr_t start,
+ 				 phys_addr_t end)
+ {
+@@ -1923,6 +1972,15 @@ static unsigned long __init __free_memory_core(phys_addr_t start,
+ 	if (start_pfn >= end_pfn)
+ 		return 0;
+ 
++#ifdef CONFIG_ROCKCHIP_THUNDER_BOOT
++	if ((end - start) > defer_free_block_size) {
++		defer_start = start_pfn;
++		defer_end = end_pfn;
++
++		return 0;
++	}
++#endif
++
+ 	__free_pages_memory(start_pfn, end_pfn);
+ 
+ 	return end_pfn - start_pfn;
+diff --git a/net/bluetooth/l2cap_sock.c b/net/bluetooth/l2cap_sock.c
+index 4493fc68e..938af502d 100644
+--- a/net/bluetooth/l2cap_sock.c
++++ b/net/bluetooth/l2cap_sock.c
+@@ -162,11 +162,7 @@ static int l2cap_sock_bind(struct socket *sock, struct sockaddr *addr, int alen)
+ 		break;
+ 	}
+ 
+-	/* Use L2CAP_MODE_LE_FLOWCTL (CoC) in case of LE address and
+-	 * L2CAP_MODE_EXT_FLOWCTL (ECRED) has not been set.
+-	 */
+-	if (chan->psm && bdaddr_type_is_le(chan->src_type) &&
+-	    chan->mode != L2CAP_MODE_EXT_FLOWCTL)
++	if (chan->psm && bdaddr_type_is_le(chan->src_type))
+ 		chan->mode = L2CAP_MODE_LE_FLOWCTL;
+ 
+ 	chan->state = BT_BOUND;
+@@ -260,11 +256,7 @@ static int l2cap_sock_connect(struct socket *sock, struct sockaddr *addr,
+ 			return -EINVAL;
+ 	}
+ 
+-	/* Use L2CAP_MODE_LE_FLOWCTL (CoC) in case of LE address and
+-	 * L2CAP_MODE_EXT_FLOWCTL (ECRED) has not been set.
+-	 */
+-	if (chan->psm && bdaddr_type_is_le(chan->src_type) &&
+-	    chan->mode != L2CAP_MODE_EXT_FLOWCTL)
++	if (chan->psm && bdaddr_type_is_le(chan->src_type) && !chan->mode)
+ 		chan->mode = L2CAP_MODE_LE_FLOWCTL;
+ 
+ 	l2cap_sock_init_pid(sk);
+@@ -904,8 +896,6 @@ static int l2cap_sock_setsockopt(struct socket *sock, int level, int optname,
+ 	struct l2cap_conn *conn;
+ 	int len, err = 0;
+ 	u32 opt;
+-	u16 mtu;
+-	u8 mode;
+ 
+ 	BT_DBG("sk %p", sk);
+ 
+@@ -1088,16 +1078,16 @@ static int l2cap_sock_setsockopt(struct socket *sock, int level, int optname,
+ 			break;
+ 		}
+ 
+-		if (copy_from_sockptr(&mtu, optval, sizeof(u16))) {
++		if (copy_from_sockptr(&opt, optval, sizeof(u16))) {
+ 			err = -EFAULT;
+ 			break;
+ 		}
+ 
+ 		if (chan->mode == L2CAP_MODE_EXT_FLOWCTL &&
+ 		    sk->sk_state == BT_CONNECTED)
+-			err = l2cap_chan_reconfigure(chan, mtu);
++			err = l2cap_chan_reconfigure(chan, opt);
+ 		else
+-			chan->imtu = mtu;
++			chan->imtu = opt;
+ 
+ 		break;
+ 
+@@ -1119,14 +1109,14 @@ static int l2cap_sock_setsockopt(struct socket *sock, int level, int optname,
+ 			break;
+ 		}
+ 
+-		if (copy_from_sockptr(&mode, optval, sizeof(u8))) {
++		if (copy_from_sockptr(&opt, optval, sizeof(u8))) {
+ 			err = -EFAULT;
+ 			break;
+ 		}
+ 
+-		BT_DBG("mode %u", mode);
++		BT_DBG("opt %u", opt);
+ 
+-		err = l2cap_set_mode(chan, mode);
++		err = l2cap_set_mode(chan, opt);
+ 		if (err)
+ 			break;
+ 
+@@ -1539,9 +1529,6 @@ static void l2cap_sock_close_cb(struct l2cap_chan *chan)
+ {
+ 	struct sock *sk = chan->data;
+ 
+-	if (!sk)
+-		return;
+-
+ 	l2cap_sock_kill(sk);
+ }
+ 
+@@ -1550,9 +1537,6 @@ static void l2cap_sock_teardown_cb(struct l2cap_chan *chan, int err)
+ 	struct sock *sk = chan->data;
+ 	struct sock *parent;
+ 
+-	if (!sk)
+-		return;
+-
+ 	BT_DBG("chan %p state %s", chan, state_to_string(chan->state));
+ 
+ 	/* This callback can be called both for server (BT_LISTEN)
+@@ -1752,10 +1736,8 @@ static void l2cap_sock_destruct(struct sock *sk)
+ {
+ 	BT_DBG("sk %p", sk);
+ 
+-	if (l2cap_pi(sk)->chan) {
+-		l2cap_pi(sk)->chan->data = NULL;
++	if (l2cap_pi(sk)->chan)
+ 		l2cap_chan_put(l2cap_pi(sk)->chan);
+-	}
+ 
+ 	if (l2cap_pi(sk)->rx_busy_skb) {
+ 		kfree_skb(l2cap_pi(sk)->rx_busy_skb);
+diff --git a/net/bluetooth/sco.c b/net/bluetooth/sco.c
+index f9a2993fd..5a36c54b9 100644
+--- a/net/bluetooth/sco.c
++++ b/net/bluetooth/sco.c
+@@ -97,10 +97,10 @@ static void sco_sock_timeout(struct work_struct *work)
+ 
+ 	BT_DBG("sock %p state %d", sk, sk->sk_state);
+ 
+-	lock_sock(sk);
++	bh_lock_sock(sk);
+ 	sk->sk_err = ETIMEDOUT;
+ 	sk->sk_state_change(sk);
+-	release_sock(sk);
++	bh_unlock_sock(sk);
+ 
+ 	sock_put(sk);
+ }
+@@ -197,10 +197,10 @@ static void sco_conn_del(struct hci_conn *hcon, int err)
+ 
+ 	if (sk) {
+ 		sock_hold(sk);
+-		lock_sock(sk);
++		bh_lock_sock(sk);
+ 		sco_sock_clear_timer(sk);
+ 		sco_chan_del(sk, err);
+-		release_sock(sk);
++		bh_unlock_sock(sk);
+ 		sock_put(sk);
+ 	}
+ 
+@@ -284,10 +284,11 @@ static int sco_connect(struct hci_dev *hdev, struct sock *sk)
+ 	return err;
+ }
+ 
+-static int sco_send_frame(struct sock *sk, struct sk_buff *skb)
++static int sco_send_frame(struct sock *sk, struct msghdr *msg, int len)
+ {
+ 	struct sco_conn *conn = sco_pi(sk)->conn;
+-	int len = skb->len;
++	struct sk_buff *skb;
++	int err;
+ 
+ 	/* Check outgoing MTU */
+ 	if (len > conn->mtu)
+@@ -295,6 +296,14 @@ static int sco_send_frame(struct sock *sk, struct sk_buff *skb)
+ 
+ 	BT_DBG("sk %p len %d", sk, len);
+ 
++	skb = bt_skb_send_alloc(sk, len, msg->msg_flags & MSG_DONTWAIT, &err);
++	if (!skb)
++		return err;
++
++	if (memcpy_from_msg(skb_put(skb, len), msg, len)) {
++		kfree_skb(skb);
++		return -EFAULT;
++	}
+ 	hci_send_sco(conn->hcon, skb);
+ 
+ 	return len;
+@@ -572,24 +581,19 @@ static int sco_sock_connect(struct socket *sock, struct sockaddr *addr, int alen
+ 	    addr->sa_family != AF_BLUETOOTH)
+ 		return -EINVAL;
+ 
+-	lock_sock(sk);
+-	if (sk->sk_state != BT_OPEN && sk->sk_state != BT_BOUND) {
+-		err = -EBADFD;
+-		goto done;
+-	}
++	if (sk->sk_state != BT_OPEN && sk->sk_state != BT_BOUND)
++		return -EBADFD;
+ 
+-	if (sk->sk_type != SOCK_SEQPACKET) {
+-		err = -EINVAL;
+-		goto done;
+-	}
++	if (sk->sk_type != SOCK_SEQPACKET)
++		return -EINVAL;
+ 
+ 	hdev = hci_get_route(&sa->sco_bdaddr, &sco_pi(sk)->src, BDADDR_BREDR);
+-	if (!hdev) {
+-		err = -EHOSTUNREACH;
+-		goto done;
+-	}
++	if (!hdev)
++		return -EHOSTUNREACH;
+ 	hci_dev_lock(hdev);
+ 
++	lock_sock(sk);
++
+ 	/* Set destination address and psm */
+ 	bacpy(&sco_pi(sk)->dst, &sa->sco_bdaddr);
+ 
+@@ -724,7 +728,6 @@ static int sco_sock_sendmsg(struct socket *sock, struct msghdr *msg,
+ 			    size_t len)
+ {
+ 	struct sock *sk = sock->sk;
+-	struct sk_buff *skb;
+ 	int err;
+ 
+ 	BT_DBG("sock %p, sk %p", sock, sk);
+@@ -736,21 +739,16 @@ static int sco_sock_sendmsg(struct socket *sock, struct msghdr *msg,
+ 	if (msg->msg_flags & MSG_OOB)
+ 		return -EOPNOTSUPP;
+ 
+-	skb = bt_skb_sendmsg(sk, msg, len, len, 0, 0);
+-	if (IS_ERR(skb))
+-		return PTR_ERR(skb);
++
+ 
+ 	lock_sock(sk);
+ 
+ 	if (sk->sk_state == BT_CONNECTED)
+-		err = sco_send_frame(sk, skb);
++		err = sco_send_frame(sk, msg, len);
+ 	else
+ 		err = -ENOTCONN;
+ 
+ 	release_sock(sk);
+-
+-	if (err < 0)
+-		kfree_skb(skb);
+ 	return err;
+ }
+ 
+@@ -1104,10 +1102,10 @@ static void sco_conn_ready(struct sco_conn *conn)
+ 
+ 	if (sk) {
+ 		sco_sock_clear_timer(sk);
+-		lock_sock(sk);
++		bh_lock_sock(sk);
+ 		sk->sk_state = BT_CONNECTED;
+ 		sk->sk_state_change(sk);
+-		release_sock(sk);
++		bh_unlock_sock(sk);
+ 	} else {
+ 		sco_conn_lock(conn);
+ 
