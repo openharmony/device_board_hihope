@@ -55,6 +55,7 @@ patch -p1 < ${KERNEL_PATCH}
 
 cp -rf ${3}/kernel/logo* ${KERNEL_SRC_TMP_PATH}/
 cp -rf ${3}/kernel/make*.sh ${KERNEL_SRC_TMP_PATH}/
+chmod +x ${KERNEL_SRC_TMP_PATH}/make*.sh
 #config
 cp -rf ${KERNEL_CONFIG_FILE} ${KERNEL_SRC_TMP_PATH}/arch/arm64/configs/rockchip_linux_defconfig
 
