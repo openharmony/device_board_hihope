@@ -172,6 +172,7 @@ fi
 
 cd ${KERNEL_SRC_TMP_PATH}
 
+chmod +x make*.sh
 eval $MAKE_OHOS_ENV ./make-ohos.sh TB-RK3568X0 $RAMDISK_ARG ${ENABLE_LTO_O0}
 
 # revert linux-6.6 hdf stdarg.h path
