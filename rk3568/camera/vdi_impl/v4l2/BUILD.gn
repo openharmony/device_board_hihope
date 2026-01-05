@@ -18,9 +18,8 @@ if (product_name == "rk3568_mini_system") {
 } else {
   import("//build/ohos.gni")
   import("//device/board/${product_company}/${device_name}/device.gni")
-  import("//drivers/hdf_core/adapter/uhdf2/uhdf.gni")
   import("//drivers/peripheral/camera/camera.gni")
-  import("$hdf_framework_path/tools/hc-gen/hc_gen.gni")
+  import("//build/config/components/hc_gen/hc_gen.gni")
 
   hc_gen("build_camera_host_config") {
     sources = [ rebase_path(
